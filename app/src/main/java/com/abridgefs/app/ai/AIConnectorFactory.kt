@@ -6,17 +6,17 @@ package com.abridgefs.app.ai
  * without changing the chat UI, registry, or profile persistence contract.
  */
 class AIConnectorFactory(
-    additionalAdapters: Map<AIProtocol, (AIProfile) -> AIConnector> = emptyMap()
+    additionalAdapters: Map<String, (AIProfile) -> AIConnector> = emptyMap()
 ) {
-    private val adapters: Map<AIProtocol, (AIProfile) -> AIConnector> = mapOf(
-        AIProtocol.OPENAI_COMPATIBLE to { profile -> OpenAICompatibleConnector(profile) },
-        AIProtocol.ANTHROPIC to { profile -> AnthropicConnector(profile) },
-        AIProtocol.GEMINI to { profile -> GeminiConnector(profile) }
+    private val adapters: Map<String, (AIProfile) -> AIConnector> = mapOf(
+        AIProtocol.OPENAI_COMPATIBLE.id to { profile -> OpenAICompatibleConnector(profile) },
+        AIProtocol.ANTHROPIC.id to { profile -> AnthropicConnector(profile) },
+        AIProtocol.GEMINI.id to { profile -> GeminiConnector(profile) }
     ) + additionalAdapters
 
     fun create(profile: AIProfile): AIConnector =
-        adapters[profile.protocol]?.invoke(profile)
-            ?: error("尚未注册 API 协议适配器：${profile.protocol}")
+        adapters[profile.protocol.id]?.invoke(profile)
+            ?: error("尚未注册 API 协议适配器：${profile.protocol.id}")
 
     fun connection(profile: AIProfile): AIConnection =
         AIConnection(id = profile.id, name = profile.name)
