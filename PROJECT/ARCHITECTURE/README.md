@@ -44,3 +44,15 @@
 `docs/architecture/` 与其他明确标记为历史 / 过渡的架构文件，仅用于迁移和追溯，不得作为新功能设计依据。
 
 PROJECT 描述当前应该是什么；实际代码是否已经实现，以源码与 Verify 为准。
+
+
+## AI API 协议适配
+
+API 协议层实现位置：
+
+- `app/src/main/java/com/abridgefs/app/ai/AIProtocol.kt`：稳定协议 ID 与模型目录能力接口；
+- `AIConnectorFactory.kt`：内置协议映射，并允许按字符串 ID 注入额外适配器；
+- `OpenAICompatibleConnector.kt`、`AnthropicConnector.kt`、`GeminiConnector.kt`：独立请求、认证、响应和流式事件实现；
+- `AIProfileStore.kt`：协议 ID 随连接配置持久化；旧配置缺少协议时默认 OpenAI 兼容协议。
+
+协议实现优先使用 APS 现有 OkHttp / Gson / Coroutine 依赖，避免引入第二套网络栈。成熟开源参考项目需记录来源、许可证、Android 兼容性与接入限制；参考实现不等于复制整个 SDK。
