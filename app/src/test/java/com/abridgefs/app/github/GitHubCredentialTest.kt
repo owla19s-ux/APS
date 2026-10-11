@@ -1,4 +1,4 @@
-package com.abridgefs.app.github
+package com.owla19s.aps.github
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
