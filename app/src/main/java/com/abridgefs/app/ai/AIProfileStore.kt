@@ -52,7 +52,7 @@ class AIProfileStore(context: Context) {
     fun save(profile: AIProfile, makeDefault: Boolean = false) {
         migrateLegacyProfileIfNeeded()
         val metadata = readMetadata().toMutableList()
-        val replacement = ProfileMetadata(profile.id, profile.name, profile.normalizedBaseUrl, profile.model, profile.protocol.name)
+        val replacement = ProfileMetadata(profile.id, profile.name, profile.normalizedBaseUrl, profile.model, profile.protocol.id)
         val oldIndex = metadata.indexOfFirst { it.id == profile.id }
         if (oldIndex >= 0) metadata[oldIndex] = replacement else metadata.add(replacement)
         val encryptedKey = encrypt(profile.apiKey, profileKeyAlias(profile.id))
@@ -138,7 +138,7 @@ class AIProfileStore(context: Context) {
         deleteKeyAlias(LEGACY_KEY_ALIAS)
     }
 
-    private data class ProfileMetadata(val id: String, val name: String, val baseUrl: String, val model: String, val protocol: String = AIProtocol.OPENAI_COMPATIBLE.name)
+    private data class ProfileMetadata(val id: String, val name: String, val baseUrl: String, val model: String, val protocol: String = AIProtocol.OPENAI_COMPATIBLE.id)
 
     /** Reads metadata independently of secret decryption so unreadable profiles are not lost. */
     private fun readMetadata(): List<ProfileMetadata> {
