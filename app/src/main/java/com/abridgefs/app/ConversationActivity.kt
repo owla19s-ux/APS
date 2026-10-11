@@ -75,6 +75,10 @@ class ConversationActivity : AppCompatActivity() {
         configureAI()
         setContentView(buildUi())
         refresh()
+        if (intent.getBooleanExtra(EXTRA_OPEN_LOCAL_FILES, false)) {
+            intent.removeExtra(EXTRA_OPEN_LOCAL_FILES)
+            openLocalFiles()
+        }
     }
 
     override fun onResume() {
@@ -1200,5 +1204,6 @@ class ConversationActivity : AppCompatActivity() {
     private companion object {
         const val UNGROUPED_FILTER = "__aps_ungrouped__"
         const val REQUEST_LOCAL_TREE = 4107
+        const val EXTRA_OPEN_LOCAL_FILES = "aps.open.local.files"
     }
 }

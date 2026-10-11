@@ -63,9 +63,9 @@ class SettingsActivity : AppCompatActivity() {
                 startActivity(Intent(this, ConversationActivity::class.java))
                 Toast.makeText(this, "请在对话页打开“GitHub 只读”入口", Toast.LENGTH_LONG).show()
             })
-            panel.addView(actionButton("本地文件入口") {
-                startActivity(Intent(this, ConversationActivity::class.java))
-                Toast.makeText(this, "请在对话页打开“本地文件”入口", Toast.LENGTH_LONG).show()
+            panel.addView(actionButton("打开本地文件") {
+                startActivity(Intent(this, ConversationActivity::class.java)
+                    .putExtra("aps.open.local.files", true))
             })
         }
         addSection("权限", "Android 系统权限与连接授权分开管理。") { panel ->
