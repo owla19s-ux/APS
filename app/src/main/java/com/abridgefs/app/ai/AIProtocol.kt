@@ -17,8 +17,12 @@ data class AIProtocol(val id: String, val displayName: String) {
         val BUILT_INS = listOf(OPENAI_COMPATIBLE, ANTHROPIC, GEMINI)
 
         fun fromStoredValue(value: String?): AIProtocol =
-            BUILT_INS.firstOrNull { it.id.equals(value, ignoreCase = true) }
-                ?: value?.takeIf { it.isNotBlank() }?.let { AIProtocol(it, it) }
+            BUILT_INS.firstOrNull {
+                it.id.equals(value, ignoreCase = true) ||
+                    (value.equals("OPENAI_COMPATIBLE", ignoreCase = true) && it == OPENAI_COMPATIBLE) ||
+                    (value.equals("ANTHROPIC", ignoreCase = true) && it == ANTHROPIC) ||
+                    (value.equals("GEMINI", ignoreCase = true) && it == GEMINI)
+            } ?: value?.takeIf { it.isNotBlank() }?.let { AIProtocol(it, it) }
                 ?: OPENAI_COMPATIBLE
     }
 }
