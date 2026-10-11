@@ -116,7 +116,7 @@ class SettingsActivity : AppCompatActivity() {
         val logs = RuntimeDiagnostics.readRecentLogs(this)
         val view = TextView(this).apply {
             text = logs
-            textIsSelectable = true
+            setTextIsSelectable(true)
             setPadding(dp(12), dp(12), dp(12), dp(12))
         }
         val scroll = ScrollView(this).apply { addView(view) }
