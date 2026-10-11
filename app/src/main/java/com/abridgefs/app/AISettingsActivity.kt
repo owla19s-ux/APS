@@ -1,4 +1,4 @@
-package com.abridgefs.app
+package com.owla19s.aps
 
 import android.app.AlertDialog
 import android.content.ClipData
@@ -15,11 +15,11 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.abridgefs.app.ai.AIProfile
-import com.abridgefs.app.ai.AIProfileStore
-import com.abridgefs.app.ai.AIProtocol
-import com.abridgefs.app.ai.AIConnectorFactory
-import com.abridgefs.app.ai.AIModelCatalogConnector
+import com.owla19s.aps.ai.AIProfile
+import com.owla19s.aps.ai.AIProfileStore
+import com.owla19s.aps.ai.AIProtocol
+import com.owla19s.aps.ai.AIConnectorFactory
+import com.owla19s.aps.ai.AIModelCatalogConnector
 import kotlinx.coroutines.runBlocking
 import java.util.UUID
 import java.util.concurrent.Executors
