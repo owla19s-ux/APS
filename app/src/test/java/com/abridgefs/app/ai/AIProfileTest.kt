@@ -1,4 +1,4 @@
-package com.abridgefs.app.ai
+package com.owla19s.aps.ai
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
