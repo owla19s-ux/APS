@@ -4,7 +4,8 @@
     <application
         android:name=".APSApplication"
         android:allowBackup="false"
-        android:supportsRtl="true">
+        android:supportsRtl="true"
+        android:theme="@style/Theme.APS">
         <activity android:name=".AISettingsActivity" android:exported="false" />
         <activity
             android:name=".ConversationActivity"
