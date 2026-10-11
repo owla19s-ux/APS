@@ -7,14 +7,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.APS">
         <activity android:name="com.owla19s.aps.AISettingsActivity" android:exported="false" />
-        <activity android:name="com.owla19s.aps.SpaceActivity" android:exported="false" />
-        <activity
-            android:name="com.owla19s.aps.ConversationActivity"
-            android:exported="true">
+        <activity android:name="com.owla19s.aps.SpaceActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="com.owla19s.aps.ConversationActivity" android:exported="false" />
     </application>
 </manifest>
