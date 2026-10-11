@@ -44,7 +44,7 @@ class RuntimeDiagnosticsTest {
         org.junit.Assert.assertTrue(formatted.contains(" exception_message=token=[redacted]"))
         org.junit.Assert.assertTrue(formatted.contains(" caused_by_type=java.lang.IllegalArgumentException"))
         org.junit.Assert.assertTrue(formatted.contains("message=api_key=[redacted]"))
-        org.junit.Assert.assertTrue(formatted.contains("\\n  at "))
+        org.junit.Assert.assertTrue(formatted.contains("\n  at "))
         org.junit.Assert.assertFalse(formatted.contains("secret-token"))
         org.junit.Assert.assertFalse(formatted.contains("secret-cause"))
     }
