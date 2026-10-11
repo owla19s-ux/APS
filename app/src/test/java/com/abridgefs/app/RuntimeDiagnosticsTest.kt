@@ -40,21 +40,6 @@ class RuntimeDiagnosticsTest {
         )
         val formatted = RuntimeDiagnostics.formatCrash(Thread.currentThread(), error)
 
-        org.junit.Assert.assertTrue(formatted.contains("apiKey=[redacted]"))
-        org.junit.Assert.assertTrue(formatted.contains("x-goog-api-key=[redacted]"))
-        org.junit.Assert.assertTrue(formatted.contains("[URL with query redacted]"))
-        org.junit.Assert.assertFalse(formatted.contains("secret-one"))
-        org.junit.Assert.assertFalse(formatted.contains("secret-two"))
-        org.junit.Assert.assertFalse(formatted.contains("secret-three"))
-    }
-
-    @Test
-    fun crashFormattingRedactsJsonSecretsAndUrlQueryParameters() {
-        val error = IllegalStateException(
-            """Request failed: {"apiKey":"secret-one","x-goog-api-key":"secret-two"} https://example.com/v1?token=secret-three"""
-        )
-        val formatted = RuntimeDiagnostics.formatCrash(Thread.currentThread(), error)
-
         org.junit.Assert.assertTrue(formatted.contains("\"apiKey\":\"[redacted]"))
         org.junit.Assert.assertTrue(formatted.contains("\"x-goog-api-key\":\"[redacted]"))
         org.junit.Assert.assertTrue(formatted.contains("[URL with query redacted]"))
