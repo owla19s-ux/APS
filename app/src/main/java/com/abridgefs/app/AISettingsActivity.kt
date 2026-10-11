@@ -24,6 +24,8 @@ import com.owla19s.aps.ai.AIConnectorFactory
 import com.owla19s.aps.ai.AIModelCatalogConnector
 import kotlinx.coroutines.runBlocking
 import java.util.UUID
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import java.util.concurrent.Executors
 
 /** Global AI/API profile settings. Model catalog retrieval is explicit and never silently changes selection. */
@@ -200,7 +202,7 @@ class AISettingsActivity : AppCompatActivity() {
                 }
             } catch (error: Exception) {
                 runOnUiThread {
-                    status.text = "聊天测试失败：${error.message ?: error::class.simpleName ?: "未知错误"}"
+                    status.text = formatApiError("聊天测试", error)
                 }
             }
         }
@@ -228,10 +230,34 @@ class AISettingsActivity : AppCompatActivity() {
                 }
             } catch (error: Exception) {
                 runOnUiThread {
-                    status.text = "连接失败：${error.message ?: error::class.simpleName ?: "未知错误"}"
+                    status.text = formatApiError("获取模型列表", error)
                 }
             }
         }
+    }
+
+    /** Turn transport/protocol failures into actionable guidance without exposing credentials. */
+    private fun formatApiError(action: String, error: Exception): String {
+        val detail = error.message.orEmpty()
+            .replace(Regex("""(?i)Bearer\s+[^\s,;]+"""), "Bearer [redacted]")
+            .replace(Regex("""(?i)(api[_-]?key|authorization|token)=?[^\s&;,]*"""), "$1=[redacted]")
+            .take(180)
+        val statusCode = Regex("""HTTP\s+(\d{3})""").find(detail)
+            ?.groupValues?.getOrNull(1)?.toIntOrNull()
+        val guidance = when {
+            statusCode == 404 -> "服务返回 404。请检查 API 地址是否填写为服务商要求的 Base URL（通常不是完整的 /models 或 /chat/completions 路径）；部分兼容服务不开放模型目录，可手动填写模型 ID。"
+            statusCode == 401 -> "服务返回 401。请检查 API Key 是否正确，以及该密钥是否属于当前服务商。"
+            statusCode == 403 -> "服务返回 403。当前密钥可能没有权限访问该接口或模型。"
+            statusCode == 429 -> "服务返回 429。请求可能触发限流或额度限制，请检查账户额度与服务商限流规则。"
+            statusCode != null && statusCode >= 500 -> "服务端返回 HTTP $statusCode，请稍后重试或查看服务商状态。"
+            error is UnknownHostException -> "无法解析 API 域名，请检查网络、域名和代理设置。"
+            error is SocketTimeoutException -> "请求超时，请检查网络或服务端响应时间。"
+            error is IllegalArgumentException -> "API 地址或请求参数格式无效，请检查协议、地址和模型配置。"
+            detail.contains("以 http:// 或 https://", ignoreCase = true) -> "API 地址必须包含 http:// 或 https://。"
+            else -> "请检查 API 地址、协议、密钥和模型配置。"
+        }
+        val safeDetail = detail.takeIf { it.isNotBlank() }?.let { "\n详情：$it" }.orEmpty()
+        return "${action}失败。$guidance$safeDetail"
     }
 
     private fun saveProfile() {
