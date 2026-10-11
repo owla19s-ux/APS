@@ -1,4 +1,4 @@
-package com.abridgefs.app.local
+package com.owla19s.aps.local
 
 import android.content.Context
 import android.net.Uri
