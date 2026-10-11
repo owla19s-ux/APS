@@ -1,4 +1,4 @@
-package com.abridgefs.app.local
+package com.owla19s.aps.local
 
 import java.io.IOException
 import org.junit.Assert.assertArrayEquals

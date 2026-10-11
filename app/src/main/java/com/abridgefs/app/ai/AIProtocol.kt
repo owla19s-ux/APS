@@ -1,4 +1,4 @@
-package com.abridgefs.app.ai
+package com.owla19s.aps.ai
 
 /**
  * Protocol descriptor. IDs are stable persisted identifiers; display names are UI-only.

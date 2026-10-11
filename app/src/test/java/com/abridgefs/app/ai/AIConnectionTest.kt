@@ -1,6 +1,6 @@
-package com.abridgefs.app.ai
+package com.owla19s.aps.ai
 
-import com.abridgefs.app.connection.Connection
+import com.owla19s.aps.connection.Connection
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

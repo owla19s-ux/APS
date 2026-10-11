@@ -1,10 +1,10 @@
-package com.abridgefs.app.github
+package com.owla19s.aps.github
 
-import com.abridgefs.app.context.Context
-import com.abridgefs.app.context.ResourceRef
-import com.abridgefs.app.github.api.FileWriteRequest
-import com.abridgefs.app.github.api.GitHubApi
-import com.abridgefs.app.github.api.WorkflowDispatchRequest
+import com.owla19s.aps.context.Context
+import com.owla19s.aps.context.ResourceRef
+import com.owla19s.aps.github.api.FileWriteRequest
+import com.owla19s.aps.github.api.GitHubApi
+import com.owla19s.aps.github.api.WorkflowDispatchRequest
 import com.google.gson.JsonObject
 import java.lang.reflect.Proxy
 import org.junit.Assert.assertEquals

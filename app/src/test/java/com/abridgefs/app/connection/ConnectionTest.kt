@@ -1,7 +1,7 @@
-package com.abridgefs.app.connection
+package com.owla19s.aps.connection
 
-import com.abridgefs.app.github.GitHubAddress
-import com.abridgefs.app.github.GitHubConnection
+import com.owla19s.aps.github.GitHubAddress
+import com.owla19s.aps.github.GitHubConnection
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

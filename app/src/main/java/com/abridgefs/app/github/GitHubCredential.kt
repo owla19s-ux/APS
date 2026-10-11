@@ -1,4 +1,4 @@
-package com.abridgefs.app.github
+package com.owla19s.aps.github
 
 data class GitHubCredential(
     val login: String,

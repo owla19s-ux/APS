@@ -1,10 +1,10 @@
-package com.abridgefs.app.conversation
+package com.owla19s.aps.conversation
 
-import com.abridgefs.app.RuntimeDiagnostics
-import com.abridgefs.app.ai.AIConnector
-import com.abridgefs.app.ai.AIMessage
-import com.abridgefs.app.ai.AIRequest
-import com.abridgefs.app.ai.AIResponse
+import com.owla19s.aps.RuntimeDiagnostics
+import com.owla19s.aps.ai.AIConnector
+import com.owla19s.aps.ai.AIMessage
+import com.owla19s.aps.ai.AIRequest
+import com.owla19s.aps.ai.AIResponse
 
 /**
  * Conversation 的运行边界。

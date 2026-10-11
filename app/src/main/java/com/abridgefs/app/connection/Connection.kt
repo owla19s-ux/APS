@@ -1,4 +1,4 @@
-package com.abridgefs.app.connection
+package com.owla19s.aps.connection
 
 interface Connection {
     val id: String

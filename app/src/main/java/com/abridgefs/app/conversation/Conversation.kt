@@ -1,4 +1,4 @@
-package com.abridgefs.app.conversation
+package com.owla19s.aps.conversation
 
 data class Conversation(
     val id: String,

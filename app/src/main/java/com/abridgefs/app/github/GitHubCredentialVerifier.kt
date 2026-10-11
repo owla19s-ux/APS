@@ -1,6 +1,6 @@
-package com.abridgefs.app.github
+package com.owla19s.aps.github
 
-import com.abridgefs.app.github.api.GitHubApi
+import com.owla19s.aps.github.api.GitHubApi
 
 data class GitHubVerificationResult(
     val login: String,

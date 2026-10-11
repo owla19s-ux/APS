@@ -1,4 +1,4 @@
-package com.abridgefs.app.ai
+package com.owla19s.aps.ai
 
 /**
  * Builds runtime connectors from persisted profiles.

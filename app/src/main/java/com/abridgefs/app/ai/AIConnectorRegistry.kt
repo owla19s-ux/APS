@@ -1,4 +1,4 @@
-package com.abridgefs.app.ai
+package com.owla19s.aps.ai
 
 /**
  * Resolves runtime connectors by stable AI connection ID.

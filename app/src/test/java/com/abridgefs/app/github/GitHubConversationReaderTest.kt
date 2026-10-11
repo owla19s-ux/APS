@@ -1,6 +1,6 @@
-package com.abridgefs.app.github
+package com.owla19s.aps.github
 
-import com.abridgefs.app.github.api.GitHubApi
+import com.owla19s.aps.github.api.GitHubApi
 import com.google.gson.JsonObject
 import java.lang.reflect.Proxy
 import java.nio.charset.StandardCharsets

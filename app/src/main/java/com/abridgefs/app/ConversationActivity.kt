@@ -1,4 +1,4 @@
-package com.abridgefs.app
+package com.owla19s.aps
 
 import android.app.AlertDialog
 import android.content.Intent
@@ -15,27 +15,27 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.abridgefs.app.ai.AIConnection
-import com.abridgefs.app.ai.AIConnector
-import com.abridgefs.app.ai.AIRequest
-import com.abridgefs.app.ai.AIResponse
-import com.abridgefs.app.conversation.Conversation
-import com.abridgefs.app.conversation.ConversationGroup
-import com.abridgefs.app.conversation.ConversationManager
-import com.abridgefs.app.conversation.ConversationService
-import com.abridgefs.app.conversation.ConversationStore
-import com.abridgefs.app.local.AndroidLocalDocumentGateway
-import com.abridgefs.app.local.LocalConnection
-import com.abridgefs.app.local.LocalConnectionStore
-import com.abridgefs.app.local.LocalEntry
-import com.abridgefs.app.local.LocalFileConnector
-import com.abridgefs.app.github.GitHubConversationReadConfigStore
-import com.abridgefs.app.github.GitHubConversationReader
-import com.abridgefs.app.github.GitHubCredential
-import com.abridgefs.app.github.GitHubCredentialStore
-import com.abridgefs.app.github.GitHubCredentialVerifier
-import com.abridgefs.app.github.GitHubReadTarget
-import com.abridgefs.app.github.api.GitHubApiFactory
+import com.owla19s.aps.ai.AIConnection
+import com.owla19s.aps.ai.AIConnector
+import com.owla19s.aps.ai.AIRequest
+import com.owla19s.aps.ai.AIResponse
+import com.owla19s.aps.conversation.Conversation
+import com.owla19s.aps.conversation.ConversationGroup
+import com.owla19s.aps.conversation.ConversationManager
+import com.owla19s.aps.conversation.ConversationService
+import com.owla19s.aps.conversation.ConversationStore
+import com.owla19s.aps.local.AndroidLocalDocumentGateway
+import com.owla19s.aps.local.LocalConnection
+import com.owla19s.aps.local.LocalConnectionStore
+import com.owla19s.aps.local.LocalEntry
+import com.owla19s.aps.local.LocalFileConnector
+import com.owla19s.aps.github.GitHubConversationReadConfigStore
+import com.owla19s.aps.github.GitHubConversationReader
+import com.owla19s.aps.github.GitHubCredential
+import com.owla19s.aps.github.GitHubCredentialStore
+import com.owla19s.aps.github.GitHubCredentialVerifier
+import com.owla19s.aps.github.GitHubReadTarget
+import com.owla19s.aps.github.api.GitHubApiFactory
 import java.util.UUID
 
 class ConversationActivity : AppCompatActivity() {
@@ -60,7 +60,7 @@ class ConversationActivity : AppCompatActivity() {
 
     private lateinit var aiConnection: AIConnection
     private lateinit var connector: AIConnector
-    private lateinit var profileStore: com.abridgefs.app.ai.AIProfileStore
+    private lateinit var profileStore: com.owla19s.aps.ai.AIProfileStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,16 +83,16 @@ class ConversationActivity : AppCompatActivity() {
     }
 
     private fun configureAI() {
-        profileStore = com.abridgefs.app.ai.AIProfileStore(this)
+        profileStore = com.owla19s.aps.ai.AIProfileStore(this)
         val selectedId = current?.aiConnectionId
         val profile = selectedId?.let(profileStore::load) ?: profileStore.load()
-        val registry = com.abridgefs.app.ai.AIConnectorRegistry(
+        val registry = com.owla19s.aps.ai.AIConnectorRegistry(
             profileProvider = profileStore::load
         )
         aiConnection = if (profile != null) {
             registry.connection(profile)
         } else {
-            AIConnection(com.abridgefs.app.ai.AIProfile.DEFAULT_ID, "AI")
+            AIConnection(com.owla19s.aps.ai.AIProfile.DEFAULT_ID, "AI")
         }
         connector = if (profile != null) {
             registry.resolve(aiConnection)
@@ -389,7 +389,7 @@ class ConversationActivity : AppCompatActivity() {
                     Thread {
                         val result = runCatching {
                             kotlinx.coroutines.runBlocking {
-                                com.abridgefs.app.ai.OpenAICompatibleConnector(profile).listModels()
+                                com.owla19s.aps.ai.OpenAICompatibleConnector(profile).listModels()
                             }
                         }
                         runOnUiThread {
@@ -620,7 +620,7 @@ class ConversationActivity : AppCompatActivity() {
     }
 
     private fun loadGitHubDirectory(
-        api: com.abridgefs.app.github.api.GitHubApi,
+        api: com.owla19s.aps.github.api.GitHubApi,
         target: GitHubReadTarget,
         path: String,
         pathField: EditText
@@ -647,10 +647,10 @@ class ConversationActivity : AppCompatActivity() {
     }
 
     private fun showGitHubDirectory(
-        api: com.abridgefs.app.github.api.GitHubApi,
+        api: com.owla19s.aps.github.api.GitHubApi,
         target: GitHubReadTarget,
         directoryPath: String,
-        entries: List<com.abridgefs.app.github.GitHubReadEntry>,
+        entries: List<com.owla19s.aps.github.GitHubReadEntry>,
         pathField: EditText
     ) {
         val labels = entries.map {

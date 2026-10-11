@@ -1,6 +1,6 @@
-package com.abridgefs.app.ai
+package com.owla19s.aps.ai
 
-import com.abridgefs.app.connection.Connection
+import com.owla19s.aps.connection.Connection
 
 data class AIConnection(
     override val id: String,

@@ -1,4 +1,4 @@
-package com.abridgefs.app.github
+package com.owla19s.aps.github
 
 import com.google.gson.JsonParser
 import org.junit.Assert.assertEquals

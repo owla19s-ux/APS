@@ -1,11 +1,11 @@
-package com.abridgefs.app.conversation
+package com.owla19s.aps.conversation
 
-import com.abridgefs.app.ai.AIConnection
-import com.abridgefs.app.ai.AIConnector
-import com.abridgefs.app.ai.AIConnectorRegistry
-import com.abridgefs.app.ai.AIRequest
-import com.abridgefs.app.ai.AIResponse
-import com.abridgefs.app.context.Context
+import com.owla19s.aps.ai.AIConnection
+import com.owla19s.aps.ai.AIConnector
+import com.owla19s.aps.ai.AIConnectorRegistry
+import com.owla19s.aps.ai.AIRequest
+import com.owla19s.aps.ai.AIResponse
+import com.owla19s.aps.context.Context
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test

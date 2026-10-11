@@ -1,4 +1,4 @@
-package com.abridgefs.app.ai
+package com.owla19s.aps.ai
 
 import kotlinx.coroutines.runBlocking
 import java.io.IOException

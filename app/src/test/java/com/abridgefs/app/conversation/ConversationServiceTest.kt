@@ -1,8 +1,8 @@
-package com.abridgefs.app.conversation
+package com.owla19s.aps.conversation
 
-import com.abridgefs.app.ai.AIConnector
-import com.abridgefs.app.ai.AIRequest
-import com.abridgefs.app.ai.AIResponse
+import com.owla19s.aps.ai.AIConnector
+import com.owla19s.aps.ai.AIRequest
+import com.owla19s.aps.ai.AIResponse
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

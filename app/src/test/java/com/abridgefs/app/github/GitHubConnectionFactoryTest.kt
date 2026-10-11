@@ -1,7 +1,7 @@
-package com.abridgefs.app.github
+package com.owla19s.aps.github
 
-import com.abridgefs.app.context.Context
-import com.abridgefs.app.context.ResourceRef
+import com.owla19s.aps.context.Context
+import com.owla19s.aps.context.ResourceRef
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
