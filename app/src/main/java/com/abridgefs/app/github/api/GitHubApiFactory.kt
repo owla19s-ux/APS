@@ -1,6 +1,6 @@
-package com.abridgefs.app.github.api
+package com.owla19s.aps.github.api
 
-import com.abridgefs.app.github.GitHubCredential
+import com.owla19s.aps.github.GitHubCredential
 
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
