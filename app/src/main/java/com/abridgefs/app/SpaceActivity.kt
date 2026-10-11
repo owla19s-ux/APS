@@ -46,14 +46,15 @@ class SpaceActivity : AppCompatActivity() {
         RuntimeDiagnostics.record("startup.space.set_content_view", "begin")
         setContentView(content)
         RuntimeDiagnostics.record("startup.space.set_content_view", "success")
-        RuntimeDiagnostics.record("startup.space.refresh", "begin")
-        refresh()
+        diagnosticStage("startup.space.initial_refresh") { refresh("on_create") }
         RuntimeDiagnostics.record("startup.space.on_create", "success")
     }
 
     override fun onResume() {
         super.onResume()
-        if (::store.isInitialized && ::list.isInitialized) refresh()
+        if (::store.isInitialized && ::list.isInitialized) {
+            diagnosticStage("startup.space.resume_refresh") { refresh("on_resume") }
+        }
     }
 
     private fun buildUi(): ScrollView {
@@ -136,58 +137,104 @@ class SpaceActivity : AppCompatActivity() {
         return ScrollView(this).apply { addView(root) }
     }
 
-    private fun refresh() {
-        spaceTitle.text = directoryStore.spaceName()
-        renderDirectories()
-        list.removeAllViews()
-        val all = store.all().sortedBy { it.name.lowercase() }
-        val visible = when (selectedDirectoryFilter) {
-            ALL_DIRECTORIES -> all
-            UNGROUPED -> all.filter { directoryStore.directoryFor(it.id) == null }
-            else -> all.filter { directoryStore.directoryFor(it.id) == selectedDirectoryFilter }
-        }
-        emptyState.text = when {
-            visible.isEmpty() && selectedDirectoryFilter == ALL_DIRECTORIES ->
-                "还没有 Context。点击“新建 Context”创建第一个工作上下文。"
-            visible.isEmpty() && selectedDirectoryFilter == UNGROUPED ->
-                "未分组目录为空。可以创建 Context，或将已有 Context 移入此处。"
-            visible.isEmpty() -> "此目录暂无 Context。"
-            else -> "显示 ${visible.size} / ${all.size} 个 Context"
-        }
-        visible.forEach { context ->
-            val directoryName = directoryStore.directoryFor(context.id)
-                ?.let { id -> directoryStore.allDirectories().firstOrNull { it.id == id }?.name }
-                ?: "未分组"
-            val card = LinearLayout(this).apply {
-                orientation = LinearLayout.VERTICAL
-                setPadding(dp(16), dp(14), dp(16), dp(12))
-                background = rounded(Color.WHITE, 18)
-                elevation = dp(2).toFloat()
+    private fun refresh(trigger: String = "action") {
+        val startedAt = System.nanoTime()
+        RuntimeDiagnostics.record("space.refresh", "begin")
+        RuntimeDiagnostics.record("space.refresh.trigger", trigger)
+        try {
+            diagnosticStage("space.refresh.space_title") {
+                spaceTitle.text = directoryStore.spaceName()
             }
-            card.addView(TextView(this).apply {
-                text = context.name
-                textSize = 19f
-                setTextColor(Color.rgb(25, 34, 52))
-                typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
-            })
-            card.addView(TextView(this).apply {
-                text = "目录：$directoryName · 资源：${context.resources.size} · AI：${context.aiConnectionId ?: "默认连接"}"
-                textSize = 13f
-                setPadding(0, dp(4), 0, dp(8))
-            })
-            val buttons = LinearLayout(this)
-            buttons.addView(actionButton("详情") { openContextDetail(context) },
-                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-            buttons.addView(actionButton("重命名") { promptRename(context) },
-                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-            buttons.addView(actionButton("移动") { promptMoveContext(context) },
-                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-            buttons.addView(actionButton("删除") { confirmDelete(context) },
-                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-            card.addView(buttons)
-            list.addView(card, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { bottomMargin = dp(10) })
+            diagnosticStage("space.refresh.directory_filters") { renderDirectories() }
+            diagnosticStage("space.refresh.clear_context_cards") { list.removeAllViews() }
+            val all = diagnosticStage("space.refresh.read_contexts") {
+                store.all().sortedBy { it.name.lowercase() }
+            }
+            val visible = diagnosticStage("space.refresh.filter_contexts") {
+                when (selectedDirectoryFilter) {
+                    ALL_DIRECTORIES -> all
+                    UNGROUPED -> all.filter { directoryStore.directoryFor(it.id) == null }
+                    else -> all.filter { directoryStore.directoryFor(it.id) == selectedDirectoryFilter }
+                }
+            }
+            diagnosticStage("space.refresh.empty_state") {
+                emptyState.text = when {
+                    visible.isEmpty() && selectedDirectoryFilter == ALL_DIRECTORIES ->
+                        "还没有 Context。点击“新建 Context”创建第一个工作上下文。"
+                    visible.isEmpty() && selectedDirectoryFilter == UNGROUPED ->
+                        "未分组目录为空。可以创建 Context，或将已有 Context 移入此处。"
+                    visible.isEmpty() -> "此目录暂无 Context。"
+                    else -> "显示 ${visible.size} / ${all.size} 个 Context"
+                }
+            }
+            diagnosticStage("space.refresh.render_context_cards") {
+                visible.forEach { context ->
+                    val directoryName = directoryStore.directoryFor(context.id)
+                        ?.let { id -> directoryStore.allDirectories().firstOrNull { it.id == id }?.name }
+                        ?: "未分组"
+                    val card = LinearLayout(this).apply {
+                        orientation = LinearLayout.VERTICAL
+                        setPadding(dp(16), dp(14), dp(16), dp(12))
+                        background = rounded(Color.WHITE, 18)
+                        elevation = dp(2).toFloat()
+                    }
+                    card.addView(TextView(this).apply {
+                        text = context.name
+                        textSize = 19f
+                        setTextColor(Color.rgb(25, 34, 52))
+                        typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
+                    })
+                    card.addView(TextView(this).apply {
+                        text = "目录：$directoryName · 资源：${context.resources.size} · AI：${context.aiConnectionId ?: "默认连接"}"
+                        textSize = 13f
+                        setPadding(0, dp(4), 0, dp(8))
+                    })
+                    val buttons = LinearLayout(this)
+                    buttons.addView(actionButton("详情") { openContextDetail(context) },
+                        LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                    buttons.addView(actionButton("重命名") { promptRename(context) },
+                        LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                    buttons.addView(actionButton("移动") { promptMoveContext(context) },
+                        LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                    buttons.addView(actionButton("删除") { confirmDelete(context) },
+                        LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                    card.addView(buttons)
+                    list.addView(card, LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                    ).apply { bottomMargin = dp(10) })
+                }
+            }
+            RuntimeDiagnostics.record(
+                "space.refresh", "success",
+                durationMs = (System.nanoTime() - startedAt) / 1_000_000
+            )
+        } catch (error: Exception) {
+            RuntimeDiagnostics.record(
+                "space.refresh", "failed",
+                durationMs = (System.nanoTime() - startedAt) / 1_000_000,
+                errorType = error.javaClass.name
+            )
+            throw error
+        }
+    }
+
+    private inline fun <T> diagnosticStage(name: String, block: () -> T): T {
+        val startedAt = System.nanoTime()
+        RuntimeDiagnostics.record(name, "begin")
+        return try {
+            block().also {
+                RuntimeDiagnostics.record(
+                    name, "success",
+                    durationMs = (System.nanoTime() - startedAt) / 1_000_000
+                )
+            }
+        } catch (error: Exception) {
+            RuntimeDiagnostics.record(
+                name, "failed",
+                durationMs = (System.nanoTime() - startedAt) / 1_000_000,
+                errorType = error.javaClass.name
+            )
+            throw error
         }
     }
 
