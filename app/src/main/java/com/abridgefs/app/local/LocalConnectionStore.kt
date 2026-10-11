@@ -1,6 +1,7 @@
 package com.owla19s.aps.local
 
 import android.content.Context
+import com.owla19s.aps.RuntimeDiagnostics
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -22,20 +23,33 @@ class LocalConnectionStore(context: Context) {
 
     private fun load(): List<LocalConnection> {
         val raw = prefs.getString(KEY_DATA, null) ?: return emptyList()
-        val array = JSONArray(raw)
-        return buildList {
-            for (index in 0 until array.length()) {
-                val json = array.getJSONObject(index)
-                add(
-                    LocalConnection(
-                        id = json.getString("id"),
-                        name = json.getString("name"),
-                        treeUri = json.getString("treeUri"),
-                        canRead = json.optBoolean("canRead", true),
-                        canWrite = json.optBoolean("canWrite", false)
+        return try {
+            val array = JSONArray(raw)
+            buildList {
+                for (index in 0 until array.length()) {
+                    val json = array.getJSONObject(index)
+                    add(
+                        LocalConnection(
+                            id = json.getString("id"),
+                            name = json.getString("name"),
+                            treeUri = json.getString("treeUri"),
+                            canRead = json.optBoolean("canRead", true),
+                            canWrite = json.optBoolean("canWrite", false)
+                        )
                     )
-                )
+                }
             }
+        } catch (error: Exception) {
+            // Preserve the original value for recovery, but never log directory URIs or raw JSON.
+            if (!prefs.contains(KEY_CORRUPT_BACKUP)) {
+                prefs.edit().putString(KEY_CORRUPT_BACKUP, raw).apply()
+            }
+            RuntimeDiagnostics.record(
+                "local_store.connections.read_failed",
+                "recovered",
+                errorType = error.javaClass.name
+            )
+            emptyList()
         }
     }
 
@@ -56,5 +70,6 @@ class LocalConnectionStore(context: Context) {
     private companion object {
         const val PREFERENCES = "aps_local_connections"
         const val KEY_DATA = "connections"
+        const val KEY_CORRUPT_BACKUP = "connections_corrupt_backup"
     }
 }
