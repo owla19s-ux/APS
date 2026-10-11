@@ -241,7 +241,7 @@ class AISettingsActivity : AppCompatActivity() {
         val detail = error.message.orEmpty()
             .replace(Regex("""(?i)Bearer\s+[^\s,;]+"""), "Bearer [redacted]")
             .replace(
-                Regex("""(?i)(["']?(?:x-api-key|x-goog-api-key|authorization|api.?key|access_token|refresh_token|token|secret|password|client_secret)["']?\s*[:=]\s*["']?)[^"'\\s&,}]+"""),
+                Regex("""(?i)(["']?(?:x-api-key|x-goog-api-key|authorization|api.?key|access_token|refresh_token|token|secret|password|client_secret)["']?\s*[:=]\s*["']?)[^"'\s&,}]+"""),
                 "$1[redacted]"
             )
             .replace(Regex("""https?://[^\s?]+\?[^\s]+"""), "[URL with query redacted]")
