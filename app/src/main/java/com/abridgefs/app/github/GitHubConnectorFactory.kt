@@ -1,8 +1,8 @@
-package com.abridgefs.app.github
+package com.owla19s.aps.github
 
-import com.abridgefs.app.context.Context
-import com.abridgefs.app.github.api.GitHubApi
-import com.abridgefs.app.github.api.GitHubApiFactory
+import com.owla19s.aps.context.Context
+import com.owla19s.aps.github.api.GitHubApi
+import com.owla19s.aps.github.api.GitHubApiFactory
 
 /**
  * 从 Context + GitHub Credential 装配可执行的 GitHub Connector。
