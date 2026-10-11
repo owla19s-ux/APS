@@ -34,6 +34,30 @@ class ContextStoreTest {
     }
 
     @Test
+    fun unreadable_context_data_is_backed_up_before_empty_recovery() {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        val prefs = appContext.getSharedPreferences("aps_contexts", android.content.Context.MODE_PRIVATE)
+        val oldData = prefs.getString("data", null)
+        val hadOldData = prefs.contains("data")
+        val oldBackup = prefs.getString("data_corrupt_backup", null)
+        val hadOldBackup = prefs.contains("data_corrupt_backup")
+        val corrupted = """{"broken":"""
+
+        try {
+            prefs.edit().putString("data", corrupted).remove("data_corrupt_backup").commit()
+
+            assertEquals(emptyList<Context>(), ContextStore(appContext).all())
+            assertEquals(corrupted, prefs.getString("data_corrupt_backup", null))
+            assertEquals(corrupted, prefs.getString("data", null))
+        } finally {
+            prefs.edit().apply {
+                if (hadOldData) putString("data", oldData) else remove("data")
+                if (hadOldBackup) putString("data_corrupt_backup", oldBackup) else remove("data_corrupt_backup")
+            }.commit()
+        }
+    }
+
+    @Test
     fun context_persists_ai_connection_binding() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val firstStore = ContextStore(appContext)
