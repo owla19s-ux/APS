@@ -141,7 +141,7 @@ class SpaceActivity : AppCompatActivity() {
                 setPadding(0, dp(4), 0, dp(8))
             })
             val buttons = LinearLayout(this)
-            buttons.addView(actionButton("进入对话") { openConversation() },
+            buttons.addView(actionButton("详情") { openContextDetail(context) },
                 LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
             buttons.addView(actionButton("重命名") { promptRename(context) },
                 LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
