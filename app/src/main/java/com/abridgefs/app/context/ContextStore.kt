@@ -43,7 +43,18 @@ class ContextStore(context: AndroidContext) {
     private fun toJson(value: Context) = JSONObject().apply {
         put("id", value.id)
         put("name", value.name)
+        put("notes", value.notes)
         value.aiConnectionId?.let { put("aiConnectionId", it) }
+        put("addresses", JSONArray().apply {
+            value.addresses.forEach { address ->
+                put(JSONObject().apply {
+                    put("id", address.id)
+                    put("name", address.name)
+                    put("address", address.address)
+                    put("notes", address.notes)
+                })
+            }
+        })
         put("resources", JSONArray().apply {
             value.resources.forEach { put(toResourceJson(it)) }
         })
@@ -86,7 +97,20 @@ class ContextStore(context: AndroidContext) {
                     add(fromResourceJson(resources.getJSONObject(i)))
                 }
             },
-            aiConnectionId = json.optString("aiConnectionId").ifBlank { null }
+            aiConnectionId = json.optString("aiConnectionId").ifBlank { null },
+            notes = json.optString("notes"),
+            addresses = buildList {
+                val addresses = json.optJSONArray("addresses") ?: JSONArray()
+                for (i in 0 until addresses.length()) {
+                    val address = addresses.getJSONObject(i)
+                    add(ContextAddress(
+                        id = address.getString("id"),
+                        name = address.getString("name"),
+                        address = address.getString("address"),
+                        notes = address.optString("notes")
+                    ))
+                }
+            }
         )
     }
 
