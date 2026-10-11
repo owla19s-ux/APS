@@ -33,10 +33,22 @@ class SpaceActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        RuntimeDiagnostics.record("startup.space.on_create", "begin")
+        RuntimeDiagnostics.record("startup.space.context_store", "begin")
         store = ContextStore(this)
+        RuntimeDiagnostics.record("startup.space.context_store", "success")
+        RuntimeDiagnostics.record("startup.space_directory_store", "begin")
         directoryStore = SpaceDirectoryStore(this)
-        setContentView(buildUi())
+        RuntimeDiagnostics.record("startup.space_directory_store", "success")
+        RuntimeDiagnostics.record("startup.space.build_ui", "begin")
+        val content = buildUi()
+        RuntimeDiagnostics.record("startup.space.build_ui", "success")
+        RuntimeDiagnostics.record("startup.space.set_content_view", "begin")
+        setContentView(content)
+        RuntimeDiagnostics.record("startup.space.set_content_view", "success")
+        RuntimeDiagnostics.record("startup.space.refresh", "begin")
         refresh()
+        RuntimeDiagnostics.record("startup.space.on_create", "success")
     }
 
     override fun onResume() {
