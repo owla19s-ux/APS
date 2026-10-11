@@ -8,7 +8,7 @@ package com.abridgefs.app.ai
 class AIConnectorFactory(
     additionalAdapters: Map<String, (AIProfile) -> AIConnector> = emptyMap()
 ) {
-    private val adapters: Map<String, (AIProfile) -> AIConnector> = mapOf(
+    private val adapters: Map<String, (AIProfile) -> AIConnector> = mapOf<String, (AIProfile) -> AIConnector>(
         AIProtocol.OPENAI_COMPATIBLE.id to { profile -> OpenAICompatibleConnector(profile) },
         AIProtocol.ANTHROPIC.id to { profile -> AnthropicConnector(profile) },
         AIProtocol.GEMINI.id to { profile -> GeminiConnector(profile) }
