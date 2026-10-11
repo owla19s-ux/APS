@@ -1,6 +1,6 @@
-package com.abridgefs.app.github
+package com.owla19s.aps.github
 
-import com.abridgefs.app.connection.Connection
+import com.owla19s.aps.connection.Connection
 
 data class GitHubConnection(
     override val id: String,
