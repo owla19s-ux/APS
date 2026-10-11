@@ -134,32 +134,34 @@ object RuntimeDiagnostics {
     }
 
     internal fun recordCrash(thread: Thread, throwable: Throwable) {
-        val details = buildString {
-            append(timestamp())
-            append(" event=app.crash outcome=uncaught")
-            append(" thread=").append(safeLabel(thread.name))
-            append("\n exception_type=").append(safeLabel(throwable.javaClass.name))
-            throwable.message?.let {
-                append("\n exception_message=").append(safeExceptionMessage(it))
-            }
-            throwable.stackTrace.take(60).forEach { frame ->
-                append("\n  at ").append(safeLabel(frame.toString()))
-            }
-            var cause = throwable.cause
-            var depth = 0
-            while (cause != null && depth < 5) {
-                append("\n caused_by_type=").append(safeLabel(cause.javaClass.name))
-                cause.message?.let {
-                    append(" message=").append(safeExceptionMessage(it))
-                }
-                cause.stackTrace.take(20).forEach { frame ->
-                    append("\n  caused_by_at ").append(safeLabel(frame.toString()))
-                }
-                cause = cause.cause
-                depth++
-            }
+        appendLineSafely(formatCrash(thread, throwable))
+    }
+
+    internal fun formatCrash(thread: Thread, throwable: Throwable): String = buildString {
+        append(timestamp())
+        append(" event=app.crash outcome=uncaught")
+        append(" thread=").append(safeLabel(thread.name))
+        append(" error_type=").append(safeLabel(throwable.javaClass.name))
+        append("\\n exception_type=").append(safeLabel(throwable.javaClass.name))
+        throwable.message?.let {
+            append("\\n exception_message=").append(safeExceptionMessage(it))
         }
-        appendLineSafely(details)
+        throwable.stackTrace.take(60).forEach { frame ->
+            append("\\n  at ").append(safeLabel(frame.toString()))
+        }
+        var cause = throwable.cause
+        var depth = 0
+        while (cause != null && depth < 5) {
+            append("\\n caused_by_type=").append(safeLabel(cause.javaClass.name))
+            cause.message?.let {
+                append(" message=").append(safeExceptionMessage(it))
+            }
+            cause.stackTrace.take(20).forEach { frame ->
+                append("\\n  caused_by_at ").append(safeLabel(frame.toString()))
+            }
+            cause = cause.cause
+            depth++
+        }
     }
 
     private fun appendLineSafely(line: String) {
