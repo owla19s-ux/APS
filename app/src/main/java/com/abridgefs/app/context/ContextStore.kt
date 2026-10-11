@@ -1,7 +1,7 @@
-package com.abridgefs.app.context
+package com.owla19s.aps.context
 
 import android.content.Context as AndroidContext
-import com.abridgefs.app.github.GitHubResource
+import com.owla19s.aps.github.GitHubResource
 import org.json.JSONArray
 import org.json.JSONObject
 
