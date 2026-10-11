@@ -1,6 +1,7 @@
 package com.owla19s.aps.context
 
 import android.content.Context as AndroidContext
+import com.owla19s.aps.RuntimeDiagnostics
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
@@ -19,12 +20,18 @@ class SpaceDirectoryStore(context: AndroidContext) {
     }
 
     fun allDirectories(): List<SpaceDirectory> {
-        val array = JSONArray(prefs.getString(KEY_DIRECTORIES, "[]"))
-        return buildList {
-            for (index in 0 until array.length()) {
-                val item = array.getJSONObject(index)
-                add(SpaceDirectory(item.getString("id"), item.getString("name")))
+        val raw = prefs.getString(KEY_DIRECTORIES, "[]") ?: "[]"
+        return try {
+            val array = JSONArray(raw)
+            buildList {
+                for (index in 0 until array.length()) {
+                    val item = array.getJSONObject(index)
+                    add(SpaceDirectory(item.getString("id"), item.getString("name")))
+                }
             }
+        } catch (error: Exception) {
+            preserveUnreadableData(KEY_DIRECTORIES_BACKUP, raw, "directories", error)
+            emptyList()
         }
     }
 
@@ -71,20 +78,43 @@ class SpaceDirectoryStore(context: AndroidContext) {
     }
 
     private fun memberships(): MutableMap<String, String> {
-        val json = JSONObject(prefs.getString(KEY_MEMBERSHIPS, "{}"))
-        val result = mutableMapOf<String, String>()
-        val keys = json.keys()
-        while (keys.hasNext()) {
-            val key = keys.next()
-            val value = json.optString(key)
-            if (value.isNotBlank()) result[key] = value
+        val raw = prefs.getString(KEY_MEMBERSHIPS, "{}") ?: "{}"
+        return try {
+            val json = JSONObject(raw)
+            val result = mutableMapOf<String, String>()
+            val keys = json.keys()
+            while (keys.hasNext()) {
+                val key = keys.next()
+                val value = json.optString(key)
+                if (value.isNotBlank()) result[key] = value
+            }
+            result
+        } catch (error: Exception) {
+            preserveUnreadableData(KEY_MEMBERSHIPS_BACKUP, raw, "memberships", error)
+            mutableMapOf()
         }
-        return result
+    }
+
+    private fun preserveUnreadableData(
+        backupKey: String,
+        raw: String,
+        kind: String,
+        error: Exception
+    ) {
+        val backupExists = prefs.contains(backupKey)
+        if (!backupExists) prefs.edit().putString(backupKey, raw).commit()
+        RuntimeDiagnostics.record(
+            event = "local_store.space_$kind.read_failed",
+            outcome = if (backupExists) "backup_already_exists" else "backup_preserved",
+            errorType = error.javaClass.simpleName
+        )
     }
 
     private companion object {
         const val KEY_SPACE_NAME = "space_name"
         const val KEY_DIRECTORIES = "directories"
         const val KEY_MEMBERSHIPS = "context_directories"
+        const val KEY_DIRECTORIES_BACKUP = "directories_corrupt_backup"
+        const val KEY_MEMBERSHIPS_BACKUP = "context_directories_corrupt_backup"
     }
 }
