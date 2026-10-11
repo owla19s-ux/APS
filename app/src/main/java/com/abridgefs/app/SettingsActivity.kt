@@ -3,6 +3,8 @@ package com.owla19s.aps
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -25,16 +27,20 @@ class SettingsActivity : AppCompatActivity() {
     private fun buildUi(): ScrollView {
         root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(20), dp(18), dp(20), dp(24))
+            setPadding(dp(18), dp(20), dp(18), dp(28))
+            setBackgroundColor(Color.rgb(246, 247, 251))
         }
         root.addView(TextView(this).apply {
             text = "设置"
-            textSize = 28f
+            textSize = 30f
+            setTextColor(Color.rgb(25, 34, 52))
+            typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
         })
         root.addView(TextView(this).apply {
-            text = "全局连接、权限、验证和系统信息"
+            text = "连接服务、访问权限与运行诊断"
             textSize = 14f
-            setPadding(0, dp(6), 0, dp(16))
+            setTextColor(Color.rgb(99, 110, 130))
+            setPadding(0, dp(6), 0, dp(20))
         })
         addSection("连接与服务", "管理 AI/API、GitHub 与本地文件连接。") { panel ->
             panel.addView(actionButton("AI / API 连接") {
@@ -75,11 +81,16 @@ class SettingsActivity : AppCompatActivity() {
     ) {
         val container = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(12), dp(10), dp(12), dp(10))
-            background = getDrawable(android.R.drawable.dialog_holo_light_frame)
+            setPadding(dp(14), dp(12), dp(14), dp(12))
+            background = rounded(Color.WHITE, 18)
+            elevation = dp(2).toFloat()
         }
         val header = Button(this).apply {
-            text = "$title  ›"
+            text = "$title    ＋"
+            isAllCaps = false
+            textSize = 16f
+            setTextColor(Color.rgb(32, 47, 70))
+            background = rounded(Color.rgb(239, 243, 250), 12)
             contentDescription = "展开$title"
         }
         val panel = LinearLayout(this).apply {
@@ -103,12 +114,17 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun actionButton(label: String, action: () -> Unit) = Button(this).apply {
         text = label
+        isAllCaps = false
+        textSize = 14f
+        setTextColor(Color.rgb(39, 53, 77))
+        background = rounded(Color.rgb(232, 237, 247), 12)
         setOnClickListener { action() }
     }
 
     private fun infoText(value: String) = TextView(this).apply {
         text = value
         textSize = 14f
+        setTextColor(Color.rgb(99, 110, 130))
         setPadding(dp(4), dp(8), dp(4), dp(8))
     }
 
@@ -130,6 +146,11 @@ class SettingsActivity : AppCompatActivity() {
             }
             .setPositiveButton("关闭", null)
             .show()
+    }
+
+    private fun rounded(color: Int, radiusDp: Int) = GradientDrawable().apply {
+        setColor(color)
+        cornerRadius = dp(radiusDp).toFloat()
     }
 
     private fun matchParams() = LinearLayout.LayoutParams(
