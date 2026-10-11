@@ -257,7 +257,7 @@ class AISettingsActivity : AppCompatActivity() {
             else -> "请检查 API 地址、协议、密钥和模型配置。"
         }
         val safeDetail = detail.takeIf { it.isNotBlank() }?.let { "\n详情：$it" }.orEmpty()
-        return "$action失败。$guidance$safeDetail"
+        return "${action}失败。$guidance$safeDetail"
     }
 
     private fun saveProfile() {
