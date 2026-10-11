@@ -11,7 +11,12 @@ class RuntimeDiagnosticsTest {
     @Test
     fun apiFailureCategoriesDistinguishConfigurationFromNetworkErrors() {
         assertEquals("invalid_configuration", RuntimeDiagnostics.classifyApiFailure(IllegalArgumentException("bad URL")))
-        assertEquals("http_error", RuntimeDiagnostics.classifyApiFailure(IOException("HTTP 404"), "404"))
+        assertEquals("authentication", RuntimeDiagnostics.classifyApiFailure(IOException("HTTP 401"), "401"))
+        assertEquals("permission_denied", RuntimeDiagnostics.classifyApiFailure(IOException("HTTP 403"), "403"))
+        assertEquals("endpoint_not_found", RuntimeDiagnostics.classifyApiFailure(IOException("HTTP 404"), "404"))
+        assertEquals("rate_limited", RuntimeDiagnostics.classifyApiFailure(IOException("HTTP 429"), "429"))
+        assertEquals("provider_server_error", RuntimeDiagnostics.classifyApiFailure(IOException("HTTP 503"), "503"))
+        assertEquals("http_error", RuntimeDiagnostics.classifyApiFailure(IOException("HTTP 418"), "418"))
         assertEquals("timeout", RuntimeDiagnostics.classifyApiFailure(SocketTimeoutException("timeout")))
         assertEquals("dns_or_host", RuntimeDiagnostics.classifyApiFailure(UnknownHostException("host")))
         assertEquals("network_io", RuntimeDiagnostics.classifyApiFailure(IOException("connection reset")))
