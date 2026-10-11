@@ -2,7 +2,7 @@ plugins { id 'com.android.application'; id 'org.jetbrains.kotlin.android' }
 
 android {
     buildFeatures { buildConfig true }
-    namespace 'com.abridgefs.app'
+    namespace 'com.owla19s.aps'
     compileSdk 35
 
     defaultConfig {
