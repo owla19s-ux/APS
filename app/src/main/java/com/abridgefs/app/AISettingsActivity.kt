@@ -239,10 +239,10 @@ class AISettingsActivity : AppCompatActivity() {
     /** Turn transport/protocol failures into actionable guidance without exposing credentials. */
     private fun formatApiError(action: String, error: Exception): String {
         val detail = error.message.orEmpty()
-            .replace(Regex("""(?i)Bearer\\s+[^\\s,;]+"""), "Bearer [redacted]")
-            .replace(Regex("""(?i)(api[_-]?key|authorization|token)=?[^\\s&;,]*"""), "$1=[redacted]")
+            .replace(Regex("""(?i)Bearer\s+[^\s,;]+"""), "Bearer [redacted]")
+            .replace(Regex("""(?i)(api[_-]?key|authorization|token)=?[^\s&;,]*"""), "$1=[redacted]")
             .take(180)
-        val statusCode = Regex("""HTTP\\s+(\\d{3})""").find(detail)
+        val statusCode = Regex("""HTTP\s+(\d{3})""").find(detail)
             ?.groupValues?.getOrNull(1)?.toIntOrNull()
         val guidance = when {
             statusCode == 404 -> "服务返回 404。请检查 API 地址是否填写为服务商要求的 Base URL（通常不是完整的 /models 或 /chat/completions 路径）；部分兼容服务不开放模型目录，可手动填写模型 ID。"
@@ -256,7 +256,7 @@ class AISettingsActivity : AppCompatActivity() {
             detail.contains("以 http:// 或 https://", ignoreCase = true) -> "API 地址必须包含 http:// 或 https://。"
             else -> "请检查 API 地址、协议、密钥和模型配置。"
         }
-        val safeDetail = detail.takeIf { it.isNotBlank() }?.let { "\\n详情：$it" }.orEmpty()
+        val safeDetail = detail.takeIf { it.isNotBlank() }?.let { "\n详情：$it" }.orEmpty()
         return "$action失败。$guidance$safeDetail"
     }
 
