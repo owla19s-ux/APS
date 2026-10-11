@@ -48,6 +48,7 @@ class ConversationActivity : AppCompatActivity() {
     private lateinit var conversationList: LinearLayout
     private lateinit var groupList: LinearLayout
     private lateinit var messageList: LinearLayout
+    private lateinit var messageScroll: ScrollView
     private lateinit var input: EditText
     private lateinit var title: TextView
     private lateinit var sendButton: Button
@@ -116,6 +117,10 @@ class ConversationActivity : AppCompatActivity() {
         }
         header.addView(title)
         header.addView(Button(this).apply {
+            text = "空间"
+            setOnClickListener { startActivity(android.content.Intent(this@ConversationActivity, SpaceActivity::class.java)) }
+        })
+        header.addView(Button(this).apply {
             text = "连接 / 模型"
             setOnClickListener { showConversationAiSettings() }
         })
@@ -137,7 +142,13 @@ class ConversationActivity : AppCompatActivity() {
             text = "GitHub 只读"
             setOnClickListener { openGitHubReadDialog() }
         })
-        root.addView(header)
+        val headerScroll = HorizontalScrollView(this).apply {
+            isHorizontalScrollBarEnabled = false
+            addView(header)
+        }
+        root.addView(headerScroll, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        ))
 
         val groupHeader = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
         groupHeader.addView(TextView(this).apply {
@@ -171,7 +182,11 @@ class ConversationActivity : AppCompatActivity() {
             orientation = LinearLayout.VERTICAL
             setPadding(0, 12, 0, 12)
         }
-        root.addView(messageList, LinearLayout.LayoutParams(
+        messageScroll = ScrollView(this).apply {
+            isFillViewport = true
+            addView(messageList)
+        }
+        root.addView(messageScroll, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, 0, 2f
         ))
 
@@ -312,11 +327,33 @@ class ConversationActivity : AppCompatActivity() {
         title.text = aiConnection.name + " · " + conversation.name
         messageList.removeAllViews()
         conversation.messages.forEach { message ->
-            messageList.addView(TextView(this).apply {
-                text = message.role.name + ": " + message.text
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.TOP
+                setPadding(4, 6, 4, 6)
+            }
+            val isUser = message.role.name.equals("USER", ignoreCase = true)
+            row.addView(TextView(this).apply {
+                text = if (isUser) "我" else "AI"
+                textSize = 13f
+                gravity = Gravity.CENTER
                 setPadding(8, 8, 8, 8)
-            })
+                background = getDrawable(android.R.drawable.btn_default)
+            }, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ))
+            row.addView(TextView(this).apply {
+                text = message.text
+                textSize = 15f
+                setPadding(12, 8, 12, 8)
+                setTextIsSelectable(true)
+                background = getDrawable(android.R.drawable.dialog_holo_light_frame)
+            }, LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f
+            ).apply { marginStart = 8 })
+            messageList.addView(row)
         }
+        messageScroll.post { messageScroll.fullScroll(View.FOCUS_DOWN) }
     }
 
     private fun showConversationAiSettings() {
@@ -389,7 +426,10 @@ class ConversationActivity : AppCompatActivity() {
                     Thread {
                         val result = runCatching {
                             kotlinx.coroutines.runBlocking {
-                                com.owla19s.aps.ai.OpenAICompatibleConnector(profile).listModels()
+                                val catalog = com.owla19s.aps.ai.AIConnectorFactory().create(profile)
+                                    as? com.owla19s.aps.ai.AIModelCatalogConnector
+                                    ?: error("当前协议不支持模型列表")
+                                catalog.listModels()
                             }
                         }
                         runOnUiThread {
