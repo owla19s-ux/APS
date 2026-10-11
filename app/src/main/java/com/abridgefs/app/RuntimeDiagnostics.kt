@@ -113,23 +113,32 @@ object RuntimeDiagnostics {
     }
 
     internal fun recordCrash(thread: Thread, throwable: Throwable) {
-        val frames = buildString {
+        val details = buildString {
             append(timestamp())
             append(" event=app.crash outcome=uncaught")
             append(" thread=").append(safeLabel(thread.name))
-            append(" error_type=").append(safeLabel(throwable.javaClass.name))
+            append("\n exception_type=").append(safeLabel(throwable.javaClass.name))
+            throwable.message?.let {
+                append("\n exception_message=").append(safeExceptionMessage(it))
+            }
             throwable.stackTrace.take(60).forEach { frame ->
                 append("\n  at ").append(safeLabel(frame.toString()))
             }
             var cause = throwable.cause
             var depth = 0
             while (cause != null && depth < 5) {
-                append("\n caused_by=").append(safeLabel(cause.javaClass.name))
+                append("\n caused_by_type=").append(safeLabel(cause.javaClass.name))
+                cause.message?.let {
+                    append(" message=").append(safeExceptionMessage(it))
+                }
+                cause.stackTrace.take(20).forEach { frame ->
+                    append("\n  caused_by_at ").append(safeLabel(frame.toString()))
+                }
                 cause = cause.cause
                 depth++
             }
         }
-        appendLineSafely(frames)
+        appendLineSafely(details)
     }
 
     private fun appendLineSafely(line: String) {
@@ -162,6 +171,13 @@ object RuntimeDiagnostics {
             ?.forEach { it.delete() }
     }
 
+    private fun safeExceptionMessage(value: String): String = value
+        .replace(Regex("""(?i)Bearer\s+[^\s,;]+"""), "Bearer [redacted]")
+        .replace(Regex("""(?i)(token|access_token|refresh_token|api[_-]?key|secret|password|authorization|client_secret)=([^&\s]+)"""), "$1=[redacted]")
+        .replace(Regex("""https?://[^\s?]+\?[^\s]+"""), "[URL with query redacted]")
+        .replace(Regex("""[\r\n\t]+"""), " ")
+        .take(300)
+
     private fun safeLabel(value: String): String =
         value.replace(Regex("""[\r\n\t]"""), " ")
             .replace(Regex("""(?i)bearer\s+[^\s]+"""), "Bearer [redacted]")
@@ -173,7 +189,7 @@ object RuntimeDiagnostics {
     private fun fileDate(): String =
         SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 }
- 
+
 private class RuntimeCrashHandler(
     private val previous: Thread.UncaughtExceptionHandler?
 ) : Thread.UncaughtExceptionHandler {
