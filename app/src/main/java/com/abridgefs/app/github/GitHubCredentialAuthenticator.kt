@@ -1,7 +1,7 @@
-package com.abridgefs.app.github
+package com.owla19s.aps.github
 
 import android.content.Context
-import com.abridgefs.app.github.api.GitHubApiFactory
+import com.owla19s.aps.github.api.GitHubApiFactory
 
 class GitHubCredentialAuthenticator(context: Context) {
     private val store = GitHubCredentialStore(context)
