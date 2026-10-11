@@ -26,6 +26,7 @@ class ContextDetailActivity : AppCompatActivity() {
     private lateinit var root: LinearLayout
     private lateinit var heading: TextView
     private lateinit var notesView: TextView
+    private lateinit var aiConnectionView: TextView
     private lateinit var addressesList: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,6 +71,24 @@ class ContextDetailActivity : AppCompatActivity() {
             background = roundedSurface(Color.WHITE, 12)
         }
         root.addView(notesView)
+        root.addView(TextView(this).apply {
+            text = "默认 AI 连接"
+            textSize = 18f
+            setTextColor(Color.rgb(28, 43, 61))
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setPadding(0, dp(16), 0, dp(4))
+        })
+        aiConnectionView = TextView(this).apply {
+            textSize = 14f
+            setTextColor(Color.rgb(69, 88, 108))
+            setPadding(dp(12), dp(10), dp(12), dp(10))
+            background = roundedSurface(Color.WHITE, 12)
+        }
+        root.addView(aiConnectionView, params())
+        root.addView(Button(this).apply {
+            text = "设置 Context 默认 API 连接"
+            setOnClickListener { chooseAIConnection() }
+        }, params())
         val addressHeader = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
         addressHeader.addView(TextView(this).apply {
             text = "项目地址"
@@ -118,6 +137,15 @@ class ContextDetailActivity : AppCompatActivity() {
         val context = store.get(contextId) ?: run { finish(); return }
         heading.text = context.name
         notesView.text = context.notes.ifBlank { "暂无备注" }
+        val profiles = com.owla19s.aps.ai.AIProfileStore(this)
+        val selectedProfile = context.aiConnectionId?.let(profiles::load)
+        aiConnectionView.text = if (selectedProfile == null) {
+            val defaultProfile = profiles.load()
+            if (defaultProfile == null) "未配置 API 连接；开始对话时将使用全局默认连接（如有）"
+            else "使用全局默认：${defaultProfile.name} · ${defaultProfile.model}"
+        } else {
+            "${selectedProfile.name} · ${selectedProfile.model}"
+        }
         addressesList.removeAllViews()
         if (context.addresses.isEmpty()) {
             addressesList.addView(TextView(this).apply {
@@ -162,6 +190,28 @@ class ContextDetailActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply { bottomMargin = dp(10) })
         }
+    }
+
+    private fun chooseAIConnection() {
+        val profiles = com.owla19s.aps.ai.AIProfileStore(this)
+        val available = profiles.loadAll()
+        val current = store.get(contextId) ?: return
+        val options = mutableListOf("跟随全局默认连接")
+        options += available.map { "${it.name} · ${it.model}" }
+        val selectedIndex = current.aiConnectionId?.let { id ->
+            available.indexOfFirst { it.id == id }.takeIf { it >= 0 }?.plus(1)
+        } ?: 0
+        AlertDialog.Builder(this)
+            .setTitle("Context 默认 API 连接")
+            .setSingleChoiceItems(options.toTypedArray(), selectedIndex) { dialog, which ->
+                val connectionId = if (which == 0) null else available[which - 1].id
+                store.save(current.copy(aiConnectionId = connectionId))
+                refresh()
+                dialog.dismiss()
+                toast(if (connectionId == null) "已设置为跟随全局默认连接" else "Context 默认连接已保存")
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
 
     private fun editContext() {
