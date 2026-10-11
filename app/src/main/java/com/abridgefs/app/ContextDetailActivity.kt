@@ -90,6 +90,13 @@ class ContextDetailActivity : AppCompatActivity() {
         addressesList = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         root.addView(addressesList)
         root.addView(Button(this).apply {
+            text = "打开本地文件"
+            setOnClickListener {
+                startActivity(Intent(this@ContextDetailActivity, ConversationActivity::class.java)
+                    .putExtra("aps.open.local.files", true))
+            }
+        }, params())
+        root.addView(Button(this).apply {
             text = "连接与服务"
             setOnClickListener { startActivity(Intent(this@ContextDetailActivity, SettingsActivity::class.java)) }
         }, params())
