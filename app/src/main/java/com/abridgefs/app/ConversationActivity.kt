@@ -77,10 +77,12 @@ class ConversationActivity : AppCompatActivity() {
         val requestedContextId = intent.getStringExtra(EXTRA_CONTEXT_ID)
         if (!requestedContextId.isNullOrBlank()) {
             intent.removeExtra(EXTRA_CONTEXT_ID)
-            val contextExists = com.owla19s.aps.context.ContextStore(this).get(requestedContextId) != null
-            if (contextExists) {
+            val linkedContext = com.owla19s.aps.context.ContextStore(this).get(requestedContextId)
+            if (linkedContext != null) {
+                val contextConnectionId = linkedContext.aiConnectionId
+                    ?.takeIf { profileStore.load(it) != null }
                 current = manager.createConversation(
-                    aiConnectionId = defaultAIConnectionId(),
+                    aiConnectionId = contextConnectionId ?: defaultAIConnectionId(),
                     contextId = requestedContextId
                 )
             } else {
