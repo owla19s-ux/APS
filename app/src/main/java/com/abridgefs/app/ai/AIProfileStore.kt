@@ -27,7 +27,7 @@ class AIProfileStore(context: Context) {
         return readMetadata().mapNotNull { item ->
             val encryptedKey = prefs.getString(secretPreferenceKey(item.id), null) ?: return@mapNotNull null
             val apiKey = decrypt(encryptedKey, profileKeyAlias(item.id)) ?: return@mapNotNull null
-            runCatching { AIProfile(item.id, item.name, item.baseUrl, item.model, apiKey) }.getOrNull()
+            runCatching { AIProfile(item.id, item.name, item.baseUrl, item.model, apiKey, AIProtocol.fromStoredValue(item.protocol)) }.getOrNull()
         }
     }
 
@@ -52,7 +52,7 @@ class AIProfileStore(context: Context) {
     fun save(profile: AIProfile, makeDefault: Boolean = false) {
         migrateLegacyProfileIfNeeded()
         val metadata = readMetadata().toMutableList()
-        val replacement = ProfileMetadata(profile.id, profile.name, profile.normalizedBaseUrl, profile.model)
+        val replacement = ProfileMetadata(profile.id, profile.name, profile.normalizedBaseUrl, profile.model, profile.protocol.id)
         val oldIndex = metadata.indexOfFirst { it.id == profile.id }
         if (oldIndex >= 0) metadata[oldIndex] = replacement else metadata.add(replacement)
         val encryptedKey = encrypt(profile.apiKey, profileKeyAlias(profile.id))
@@ -127,7 +127,7 @@ class AIProfileStore(context: Context) {
         val encryptedKey = encrypt(profile.apiKey, profileKeyAlias(profile.id))
         val committed = prefs.edit()
             .putString(secretPreferenceKey(profile.id), encryptedKey)
-            .putString(KEY_PROFILES_JSON, encodeMetadata(listOf(ProfileMetadata(profile.id, profile.name, profile.normalizedBaseUrl, profile.model))))
+            .putString(KEY_PROFILES_JSON, encodeMetadata(listOf(ProfileMetadata(profile.id, profile.name, profile.normalizedBaseUrl, profile.model, profile.protocol.id))))
             .putString(KEY_DEFAULT_PROFILE_ID, profile.id)
             .remove(KEY_NAME)
             .remove(KEY_BASE_URL)
@@ -138,7 +138,7 @@ class AIProfileStore(context: Context) {
         deleteKeyAlias(LEGACY_KEY_ALIAS)
     }
 
-    private data class ProfileMetadata(val id: String, val name: String, val baseUrl: String, val model: String)
+    private data class ProfileMetadata(val id: String, val name: String, val baseUrl: String, val model: String, val protocol: String = AIProtocol.OPENAI_COMPATIBLE.id)
 
     /** Reads metadata independently of secret decryption so unreadable profiles are not lost. */
     private fun readMetadata(): List<ProfileMetadata> {
@@ -151,7 +151,9 @@ class AIProfileStore(context: Context) {
                 val name = item.optString("name").takeIf { it.isNotBlank() } ?: continue
                 val baseUrl = item.optString("baseUrl").takeIf { it.isNotBlank() } ?: continue
                 val model = item.optString("model").takeIf { it.isNotBlank() } ?: continue
-                add(ProfileMetadata(id, name, baseUrl, model))
+                val protocol = item.optString("protocol", AIProtocol.OPENAI_COMPATIBLE.id)
+                    .takeIf { it.isNotBlank() } ?: AIProtocol.OPENAI_COMPATIBLE.id
+                add(ProfileMetadata(id, name, baseUrl, model, AIProtocol.fromStoredValue(protocol).id))
             }
         }
     }
@@ -164,6 +166,7 @@ class AIProfileStore(context: Context) {
                     put("name", profile.name)
                     put("baseUrl", profile.baseUrl.trim().trimEnd('/'))
                     put("model", profile.model)
+                    put("protocol", profile.protocol)
                 })
             }
         }.toString()

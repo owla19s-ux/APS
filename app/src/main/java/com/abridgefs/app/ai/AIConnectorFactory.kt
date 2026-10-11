@@ -1,12 +1,22 @@
 package com.abridgefs.app.ai
 
 /**
- * Builds runtime connectors from persisted API profiles.
- * Provider-specific construction stays out of UI activities.
- * This first version supports OpenAI-compatible endpoints.
+ * Builds runtime connectors from persisted profiles.
+ * The default protocol set is deliberately small; callers can inject additional adapters
+ * without changing the chat UI, registry, or profile persistence contract.
  */
-class AIConnectorFactory {
-    fun create(profile: AIProfile): AIConnector = OpenAICompatibleConnector(profile)
+class AIConnectorFactory(
+    additionalAdapters: Map<String, (AIProfile) -> AIConnector> = emptyMap()
+) {
+    private val adapters: Map<String, (AIProfile) -> AIConnector> = mapOf<String, (AIProfile) -> AIConnector>(
+        AIProtocol.OPENAI_COMPATIBLE.id to { profile -> OpenAICompatibleConnector(profile) },
+        AIProtocol.ANTHROPIC.id to { profile -> AnthropicConnector(profile) },
+        AIProtocol.GEMINI.id to { profile -> GeminiConnector(profile) }
+    ) + additionalAdapters
+
+    fun create(profile: AIProfile): AIConnector =
+        adapters[profile.protocol.id]?.invoke(profile)
+            ?: error("尚未注册 API 协议适配器：${profile.protocol.id}")
 
     fun connection(profile: AIProfile): AIConnection =
         AIConnection(id = profile.id, name = profile.name)

@@ -1,7 +1,7 @@
 package com.abridgefs.app.ai
 
 /**
- * User-configured OpenAI-compatible API profile.
+ * User-configured AI API profile. Provider identity and wire protocol are separate.
  * The API key is never included in toString() or UI summaries.
  */
 data class AIProfile(
@@ -9,7 +9,8 @@ data class AIProfile(
     val name: String,
     val baseUrl: String,
     val model: String,
-    val apiKey: String
+    val apiKey: String,
+    val protocol: AIProtocol = AIProtocol.OPENAI_COMPATIBLE
 ) {
     init {
         require(id.isNotBlank()) { "API Profile ID 不能为空" }
@@ -23,7 +24,7 @@ data class AIProfile(
         get() = baseUrl.trim().trimEnd('/')
 
     override fun toString(): String =
-        "AIProfile(id=$id, name=$name, baseUrl=$baseUrl, model=$model, apiKey=[redacted])"
+        "AIProfile(id=$id, name=$name, baseUrl=$baseUrl, model=$model, protocol=$protocol, apiKey=[redacted])"
 
     companion object {
         const val DEFAULT_ID = "default-ai"

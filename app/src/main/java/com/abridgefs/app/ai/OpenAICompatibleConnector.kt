@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicReference
 class OpenAICompatibleConnector(
     private val profile: AIProfile,
     private val client: OkHttpClient = defaultClient()
-) : AIConnector {
+) : AIModelCatalogConnector {
     private val activeCall = AtomicReference<Call?>(null)
 
     /** Cancels the active chat request, if one is currently executing. */
@@ -159,7 +159,7 @@ class OpenAICompatibleConnector(
         }
     }
     /** Performs a real non-streaming chat completion to verify model access and chat permissions. */
-    suspend fun testChatCompletion(): String {
+    override suspend fun testChatCompletion(): String {
         return send(AIRequest(
             contextId = null,
             userText = "Reply with OK only."
@@ -167,7 +167,7 @@ class OpenAICompatibleConnector(
     }
 
     /** Fetches the provider's model catalog. The user still chooses and saves a model explicitly. */
-    suspend fun listModels(): List<String> = withContext(Dispatchers.IO) {
+    override suspend fun listModels(): List<String> = withContext(Dispatchers.IO) {
         val startedAt = System.nanoTime()
         RuntimeDiagnostics.record("api.models.list", "started")
         try {
