@@ -125,9 +125,9 @@ class ConversationActivity : AppCompatActivity() {
             setOnClickListener { showConversationAiSettings() }
         })
         header.addView(Button(this).apply {
-            text = "API 设置"
+            text = "设置"
             setOnClickListener {
-                startActivity(android.content.Intent(this@ConversationActivity, AISettingsActivity::class.java))
+                startActivity(android.content.Intent(this@ConversationActivity, SettingsActivity::class.java))
             }
         })
         header.addView(Button(this).apply {
