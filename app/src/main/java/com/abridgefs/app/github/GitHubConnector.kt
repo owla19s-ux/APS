@@ -1,9 +1,9 @@
-package com.abridgefs.app.github
+package com.owla19s.aps.github
 
-import com.abridgefs.app.connection.Connection
-import com.abridgefs.app.github.api.FileWriteRequest
-import com.abridgefs.app.github.api.GitHubApi
-import com.abridgefs.app.github.api.WorkflowDispatchRequest
+import com.owla19s.aps.connection.Connection
+import com.owla19s.aps.github.api.FileWriteRequest
+import com.owla19s.aps.github.api.GitHubApi
+import com.owla19s.aps.github.api.WorkflowDispatchRequest
 import com.google.gson.JsonObject
 import retrofit2.Response
 
