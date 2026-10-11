@@ -1,4 +1,4 @@
-package com.abridgefs.app.github.api
+package com.owla19s.aps.github.api
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
