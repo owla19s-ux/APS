@@ -40,6 +40,7 @@ class AnthropicConnector(
 
     override suspend fun listModels(): List<String> = withContext(Dispatchers.IO) {
         val started = System.nanoTime()
+        RuntimeDiagnostics.record("api.models.list", "started")
         try {
             val request = Request.Builder()
                 .url(endpoint("models"))
