@@ -1,6 +1,7 @@
 package com.owla19s.aps.context
 
 import android.content.Context as AndroidContext
+import com.owla19s.aps.RuntimeDiagnostics
 import com.owla19s.aps.github.GitHubResource
 import org.json.JSONArray
 import org.json.JSONObject
@@ -28,9 +29,20 @@ class ContextStore(context: AndroidContext) {
 
     private fun load(): List<Context> {
         val raw = prefs.getString(KEY_DATA, null) ?: return emptyList()
-        val array = JSONArray(raw)
-        return buildList {
-            for (i in 0 until array.length()) add(fromJson(array.getJSONObject(i)))
+        return try {
+            val array = JSONArray(raw)
+            buildList {
+                for (i in 0 until array.length()) add(fromJson(array.getJSONObject(i)))
+            }
+        } catch (error: Exception) {
+            val backupExists = prefs.contains(KEY_CORRUPT_BACKUP)
+            if (!backupExists) prefs.edit().putString(KEY_CORRUPT_BACKUP, raw).commit()
+            RuntimeDiagnostics.record(
+                event = "local_store.context.read_failed",
+                outcome = if (backupExists) "backup_already_exists" else "backup_preserved",
+                errorType = error.javaClass.simpleName
+            )
+            emptyList()
         }
     }
 
@@ -135,5 +147,6 @@ class ContextStore(context: AndroidContext) {
     private companion object {
         const val PREFERENCES = "aps_contexts"
         const val KEY_DATA = "data"
+        const val KEY_CORRUPT_BACKUP = "data_corrupt_backup"
     }
 }
