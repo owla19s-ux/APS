@@ -12,7 +12,9 @@ data class Context(
     val id: String,
     val name: String,
     val resources: List<ResourceRef> = emptyList(),
-    val aiConnectionId: String? = null
+    val aiConnectionId: String? = null,
+    val notes: String = "",
+    val addresses: List<ContextAddress> = emptyList()
 ) {
     init {
         require(id.isNotBlank()) { "Context ID 不能为空" }
@@ -39,5 +41,20 @@ sealed interface ResourceRef {
             is GitHubResource.File -> "github:file:" + resource.path
             is GitHubResource.Commit -> "github:commit:" + resource.ref
         }
+    }
+}
+
+
+/** A named location reference for a Context; it does not copy or sync the resource. */
+data class ContextAddress(
+    val id: String,
+    val name: String,
+    val address: String,
+    val notes: String = ""
+) {
+    init {
+        require(id.isNotBlank()) { "Address ID 不能为空" }
+        require(name.isNotBlank()) { "Address 名称不能为空" }
+        require(address.isNotBlank()) { "Address 地址不能为空" }
     }
 }
