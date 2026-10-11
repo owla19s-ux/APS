@@ -240,7 +240,11 @@ class AISettingsActivity : AppCompatActivity() {
     private fun formatApiError(action: String, error: Exception): String {
         val detail = error.message.orEmpty()
             .replace(Regex("""(?i)Bearer\s+[^\s,;]+"""), "Bearer [redacted]")
-            .replace(Regex("""(?i)(api[_-]?key|authorization|token)=?[^\s&;,]*"""), "$1=[redacted]")
+            .replace(
+                Regex("""(?i)(["']?(?:x-api-key|x-goog-api-key|authorization|api.?key|access_token|refresh_token|token|secret|password|client_secret)["']?\s*[:=]\s*["']?)[^"'\\s&,}]+"""),
+                "$1[redacted]"
+            )
+            .replace(Regex("""https?://[^\s?]+\?[^\s]+"""), "[URL with query redacted]")
             .take(180)
         val statusCode = Regex("""HTTP\s+(\d{3})""").find(detail)
             ?.groupValues?.getOrNull(1)?.toIntOrNull()
