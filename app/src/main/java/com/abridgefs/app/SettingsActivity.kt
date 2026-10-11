@@ -14,10 +14,23 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.result.contract.ActivityResultContracts
 
 /** A compact, expandable global settings hub. Unimplemented capabilities are labelled honestly. */
 class SettingsActivity : AppCompatActivity() {
     private lateinit var root: LinearLayout
+    private val exportLogsLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("text/plain")
+    ) { uri ->
+        if (uri != null) {
+            val success = RuntimeDiagnostics.exportRecentLogs(this, uri)
+            Toast.makeText(
+                this,
+                if (success) "诊断日志已导出" else "日志导出失败，请重试",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,7 +82,10 @@ class SettingsActivity : AppCompatActivity() {
         }
         addSection("系统", "诊断与运行信息。") { panel ->
             panel.addView(actionButton("查看运行日志") { showLogs() })
-            panel.addView(infoText("当前日志保存在应用私有目录；共享存储目录尚未接入。"))
+            panel.addView(actionButton("导出运行日志") {
+                exportLogsLauncher.launch("aps-diagnostics.log")
+            })
+            panel.addView(infoText("日志默认保存在应用私有目录；导出时可在系统文件选择器中选择可访问的位置。"))
         }
         return ScrollView(this).apply { addView(root) }
     }
