@@ -74,6 +74,19 @@ class ConversationActivity : AppCompatActivity() {
         githubReadConfigStore = GitHubConversationReadConfigStore(this)
         configureAI()
         setContentView(buildUi())
+        val requestedContextId = intent.getStringExtra(EXTRA_CONTEXT_ID)
+        if (!requestedContextId.isNullOrBlank()) {
+            intent.removeExtra(EXTRA_CONTEXT_ID)
+            val contextExists = com.owla19s.aps.context.ContextStore(this).get(requestedContextId) != null
+            if (contextExists) {
+                current = manager.createConversation(
+                    aiConnectionId = defaultAIConnectionId(),
+                    contextId = requestedContextId
+                )
+            } else {
+                toast("关联的 Context 不存在，已打开普通对话")
+            }
+        }
         refresh()
         if (intent.getBooleanExtra(EXTRA_OPEN_LOCAL_FILES, false)) {
             intent.removeExtra(EXTRA_OPEN_LOCAL_FILES)
@@ -1205,5 +1218,6 @@ class ConversationActivity : AppCompatActivity() {
         const val UNGROUPED_FILTER = "__aps_ungrouped__"
         const val REQUEST_LOCAL_TREE = 4107
         const val EXTRA_OPEN_LOCAL_FILES = "aps.open.local.files"
+        const val EXTRA_CONTEXT_ID = "aps.context.id"
     }
 }
