@@ -196,7 +196,10 @@ object RuntimeDiagnostics {
 
     private fun safeExceptionMessage(value: String): String = value
         .replace(Regex("""(?i)Bearer\s+[^\s,;]+"""), "Bearer [redacted]")
-        .replace(Regex("""(?i)(token|access_token|refresh_token|api[_-]?key|secret|password|authorization|client_secret)=([^&\s]+)"""), "$1=[redacted]")
+        .replace(
+            Regex("""(?i)(["']?(?:x-api-key|x-goog-api-key|authorization|api.?key|access_token|refresh_token|token|secret|password|client_secret)["']?\s*[:=]\s*["']?)[^"'\\s&,}]+"""),
+            "$1[redacted]"
+        )
         .replace(Regex("""https?://[^\s?]+\?[^\s]+"""), "[URL with query redacted]")
         .replace(Regex("""[\r\n\t]+"""), " ")
         .take(300)
