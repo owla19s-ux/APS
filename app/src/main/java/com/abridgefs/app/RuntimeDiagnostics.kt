@@ -94,6 +94,21 @@ object RuntimeDiagnostics {
         }
     }
 
+    /** Export the retained local diagnostics to a user-selected document URI. */
+    fun exportRecentLogs(context: Context, destination: android.net.Uri): Boolean {
+        return try {
+            val logs = readRecentLogs(
+                context,
+                maxChars = (RETENTION_DAYS * MAX_LOG_FILE_BYTES).toInt()
+            )
+            val output = context.contentResolver.openOutputStream(destination) ?: return false
+            output.bufferedWriter(Charsets.UTF_8).use { writer -> writer.write(logs) }
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     fun record(
         event: String,
         outcome: String,
