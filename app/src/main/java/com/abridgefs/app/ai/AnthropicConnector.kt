@@ -23,7 +23,7 @@ class AnthropicConnector(
     private val activeCall = AtomicReference<Call?>(null)
 
     override fun cancelCurrentRequest(): Boolean = activeCall.get()?.let { call ->
-        if (call.isCanceled) return@let false
+        if (call.isCanceled()) return@let false
         call.cancel()
         true
     } ?: false
@@ -88,7 +88,7 @@ class AnthropicConnector(
         val started = System.nanoTime()
         val event = if (stream) "api.chat.stream" else "api.chat.request"
         RuntimeDiagnostics.record(event, "started")
-        try {
+        return try {
             val result = call.execute().use { response ->
                 if (!response.isSuccessful) {
                     throw IOException("Anthropic API 请求失败（HTTP ${response.code}）：${safeError(response.body?.string().orEmpty())}")
