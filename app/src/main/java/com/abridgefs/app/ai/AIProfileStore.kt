@@ -151,9 +151,9 @@ class AIProfileStore(context: Context) {
                 val name = item.optString("name").takeIf { it.isNotBlank() } ?: continue
                 val baseUrl = item.optString("baseUrl").takeIf { it.isNotBlank() } ?: continue
                 val model = item.optString("model").takeIf { it.isNotBlank() } ?: continue
-                val protocol = item.optString("protocol", AIProtocol.OPENAI_COMPATIBLE.name)
+                val protocol = item.optString("protocol", AIProtocol.OPENAI_COMPATIBLE.id)
                     .takeIf { it.isNotBlank() } ?: AIProtocol.OPENAI_COMPATIBLE.name
-                add(ProfileMetadata(id, name, baseUrl, model, AIProtocol.fromStoredValue(protocol).name))
+                add(ProfileMetadata(id, name, baseUrl, model, AIProtocol.fromStoredValue(protocol).id))
             }
         }
     }
