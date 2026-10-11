@@ -7,6 +7,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.APS">
         <activity android:name="com.owla19s.aps.AISettingsActivity" android:exported="false" />
+        <activity android:name="com.owla19s.aps.SpaceActivity" android:exported="false" />
         <activity
             android:name="com.owla19s.aps.ConversationActivity"
             android:exported="true">
