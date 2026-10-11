@@ -1,6 +1,6 @@
-package com.abridgefs.app.ai
+package com.owla19s.aps.ai
 
-import com.abridgefs.app.RuntimeDiagnostics
+import com.owla19s.aps.RuntimeDiagnostics
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import kotlinx.coroutines.Dispatchers
