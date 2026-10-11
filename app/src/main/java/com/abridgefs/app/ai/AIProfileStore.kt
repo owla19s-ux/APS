@@ -127,7 +127,7 @@ class AIProfileStore(context: Context) {
         val encryptedKey = encrypt(profile.apiKey, profileKeyAlias(profile.id))
         val committed = prefs.edit()
             .putString(secretPreferenceKey(profile.id), encryptedKey)
-            .putString(KEY_PROFILES_JSON, encodeMetadata(listOf(ProfileMetadata(profile.id, profile.name, profile.normalizedBaseUrl, profile.model, profile.protocol.name))))
+            .putString(KEY_PROFILES_JSON, encodeMetadata(listOf(ProfileMetadata(profile.id, profile.name, profile.normalizedBaseUrl, profile.model, profile.protocol.id))))
             .putString(KEY_DEFAULT_PROFILE_ID, profile.id)
             .remove(KEY_NAME)
             .remove(KEY_BASE_URL)
@@ -152,7 +152,7 @@ class AIProfileStore(context: Context) {
                 val baseUrl = item.optString("baseUrl").takeIf { it.isNotBlank() } ?: continue
                 val model = item.optString("model").takeIf { it.isNotBlank() } ?: continue
                 val protocol = item.optString("protocol", AIProtocol.OPENAI_COMPATIBLE.id)
-                    .takeIf { it.isNotBlank() } ?: AIProtocol.OPENAI_COMPATIBLE.name
+                    .takeIf { it.isNotBlank() } ?: AIProtocol.OPENAI_COMPATIBLE.id
                 add(ProfileMetadata(id, name, baseUrl, model, AIProtocol.fromStoredValue(protocol).id))
             }
         }
