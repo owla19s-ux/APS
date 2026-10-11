@@ -29,3 +29,10 @@
 历史规格资料可以保留在 `docs/` 或历史审计目录，但不得与本文件冲突。
 
 当前产品定位：**APS（AI + Context + Service）**。
+
+
+## API 多协议版本记录
+
+- `0.3.0`：API Profile 增加稳定协议 ID；内置 OpenAI 兼容、Anthropic Messages、Google Gemini 适配器；设置页按协议调用模型列表和真实聊天测试；协议适配器可按 ID 扩展。
+- Android `versionCode=4`、`versionName=0.3.0`；新的安装包标识为 `com.owla19s.aps`。
+- 版本号与包标识只说明版本目标；实际交付仍以单元测试、构建工作流和安装启动验证为准。
