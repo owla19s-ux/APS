@@ -2,6 +2,8 @@ package com.owla19s.aps
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.Gravity
 import android.view.ViewGroup
@@ -45,11 +47,14 @@ class SpaceActivity : AppCompatActivity() {
     private fun buildUi(): ScrollView {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(20), dp(18), dp(20), dp(24))
+            setPadding(dp(18), dp(20), dp(18), dp(28))
+            setBackgroundColor(Color.rgb(246, 247, 251))
         }
         val heading = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
         spaceTitle = TextView(this).apply {
-            textSize = 28f
+            textSize = 30f
+            setTextColor(Color.rgb(25, 34, 52))
+            typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
         }
         heading.addView(spaceTitle)
@@ -61,20 +66,31 @@ class SpaceActivity : AppCompatActivity() {
         root.addView(TextView(this).apply {
             text = "空间内通过目录分组管理 Context。选择 Context 后可继续进入对话和连接操作。"
             textSize = 14f
-            setPadding(0, dp(6), 0, dp(14))
+            setTextColor(Color.rgb(99, 110, 130))
+            setLineSpacing(dp(3).toFloat(), 1f)
+            setPadding(0, dp(6), 0, dp(18))
         })
         val actions = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        actions.addView(actionButton("新建 Context") { promptCreateContext() }, buttonParams())
-        actions.addView(actionButton("新建目录") { promptCreateDirectory() }, buttonParams())
-        actions.addView(actionButton("普通对话") { openConversation() }, buttonParams())
-        actions.addView(actionButton("设置") {
+        val primaryActions = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        primaryActions.addView(actionButton("＋  新建 Context") { promptCreateContext() },
+            LinearLayout.LayoutParams(0, dp(54), 1.25f).apply { marginEnd = dp(8) })
+        primaryActions.addView(actionButton("＋  新建目录") { promptCreateDirectory() },
+            LinearLayout.LayoutParams(0, dp(54), 1f))
+        actions.addView(primaryActions, buttonParams())
+        val secondaryActions = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        secondaryActions.addView(actionButton("普通对话") { openConversation() },
+            LinearLayout.LayoutParams(0, dp(48), 1f).apply { marginEnd = dp(8) })
+        secondaryActions.addView(actionButton("设置") {
             startActivity(Intent(this@SpaceActivity, SettingsActivity::class.java))
-        }, buttonParams())
+        }, LinearLayout.LayoutParams(0, dp(48), 1f))
+        actions.addView(secondaryActions, buttonParams())
         root.addView(actions)
         val directoryHeading = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
         directoryHeading.addView(TextView(this).apply {
-            text = "目录"
+            text = "目录分组"
             textSize = 20f
+            setTextColor(Color.rgb(25, 34, 52))
+            typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
         }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         directoryHeading.addView(Button(this).apply {
             text = "管理目录"
@@ -90,13 +106,17 @@ class SpaceActivity : AppCompatActivity() {
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
         ))
         root.addView(TextView(this).apply {
-            text = "Context 列表"
-            textSize = 20f
-            setPadding(0, dp(18), 0, dp(8))
+            text = "工作上下文"
+            textSize = 22f
+            setTextColor(Color.rgb(25, 34, 52))
+            typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
+            setPadding(0, dp(22), 0, dp(8))
         })
         emptyState = TextView(this).apply {
             textSize = 14f
-            setPadding(0, dp(8), 0, dp(12))
+            setTextColor(Color.rgb(99, 110, 130))
+            setPadding(dp(14), dp(12), dp(14), dp(12))
+            background = rounded(Color.WHITE, 14)
         }
         root.addView(emptyState)
         list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
@@ -128,12 +148,15 @@ class SpaceActivity : AppCompatActivity() {
                 ?: "未分组"
             val card = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
-                setPadding(dp(12), dp(10), dp(12), dp(10))
-                background = getDrawable(android.R.drawable.dialog_holo_light_frame)
+                setPadding(dp(16), dp(14), dp(16), dp(12))
+                background = rounded(Color.WHITE, 18)
+                elevation = dp(2).toFloat()
             }
             card.addView(TextView(this).apply {
                 text = context.name
-                textSize = 18f
+                textSize = 19f
+                setTextColor(Color.rgb(25, 34, 52))
+                typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
             })
             card.addView(TextView(this).apply {
                 text = "目录：$directoryName · 资源：${context.resources.size} · AI：${context.aiConnectionId ?: "默认连接"}"
@@ -362,7 +385,17 @@ class SpaceActivity : AppCompatActivity() {
 
     private fun actionButton(label: String, action: () -> Unit) = Button(this).apply {
         text = label
+        textSize = 14f
+        isAllCaps = false
+        setTextColor(Color.rgb(39, 53, 77))
+        background = rounded(Color.rgb(232, 237, 247), 14)
+        elevation = dp(1).toFloat()
         setOnClickListener { action() }
+    }
+
+    private fun rounded(color: Int, radiusDp: Int) = GradientDrawable().apply {
+        setColor(color)
+        cornerRadius = dp(radiusDp).toFloat()
     }
 
     private fun buttonParams() = LinearLayout.LayoutParams(
