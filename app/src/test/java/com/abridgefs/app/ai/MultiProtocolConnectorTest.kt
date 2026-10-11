@@ -89,4 +89,49 @@ class MultiProtocolConnectorTest {
         assertTrue(factory.create(profile.copy(protocol = AIProtocol.ANTHROPIC)) is AnthropicConnector)
         assertTrue(factory.create(profile.copy(protocol = AIProtocol.GEMINI)) is GeminiConnector)
     }
+
+    @Test
+    fun anthropic_model_catalog_uses_v1_models_endpoint() = runBlocking {
+        var captured: Request? = null
+        val client = OkHttpClient.Builder().addInterceptor { chain ->
+            captured = chain.request()
+            Response.Builder().request(chain.request()).protocol(Protocol.HTTP_1_1)
+                .code(200).message("OK")
+                .body("""{"data":[{"id":"claude-test"}]}"""
+                    .toResponseBody("application/json".toMediaType()))
+                .build()
+        }.build()
+        val profile = AIProfile(
+            name = "Anthropic models", baseUrl = "https://api.anthropic.com/v1",
+            model = "claude-test", apiKey = "secret", protocol = AIProtocol.ANTHROPIC
+        )
+
+        assertEquals(listOf("claude-test"), AnthropicConnector(profile, client).listModels())
+        assertEquals("https://api.anthropic.com/v1/models", captured?.url.toString())
+    }
+
+    @Test
+    fun gemini_model_catalog_filters_models_without_generate_content() = runBlocking {
+        var captured: Request? = null
+        val client = OkHttpClient.Builder().addInterceptor { chain ->
+            captured = chain.request()
+            Response.Builder().request(chain.request()).protocol(Protocol.HTTP_1_1)
+                .code(200).message("OK")
+                .body("""{"models":[{"name":"models/gemini-flash","supportedGenerationMethods":["generateContent"]},{"name":"models/embed-only","supportedGenerationMethods":["embedContent"]}]}"""
+                    .toResponseBody("application/json".toMediaType()))
+                .build()
+        }.build()
+        val profile = AIProfile(
+            name = "Gemini models",
+            baseUrl = "https://generativelanguage.googleapis.com/v1beta",
+            model = "gemini-flash", apiKey = "secret", protocol = AIProtocol.GEMINI
+        )
+
+        assertEquals(listOf("gemini-flash"), GeminiConnector(profile, client).listModels())
+        assertEquals(
+            "https://generativelanguage.googleapis.com/v1beta/models",
+            captured?.url.toString()
+        )
+    }
+
 }
