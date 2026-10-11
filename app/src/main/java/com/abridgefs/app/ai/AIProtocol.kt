@@ -1,18 +1,24 @@
 package com.abridgefs.app.ai
 
 /**
- * Wire protocol used by an AI profile. Provider identity is deliberately separate:
- * many providers expose an OpenAI-compatible endpoint, while one provider may expose
- * more than one API protocol.
+ * Protocol descriptor. IDs are stable persisted identifiers; display names are UI-only.
+ * New protocol adapters can register their own IDs without modifying this core type.
  */
-enum class AIProtocol(val displayName: String) {
-    OPENAI_COMPATIBLE("OpenAI 兼容协议"),
-    ANTHROPIC("Anthropic Messages"),
-    GEMINI("Google Gemini");
+data class AIProtocol(val id: String, val displayName: String) {
+    init {
+        require(id.isNotBlank()) { "API 协议 ID 不能为空" }
+        require(displayName.isNotBlank()) { "API 协议名称不能为空" }
+    }
 
     companion object {
+        val OPENAI_COMPATIBLE = AIProtocol("openai-compatible", "OpenAI 兼容协议")
+        val ANTHROPIC = AIProtocol("anthropic-messages", "Anthropic Messages")
+        val GEMINI = AIProtocol("google-gemini", "Google Gemini")
+        val BUILT_INS = listOf(OPENAI_COMPATIBLE, ANTHROPIC, GEMINI)
+
         fun fromStoredValue(value: String?): AIProtocol =
-            entries.firstOrNull { it.name.equals(value, ignoreCase = true) }
+            BUILT_INS.firstOrNull { it.id.equals(value, ignoreCase = true) }
+                ?: value?.takeIf { it.isNotBlank() }?.let { AIProtocol(it, it) }
                 ?: OPENAI_COMPATIBLE
     }
 }
