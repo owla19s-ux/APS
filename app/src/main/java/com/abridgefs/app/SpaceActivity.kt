@@ -354,6 +354,12 @@ class SpaceActivity : AppCompatActivity() {
         startActivity(Intent(this, ConversationActivity::class.java))
     }
 
+    private fun openContextDetail(context: APSContext) {
+        startActivity(Intent(this, ContextDetailActivity::class.java).apply {
+            putExtra(ContextDetailActivity.EXTRA_CONTEXT_ID, context.id)
+        })
+    }
+
     private fun actionButton(label: String, action: () -> Unit) = Button(this).apply {
         text = label
         setOnClickListener { action() }
