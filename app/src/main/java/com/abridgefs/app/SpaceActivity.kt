@@ -90,7 +90,7 @@ class SpaceActivity : AppCompatActivity() {
         emptyState.text = if (contexts.isEmpty()) {
             "还没有 Context。点击“新建 Context”创建第一个工作上下文。"
         } else {
-            "共 \${contexts.size} 个 Context"
+            "共 ${contexts.size} 个 Context"
         }
         contexts.forEach { context ->
             val card = LinearLayout(this).apply {
@@ -103,7 +103,7 @@ class SpaceActivity : AppCompatActivity() {
                 textSize = 18f
             })
             card.addView(TextView(this).apply {
-                text = "资源：\${context.resources.size} · AI 连接：\${context.aiConnectionId ?: "使用默认连接"}"
+                text = "资源：${context.resources.size} · AI 连接：${context.aiConnectionId ?: "使用默认连接"}"
                 textSize = 13f
                 setPadding(0, dp(4), 0, dp(8))
             })
@@ -172,7 +172,7 @@ class SpaceActivity : AppCompatActivity() {
     private fun confirmDelete(context: APSContext) {
         AlertDialog.Builder(this)
             .setTitle("删除 Context")
-            .setMessage("确定删除“\${context.name}”吗？此操作只删除 APS 中的 Context 记录，不会删除 GitHub 仓库或本地文件。")
+            .setMessage("确定删除“${context.name}”吗？此操作只删除 APS 中的 Context 记录，不会删除 GitHub 仓库或本地文件。")
             .setNegativeButton("取消", null)
             .setPositiveButton("删除") { _, _ ->
                 store.delete(context.id)
