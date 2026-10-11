@@ -32,4 +32,20 @@ class RuntimeDiagnosticsTest {
             IllegalStateException("exception details must not be copied into crash logs")
         )
     }
+
+    @Test
+    fun crashFormattingIncludesStackTraceCauseAndRedactsSensitiveValues() {
+        val cause = IllegalArgumentException("api_key=secret-cause")
+        val error = IllegalStateException("token=secret-token", cause)
+        val formatted = RuntimeDiagnostics.formatCrash(Thread.currentThread(), error)
+
+        org.junit.Assert.assertTrue(formatted.contains("event=app.crash outcome=uncaught"))
+        org.junit.Assert.assertTrue(formatted.contains("error_type=java.lang.IllegalStateException"))
+        org.junit.Assert.assertTrue(formatted.contains(" exception_message=token=[redacted]"))
+        org.junit.Assert.assertTrue(formatted.contains(" caused_by_type=java.lang.IllegalArgumentException"))
+        org.junit.Assert.assertTrue(formatted.contains("message=api_key=[redacted]"))
+        org.junit.Assert.assertTrue(formatted.contains("\\n  at "))
+        org.junit.Assert.assertFalse(formatted.contains("secret-token"))
+        org.junit.Assert.assertFalse(formatted.contains("secret-cause"))
+    }
 }
