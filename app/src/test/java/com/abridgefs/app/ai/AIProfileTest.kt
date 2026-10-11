@@ -42,7 +42,7 @@ class AIProfileTest {
 
         val summary = profile.toString()
         assertFalse(summary.contains("url-query-secret"))
-        assertTrue(summary.contains("https://api.example.com/v1?[redacted]"))
+        assertTrue(summary.contains("[URL with query redacted]"))
     }
 
     @Test(expected = IllegalArgumentException::class)
