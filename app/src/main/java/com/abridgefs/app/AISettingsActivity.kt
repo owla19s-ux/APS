@@ -17,7 +17,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.abridgefs.app.ai.AIProfile
 import com.abridgefs.app.ai.AIProfileStore
-import com.abridgefs.app.ai.OpenAICompatibleConnector
+import com.abridgefs.app.ai.AIProtocol
+import com.abridgefs.app.ai.AIConnectorFactory
+import com.abridgefs.app.ai.AIModelCatalogConnector
 import kotlinx.coroutines.runBlocking
 import java.util.UUID
 import java.util.concurrent.Executors
@@ -27,6 +29,7 @@ class AISettingsActivity : AppCompatActivity() {
     private lateinit var profileStore: AIProfileStore
     private var selectedProfileId: String? = null
     private lateinit var nameField: EditText
+    private lateinit var protocolField: AutoCompleteTextView
     private lateinit var baseUrlField: EditText
     private lateinit var keyField: EditText
     private lateinit var modelField: AutoCompleteTextView
@@ -51,7 +54,7 @@ class AISettingsActivity : AppCompatActivity() {
             textSize = 24f
         })
         root.addView(TextView(this).apply {
-            text = "支持 OpenAI-compatible API。API Key 使用 Android Keystore 加密保存。"
+            text = "支持 OpenAI 兼容、Anthropic、Gemini 协议。API Key 使用 Android Keystore 加密保存。"
             textSize = 14f
             setPadding(0, dp(6), 0, dp(12))
         })
@@ -60,11 +63,37 @@ class AISettingsActivity : AppCompatActivity() {
         root.addView(label("连接名称"))
         root.addView(nameField, fieldParams())
 
-        baseUrlField = field("API Base URL，例如 https://api.example.com/v1", saved?.baseUrl.orEmpty()).apply {
+        baseUrlField = field("API Base URL，例如 https://api.example.com/v1", saved?.baseUrl ?: defaultBaseUrl(AIProtocol.OPENAI_COMPATIBLE)).apply {
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
         }
         root.addView(label("API 地址"))
         root.addView(baseUrlField, fieldParams())
+
+        protocolField = AutoCompleteTextView(this).apply {
+            hint = "选择 API 协议"
+            setText((saved?.protocol ?: AIProtocol.OPENAI_COMPATIBLE).displayName, false)
+            setAdapter(ArrayAdapter(
+                this@AISettingsActivity,
+                android.R.layout.simple_dropdown_item_1line,
+                AIProtocol.values().map { it.displayName }
+            ))
+            threshold = 0
+            setOnClickListener { showDropDown() }
+            setOnItemClickListener { _, _, position, _ ->
+                val selected = AIProtocol.values().getOrNull(position) ?: return@setOnItemClickListener
+                val current = baseUrlField.text.toString().trim().trimEnd('/')
+                val knownDefaults = listOf(
+                    "https://api.openai.com/v1",
+                    "https://api.anthropic.com/v1",
+                    "https://generativelanguage.googleapis.com/v1beta"
+                )
+                if (current.isBlank() || current in knownDefaults) {
+                    baseUrlField.setText(defaultBaseUrl(selected))
+                }
+            }
+        }
+        root.addView(label("API 协议"))
+        root.addView(protocolField, fieldParams())
 
         keyField = field("API Key", saved?.apiKey.orEmpty()).apply {
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
@@ -155,7 +184,9 @@ class AISettingsActivity : AppCompatActivity() {
         status.text = "状态：正在发送实际聊天测试请求……"
         executor.execute {
             try {
-                val reply = runBlocking { OpenAICompatibleConnector(profile).testChatCompletion() }
+                val connector = AIConnectorFactory().create(profile) as? AIModelCatalogConnector
+                    ?: error("当前协议不支持聊天测试")
+                val reply = runBlocking { connector.testChatCompletion() }
                 runOnUiThread {
                     status.text = "聊天测试成功：模型已返回响应（${reply.take(80)}）"
                 }
@@ -171,7 +202,9 @@ class AISettingsActivity : AppCompatActivity() {
         status.text = "状态：正在请求模型列表……"
         executor.execute {
             try {
-                val models = runBlocking { OpenAICompatibleConnector(profile).listModels() }
+                val connector = AIConnectorFactory().create(profile) as? AIModelCatalogConnector
+                    ?: error("当前协议不支持模型列表")
+                val models = runBlocking { connector.listModels() }
                 runOnUiThread {
                     if (models.isEmpty()) {
                         status.text = "连接成功，但服务没有返回模型目录；可以手动填写模型 ID。"
@@ -239,12 +272,14 @@ class AISettingsActivity : AppCompatActivity() {
         baseUrlField.setText(profile.baseUrl)
         keyField.setText(profile.apiKey)
         modelField.setText(profile.model, false)
+        protocolField.setText(profile.protocol.displayName, false)
     }
 
     private fun startNewProfile() {
         selectedProfileId = UUID.randomUUID().toString()
         nameField.setText("新 API 连接")
-        baseUrlField.setText("")
+        protocolField.setText(AIProtocol.OPENAI_COMPATIBLE.displayName, false)
+        baseUrlField.setText(defaultBaseUrl(AIProtocol.OPENAI_COMPATIBLE))
         keyField.setText("")
         modelField.setText("", false)
         status.text = "新建连接尚未保存。填写地址、密钥和模型后保存。"
@@ -304,11 +339,19 @@ class AISettingsActivity : AppCompatActivity() {
         val enteredModel = modelField.text.toString().trim()
         val model = enteredModel.ifBlank { if (requireModel) "" else "model-discovery" }
         return try {
-            AIProfile(id = id, name = name, baseUrl = baseUrl, model = model, apiKey = key)
+            val protocol = AIProtocol.values().firstOrNull { it.displayName == protocolField.text.toString() }
+                ?: AIProtocol.OPENAI_COMPATIBLE
+            AIProfile(id = id, name = name, baseUrl = baseUrl, model = model, apiKey = key, protocol = protocol)
         } catch (error: IllegalArgumentException) {
             status.text = "请检查配置：${error.message}"
             null
         }
+    }
+
+    private fun defaultBaseUrl(protocol: AIProtocol): String = when (protocol) {
+        AIProtocol.OPENAI_COMPATIBLE -> "https://api.openai.com/v1"
+        AIProtocol.ANTHROPIC -> "https://api.anthropic.com/v1"
+        AIProtocol.GEMINI -> "https://generativelanguage.googleapis.com/v1beta"
     }
 
     private fun field(hintText: String, value: String) = EditText(this).apply {
