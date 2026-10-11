@@ -61,6 +61,11 @@ object RuntimeDiagnostics {
     internal fun classifyApiFailure(error: Throwable?, httpStatus: String? = null): String? {
         return when {
             error == null -> null
+            httpStatus == "401" -> "authentication"
+            httpStatus == "403" -> "permission_denied"
+            httpStatus == "404" -> "endpoint_not_found"
+            httpStatus == "429" -> "rate_limited"
+            httpStatus?.toIntOrNull()?.let { it in 500..599 } == true -> "provider_server_error"
             httpStatus != null -> "http_error"
             error is SocketTimeoutException -> "timeout"
             error is UnknownHostException -> "dns_or_host"
