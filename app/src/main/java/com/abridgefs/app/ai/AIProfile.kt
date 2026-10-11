@@ -1,4 +1,4 @@
-package com.abridgefs.app.ai
+package com.owla19s.aps.ai
 
 /**
  * User-configured AI API profile. Provider identity and wire protocol are separate.
