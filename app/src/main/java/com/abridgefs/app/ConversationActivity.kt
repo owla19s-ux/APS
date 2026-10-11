@@ -857,7 +857,12 @@ class ConversationActivity : AppCompatActivity() {
         }
     }
 
-    private fun showLocalEntries(connection: LocalConnection, parentDocumentId: String?) {
+    private fun showLocalEntries(
+        connection: LocalConnection,
+        parentDocumentId: String?,
+        parentIds: List<String?> = emptyList(),
+        pathNames: List<String> = emptyList()
+    ) {
         Thread {
             val result = runCatching {
                 kotlinx.coroutines.runBlocking {
@@ -866,24 +871,41 @@ class ConversationActivity : AppCompatActivity() {
                 }
             }
             runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
                 result.onSuccess { entries ->
-                    if (entries.isEmpty()) {
-                        toast("此目录没有可显示的文件")
-                        return@onSuccess
-                    }
                     val labels = entries.map {
                         (if (it.isDirectory) "[目录] " else "[文件] ") + it.displayName
                     }.toTypedArray()
-                    AlertDialog.Builder(this)
-                        .setTitle(connection.name)
+                    val visiblePath = (listOf(connection.name) + pathNames).joinToString(" / ")
+                    val dialog = AlertDialog.Builder(this)
+                        .setTitle(visiblePath)
                         .setItems(labels) { _, index ->
                             val entry = entries[index]
-                            if (entry.isDirectory) showLocalEntries(connection, entry.documentId)
-                            else openLocalTextFile(connection, entry)
+                            if (entry.isDirectory) {
+                                showLocalEntries(
+                                    connection,
+                                    entry.documentId,
+                                    parentIds + parentDocumentId,
+                                    pathNames + entry.displayName
+                                )
+                            } else {
+                                openLocalTextFile(connection, entry)
+                            }
                         }
                         .setNeutralButton("选择其他目录") { _, _ -> pickLocalDirectory() }
                         .setNegativeButton("关闭", null)
-                        .show()
+                    if (pathNames.isNotEmpty()) {
+                        dialog.setPositiveButton("上级目录") { _, _ ->
+                            showLocalEntries(
+                                connection,
+                                parentIds.lastOrNull(),
+                                parentIds.dropLast(1),
+                                pathNames.dropLast(1)
+                            )
+                        }
+                    }
+                    if (entries.isEmpty()) dialog.setMessage("此目录为空，没有可显示的文件或子目录。")
+                    dialog.show()
                 }.onFailure { error ->
                     showLocalAccessFailure("无法访问本地目录", "读取目录", error)
                 }
