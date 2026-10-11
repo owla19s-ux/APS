@@ -142,8 +142,7 @@ class GeminiConnector(
 
     private fun safeError(body: String): String =
         Regex("""(?i)(bearer\s+)[^\s"}]+""").replace(body) { it.groupValues[1] + "[redacted]" }
-            .replace(Regex("""(?i)(x-goog-api-key["=: ]+)[^\s",}]+"""), "$1[redacted]")
-            .replace(Regex("""(?i)(key["=: ]+)[^\s",}]+"""), "$1[redacted]")
+            .replace(Regex("""(?i)(["']?(?:x-goog-api-key|api[_-]?key|key)["']?\s*[:=]\s*["']?)[^\s"',}]+"""), "$1[redacted]")
             .take(240)
 
     companion object {

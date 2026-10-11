@@ -146,7 +146,7 @@ class AnthropicConnector(
 
     private fun safeError(body: String): String =
         Regex("""(?i)(bearer\s+)[^\s"}]+""").replace(body) { it.groupValues[1] + "[redacted]" }
-            .replace(Regex("""(?i)(x-api-key["=: ]+)[^\s",}]+"""), "$1[redacted]").take(240)
+            .replace(Regex("""(?i)(["']?x-api-key["']?\s*[:=]\s*["']?)[^\s"',}]+"""), "$1[redacted]").take(240)
 
     companion object {
         private const val API_VERSION = "2023-06-01"
