@@ -63,9 +63,9 @@ class SpaceActivity : AppCompatActivity() {
             setOnClickListener { openConversation() }
         }, buttonParams())
         actions.addView(Button(this).apply {
-            text = "API 连接设置"
+            text = "设置"
             setOnClickListener {
-                startActivity(Intent(this@SpaceActivity, AISettingsActivity::class.java))
+                startActivity(Intent(this@SpaceActivity, SettingsActivity::class.java))
             }
         }, buttonParams())
         root.addView(actions)
