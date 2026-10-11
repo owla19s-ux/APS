@@ -203,6 +203,37 @@ class OpenAICompatibleConnectorTest {
     }
 
     @Test
+    fun failed_request_redacts_api_key_fields_from_server_error() = runBlocking {
+        val client = OkHttpClient.Builder().addInterceptor { chain ->
+            Response.Builder()
+                .request(chain.request())
+                .protocol(Protocol.HTTP_1_1)
+                .code(401)
+                .message("Unauthorized")
+                .body(
+                    """{"api_key":"secret-json","key":"secret-key","message":"invalid credentials"}"""
+                        .toResponseBody("application/json".toMediaType())
+                )
+                .build()
+        }.build()
+        val profile = AIProfile(
+            name = "Test API",
+            baseUrl = "https://api.example.com/v1",
+            model = "model-a",
+            apiKey = "secret-test"
+        )
+
+        val error = runCatching {
+            OpenAICompatibleConnector(profile, client).send(AIRequest(null, "Hello"))
+        }.exceptionOrNull()
+
+        assertTrue(error is IOException)
+        assertFalse(error?.message.orEmpty().contains("secret-json"))
+        assertFalse(error?.message.orEmpty().contains("secret-key"))
+        assertTrue(error?.message.orEmpty().contains("[redacted]"))
+    }
+
+    @Test
     fun cancelCurrentRequest_returnsFalseWhenNoChatRequestIsActive() {
         val profile = AIProfile(
             name = "Test API",
