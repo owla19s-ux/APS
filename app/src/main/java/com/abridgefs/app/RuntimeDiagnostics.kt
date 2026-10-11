@@ -45,14 +45,7 @@ object RuntimeDiagnostics {
     ) {
         val httpStatus = error?.message
             ?.let { Regex("""HTTP\s+(\d{3})""").find(it)?.groupValues?.getOrNull(1) }
-        val failureCategory = when (error) {
-            null -> null
-            is SocketTimeoutException -> "timeout"
-            is UnknownHostException -> "dns_or_host"
-            is InterruptedIOException -> "timeout_or_cancelled"
-            is IOException -> if (httpStatus != null) "http_error" else "network_io"
-            else -> "unexpected_error"
-        }
+        val failureCategory = classifyApiFailure(error, httpStatus)
         record(
             event = event,
             outcome = outcome,
@@ -61,6 +54,19 @@ object RuntimeDiagnostics {
             errorType = error?.javaClass?.simpleName,
             failureCategory = failureCategory
         )
+    }
+
+    internal fun classifyApiFailure(error: Throwable?, httpStatus: String? = null): String? {
+        return when {
+            error == null -> null
+            httpStatus != null -> "http_error"
+            error is SocketTimeoutException -> "timeout"
+            error is UnknownHostException -> "dns_or_host"
+            error is InterruptedIOException -> "timeout_or_cancelled"
+            error is IllegalArgumentException -> "invalid_configuration"
+            error is IOException -> "network_io"
+            else -> "unexpected_error"
+        }
     }
 
     fun readRecentLogs(context: Context, maxChars: Int = 24_000): String {
