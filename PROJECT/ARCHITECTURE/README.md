@@ -50,7 +50,7 @@ PROJECT 描述当前应该是什么；实际代码是否已经实现，以源码
 
 API 协议层实现位置：
 
-- `app/src/main/java/com/owla19s/aps/ai/AIProtocol.kt`：稳定协议 ID 与模型目录能力接口；
+- `app/src/main/java/com/abridgefs/app/ai/AIProtocol.kt`：稳定协议 ID 与模型目录能力接口；
 - `AIConnectorFactory.kt`：内置协议映射，并允许按字符串 ID 注入额外适配器；
 - `OpenAICompatibleConnector.kt`、`AnthropicConnector.kt`、`GeminiConnector.kt`：独立请求、认证、响应和流式事件实现；
 - `AIProfileStore.kt`：协议 ID 随连接配置持久化；旧配置缺少协议时默认 OpenAI 兼容协议。
