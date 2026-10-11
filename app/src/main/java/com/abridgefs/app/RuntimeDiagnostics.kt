@@ -142,22 +142,22 @@ object RuntimeDiagnostics {
         append(" event=app.crash outcome=uncaught")
         append(" thread=").append(safeLabel(thread.name))
         append(" error_type=").append(safeLabel(throwable.javaClass.name))
-        append("\\n exception_type=").append(safeLabel(throwable.javaClass.name))
+        append('\n').append(" exception_type=").append(safeLabel(throwable.javaClass.name))
         throwable.message?.let {
-            append("\\n exception_message=").append(safeExceptionMessage(it))
+            append('\n').append(" exception_message=").append(safeExceptionMessage(it))
         }
         throwable.stackTrace.take(60).forEach { frame ->
-            append("\\n  at ").append(safeLabel(frame.toString()))
+            append('\n').append("  at ").append(safeLabel(frame.toString()))
         }
         var cause = throwable.cause
         var depth = 0
         while (cause != null && depth < 5) {
-            append("\\n caused_by_type=").append(safeLabel(cause.javaClass.name))
+            append('\n').append(" caused_by_type=").append(safeLabel(cause.javaClass.name))
             cause.message?.let {
                 append(" message=").append(safeExceptionMessage(it))
             }
             cause.stackTrace.take(20).forEach { frame ->
-                append("\\n  caused_by_at ").append(safeLabel(frame.toString()))
+                append('\n').append("  caused_by_at ").append(safeLabel(frame.toString()))
             }
             cause = cause.cause
             depth++
