@@ -140,10 +140,7 @@ class GeminiConnector(
     private fun encodePathSegment(value: String): String =
         URLEncoder.encode(value, StandardCharsets.UTF_8.name()).replace("+", "%20")
 
-    private fun safeError(body: String): String =
-        Regex("""(?i)(bearer\s+)[^\s"}]+""").replace(body) { it.groupValues[1] + "[redacted]" }
-            .replace(Regex("""(?i)(["']?(?:x-goog-api-key|api[_-]?key|key)["']?\s*[:=]\s*["']?)[^\s"',}]+"""), "$1[redacted]")
-            .take(240)
+    private fun safeError(body: String): String = ApiErrorSanitizer.sanitize(body)
 
     companion object {
         private val JSON = "application/json; charset=utf-8".toMediaType()

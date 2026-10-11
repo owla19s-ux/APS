@@ -208,16 +208,7 @@ class OpenAICompatibleConnector(
         return "$base/$path"
     }
 
-    private fun safeError(body: String): String {
-        if (body.isBlank()) return "服务未提供错误详情"
-        // Keep server messages short and avoid reflecting request headers or API keys.
-        val bearerRedacted = Regex("""(?i)(bearer\s+)[^\s"}]+""").replace(body) { match ->
-            match.groupValues[1] + "[redacted]"
-        }
-        return Regex("""(?i)(["']?(?:x-api-key|api[_-]?key|key)["']?\s*[:=]\s*["']?)[^\s"'&,}]+""")
-            .replace(bearerRedacted) { match -> match.groupValues[1] + "[redacted]" }
-            .take(240)
-    }
+    private fun safeError(body: String): String = ApiErrorSanitizer.sanitize(body)
 
     companion object {
         private val JSON = "application/json; charset=utf-8".toMediaType()
