@@ -1,8 +1,8 @@
-package com.abridgefs.app.conversation
+package com.owla19s.aps.conversation
 
-import com.abridgefs.app.ai.AIConnection
-import com.abridgefs.app.ai.AIConnectorRegistry
-import com.abridgefs.app.context.Context
+import com.owla19s.aps.ai.AIConnection
+import com.owla19s.aps.ai.AIConnectorRegistry
+import com.owla19s.aps.context.Context
 
 /**
  * Context Conversation 的最小运行时组装边界。
