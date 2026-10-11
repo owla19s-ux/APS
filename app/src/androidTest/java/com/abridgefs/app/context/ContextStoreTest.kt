@@ -1,7 +1,7 @@
-package com.abridgefs.app.context
+package com.owla19s.aps.context
 
 import androidx.test.platform.app.InstrumentationRegistry
-import com.abridgefs.app.github.GitHubResource
+import com.owla19s.aps.github.GitHubResource
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
