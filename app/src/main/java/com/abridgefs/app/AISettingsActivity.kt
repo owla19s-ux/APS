@@ -352,6 +352,7 @@ class AISettingsActivity : AppCompatActivity() {
         AIProtocol.OPENAI_COMPATIBLE -> "https://api.openai.com/v1"
         AIProtocol.ANTHROPIC -> "https://api.anthropic.com/v1"
         AIProtocol.GEMINI -> "https://generativelanguage.googleapis.com/v1beta"
+        else -> protocol.id
     }
 
     private fun field(hintText: String, value: String) = EditText(this).apply {
