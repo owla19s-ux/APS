@@ -75,12 +75,12 @@ class AISettingsActivity : AppCompatActivity() {
             setAdapter(ArrayAdapter(
                 this@AISettingsActivity,
                 android.R.layout.simple_dropdown_item_1line,
-                AIProtocol.values().map { it.displayName }
+                AIProtocol.BUILT_INS.map { it.displayName }
             ))
             threshold = 0
             setOnClickListener { showDropDown() }
             setOnItemClickListener { _, _, position, _ ->
-                val selected = AIProtocol.values().getOrNull(position) ?: return@setOnItemClickListener
+                val selected = AIProtocol.BUILT_INS.getOrNull(position) ?: return@setOnItemClickListener
                 val current = baseUrlField.text.toString().trim().trimEnd('/')
                 val knownDefaults = listOf(
                     "https://api.openai.com/v1",
@@ -339,7 +339,7 @@ class AISettingsActivity : AppCompatActivity() {
         val enteredModel = modelField.text.toString().trim()
         val model = enteredModel.ifBlank { if (requireModel) "" else "model-discovery" }
         return try {
-            val protocol = AIProtocol.values().firstOrNull { it.displayName == protocolField.text.toString() }
+            val protocol = AIProtocol.BUILT_INS.firstOrNull { it.displayName == protocolField.text.toString() }
                 ?: AIProtocol.OPENAI_COMPATIBLE
             AIProfile(id = id, name = name, baseUrl = baseUrl, model = model, apiKey = key, protocol = protocol)
         } catch (error: IllegalArgumentException) {
