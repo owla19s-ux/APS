@@ -2,6 +2,8 @@ package com.owla19s.aps
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
@@ -108,11 +110,14 @@ class ConversationActivity : AppCompatActivity() {
     private fun buildUi(): LinearLayout {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(20, 16, 20, 16)
+            setPadding(16, 12, 16, 16)
+            setBackgroundColor(Color.rgb(243, 246, 250))
         }
         val header = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
         title = TextView(this).apply {
-            textSize = 20f
+            textSize = 21f
+            setTextColor(Color.rgb(28, 43, 61))
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
         }
         header.addView(title)
@@ -174,9 +179,12 @@ class ConversationActivity : AppCompatActivity() {
         val conversationScroll = ScrollView(this)
         conversationList = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         conversationScroll.addView(conversationList)
+        conversationScroll.background = roundedSurface(Color.WHITE, 14)
+        conversationScroll.clipToPadding = false
+        conversationScroll.setPadding(8, 6, 8, 6)
         root.addView(conversationScroll, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f
-        ))
+        ).apply { bottomMargin = 8 })
 
         messageList = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -186,14 +194,18 @@ class ConversationActivity : AppCompatActivity() {
             isFillViewport = true
             addView(messageList)
         }
+        messageScroll.background = roundedSurface(Color.WHITE, 14)
+        messageScroll.setPadding(8, 4, 8, 4)
         root.addView(messageScroll, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, 0, 2f
-        ))
+        ).apply { bottomMargin = 8 })
 
         requestStatus = TextView(this).apply {
             text = "就绪"
             textSize = 13f
-            setPadding(0, 8, 0, 4)
+            setTextColor(Color.rgb(69, 88, 108))
+            setPadding(12, 9, 12, 9)
+            background = roundedSurface(Color.rgb(230, 237, 245), 10)
         }
         root.addView(requestStatus)
 
@@ -201,6 +213,9 @@ class ConversationActivity : AppCompatActivity() {
         input = EditText(this).apply {
             hint = "输入消息"
             minLines = 1
+            textSize = 16f
+            setPadding(14, 10, 14, 10)
+            background = roundedSurface(Color.WHITE, 12)
         }
         composer.addView(input, LinearLayout.LayoutParams(
             0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f
@@ -217,8 +232,14 @@ class ConversationActivity : AppCompatActivity() {
             setOnClickListener { cancelCurrentRequest() }
         }
         root.addView(cancelButton)
+        composer.setPadding(0, 4, 0, 0)
         root.addView(composer)
         return root
+    }
+
+    private fun roundedSurface(color: Int, radiusDp: Int) = GradientDrawable().apply {
+        setColor(color)
+        cornerRadius = radiusDp * resources.displayMetrics.density
     }
 
     private fun refresh() {

@@ -2,6 +2,8 @@ package com.owla19s.aps
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.Gravity
 import android.view.ViewGroup
@@ -47,23 +49,33 @@ class ContextDetailActivity : AppCompatActivity() {
     private fun buildUi(): ScrollView {
         root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(20), dp(18), dp(20), dp(24))
+            setPadding(dp(16), dp(18), dp(16), dp(24))
+            setBackgroundColor(Color.rgb(243, 246, 250))
         }
-        heading = TextView(this).apply { textSize = 26f }
+        heading = TextView(this).apply {
+            textSize = 26f
+            setTextColor(Color.rgb(28, 43, 61))
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setPadding(0, 0, 0, dp(8))
+        }
         root.addView(heading)
         root.addView(Button(this).apply {
             text = "编辑 Context 名称与备注"
             setOnClickListener { editContext() }
         }, params())
         notesView = TextView(this).apply {
-            textSize = 14f
-            setPadding(0, dp(8), 0, dp(16))
+            textSize = 15f
+            setTextColor(Color.rgb(69, 88, 108))
+            setPadding(dp(12), dp(10), dp(12), dp(12))
+            background = roundedSurface(Color.WHITE, 12)
         }
         root.addView(notesView)
         val addressHeader = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
         addressHeader.addView(TextView(this).apply {
             text = "项目地址"
             textSize = 20f
+            setTextColor(Color.rgb(28, 43, 61))
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
         }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         addressHeader.addView(Button(this).apply {
             text = "添加地址"
@@ -103,12 +115,14 @@ class ContextDetailActivity : AppCompatActivity() {
         context.addresses.forEach { address ->
             val card = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
-                setPadding(dp(12), dp(10), dp(12), dp(10))
-                background = getDrawable(android.R.drawable.dialog_holo_light_frame)
+                setPadding(dp(14), dp(12), dp(14), dp(12))
+                background = roundedSurface(Color.WHITE, 12)
             }
             card.addView(TextView(this).apply {
                 text = address.name
                 textSize = 17f
+                setTextColor(Color.rgb(28, 43, 61))
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
             })
             card.addView(TextView(this).apply {
                 text = address.address
@@ -227,6 +241,11 @@ class ContextDetailActivity : AppCompatActivity() {
                 store.save(current.copy(addresses = current.addresses.filterNot { it.id == address.id }))
                 refresh()
             }.show()
+    }
+
+    private fun roundedSurface(color: Int, radiusDp: Int) = GradientDrawable().apply {
+        setColor(color)
+        cornerRadius = dp(radiusDp).toFloat()
     }
 
     private fun params() = LinearLayout.LayoutParams(

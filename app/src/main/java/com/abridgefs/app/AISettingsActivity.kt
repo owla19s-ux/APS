@@ -2,6 +2,8 @@ package com.owla19s.aps
 
 import android.app.AlertDialog
 import android.content.ClipData
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.content.ClipboardManager
 import android.os.Bundle
 import android.text.InputType
@@ -47,16 +49,20 @@ class AISettingsActivity : AppCompatActivity() {
         selectedProfileId = saved?.id
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(20), dp(16), dp(20), dp(24))
+            setPadding(dp(16), dp(16), dp(16), dp(24))
+            setBackgroundColor(Color.rgb(243, 246, 250))
         }
         root.addView(TextView(this).apply {
             text = "AI / API 连接"
-            textSize = 24f
+            textSize = 25f
+            setTextColor(Color.rgb(28, 43, 61))
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
         })
         root.addView(TextView(this).apply {
             text = "支持 OpenAI 兼容、Anthropic、Gemini 协议。API Key 使用 Android Keystore 加密保存。"
             textSize = 14f
-            setPadding(0, dp(6), 0, dp(12))
+            setTextColor(Color.rgb(69, 88, 108))
+            setPadding(0, dp(6), 0, dp(16))
         })
 
         nameField = field("连接名称", saved?.name ?: "Default API")
@@ -120,7 +126,9 @@ class AISettingsActivity : AppCompatActivity() {
         status = TextView(this).apply {
             text = if (saved == null) "状态：尚未配置" else "状态：已保存配置；尚未测试连接"
             textSize = 14f
-            setPadding(0, dp(10), 0, dp(10))
+            setTextColor(Color.rgb(45, 65, 86))
+            setPadding(dp(12), dp(12), dp(12), dp(12))
+            background = roundedSurface(Color.rgb(230, 237, 245), 10)
         }
         root.addView(status)
 
@@ -360,12 +368,21 @@ class AISettingsActivity : AppCompatActivity() {
         setText(value)
         textSize = 15f
         maxLines = 1
+        setPadding(dp(12), 0, dp(12), 0)
+        background = roundedSurface(Color.WHITE, 10)
     }
 
     private fun label(value: String) = TextView(this).apply {
         text = value
         textSize = 14f
-        setPadding(0, dp(12), 0, dp(4))
+        setTextColor(Color.rgb(42, 59, 78))
+        setTypeface(typeface, android.graphics.Typeface.BOLD)
+        setPadding(dp(2), dp(12), 0, dp(6))
+    }
+
+    private fun roundedSurface(color: Int, radiusDp: Int) = GradientDrawable().apply {
+        setColor(color)
+        cornerRadius = dp(radiusDp).toFloat()
     }
 
     private fun fieldParams() = LinearLayout.LayoutParams(
