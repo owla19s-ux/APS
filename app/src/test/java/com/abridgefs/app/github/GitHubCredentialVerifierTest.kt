@@ -20,6 +20,8 @@ class GitHubCredentialVerifierTest {
             override suspend fun repository(owner: String, repo: String) = error("unused")
             override suspend fun branches(owner: String, repo: String) = error("unused")
             override suspend fun branch(owner: String, repo: String, branch: String) = error("unused")
+            override suspend fun rootContents(owner: String, repo: String, ref: String?) = error("unused")
+            override suspend fun directoryContents(owner: String, repo: String, path: String, ref: String?) = error("unused")
             override suspend fun file(owner: String, repo: String, path: String, ref: String?) = error("unused")
             override suspend fun commit(owner: String, repo: String, ref: String) = error("unused")
             override suspend fun workflowRuns(owner: String, repo: String, branch: String?, headSha: String?, perPage: Int) = error("unused")
