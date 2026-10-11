@@ -1,4 +1,4 @@
-package com.abridgefs.app.ai
+package com.owla19s.aps.ai
 
 /**
  * Sanitizes provider-supplied error bodies before they are shown to users or wrapped in exceptions.
