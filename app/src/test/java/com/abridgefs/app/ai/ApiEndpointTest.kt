@@ -55,6 +55,11 @@ class ApiEndpointTest {
         ApiEndpoint.validateBaseUrl("https://user:secret@api.example.com/v1")
     }
 
+    @Test(expected = IllegalArgumentException::class)
+    fun rejectsPlainHttpBaseUrlToProtectApiKeys() {
+        ApiEndpoint.validateBaseUrl("http://api.example.com/v1")
+    }
+
     @Test
     fun geminiStreamingQueryIsAddedAfterPathConstruction() {
         val endpoint = ApiEndpoint.build(
