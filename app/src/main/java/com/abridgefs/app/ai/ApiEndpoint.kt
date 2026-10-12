@@ -14,12 +14,12 @@ internal object ApiEndpoint {
             "API Base URL 不能包含片段标识（#）"
         }
         val builder = base.newBuilder()
-        while (builder.encodedPathSegments.size > 1 &&
-            builder.encodedPathSegments.lastOrNull() == ""
-        ) {
-            builder.removePathSegment(builder.encodedPathSegments.lastIndex)
+        val pathSegments = base.encodedPathSegments.toMutableList()
+        while (pathSegments.size > 1 && pathSegments.lastOrNull() == "") {
+            builder.removePathSegment(pathSegments.lastIndex)
+            pathSegments.removeAt(pathSegments.lastIndex)
         }
-        if (ensureV1 && builder.encodedPathSegments.lastOrNull() != "v1") {
+        if (ensureV1 && pathSegments.lastOrNull() != "v1") {
             builder.addPathSegment("v1")
         }
         return builder.addPathSegments(path).build()
