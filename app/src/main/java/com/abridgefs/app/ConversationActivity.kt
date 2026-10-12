@@ -34,6 +34,7 @@ import com.owla19s.aps.local.LocalFileConnector
 import com.owla19s.aps.github.GitHubConversationReadConfigStore
 import com.owla19s.aps.github.GitHubConversationReader
 import com.owla19s.aps.github.GitHubWorkflowRunSummary
+import com.owla19s.aps.github.GitHubWorkflowRunDetails
 import com.owla19s.aps.github.GitHubCredential
 import com.owla19s.aps.github.GitHubCredentialStore
 import com.owla19s.aps.github.GitHubCredentialVerifier
@@ -566,18 +567,61 @@ class ConversationActivity : AppCompatActivity() {
                         AlertDialog.Builder(this)
                             .setTitle("${target.repository} · Actions")
                             .setItems(labels) { _, index ->
-                                val url = runs[index].htmlUrl
-                                runCatching {
-                                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-                                }.onFailure {
-                                    toast("无法打开 GitHub Actions 页面")
-                                }
+                                showGitHubActionRunDetails(
+                                    credential.accessToken,
+                                    parts[0],
+                                    parts[1],
+                                    runs[index]
+                                )
                             }
                             .setNegativeButton("关闭", null)
                             .show()
                     }
                 }.onFailure { error ->
                     requestStatus.text = "GitHub Actions 查询失败"
+                    toast(error.message ?: error.javaClass.simpleName)
+                }
+            }
+        }.start()
+    }
+
+    private fun showGitHubActionRunDetails(
+        token: String,
+        owner: String,
+        repository: String,
+        run: GitHubWorkflowRunSummary
+    ) {
+        requestStatus.text = "正在读取 Actions 运行详情……"
+        Thread {
+            val result = runCatching {
+                val api = GitHubApiFactory.create(token)
+                val response = kotlinx.coroutines.runBlocking {
+                    api.workflowRun(owner, repository, run.id)
+                }
+                check(response.isSuccessful) {
+                    "读取 Actions 详情失败：HTTP ${response.code()}"
+                }
+                val body = response.body() ?: error("GitHub 未返回运行详情")
+                GitHubWorkflowRunDetails.parse(body)
+            }
+            runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
+                result.onSuccess { details ->
+                    requestStatus.text = "已读取 Actions 运行详情：#${details.runNumber}"
+                    AlertDialog.Builder(this)
+                        .setTitle("Actions 运行详情")
+                        .setMessage(details.toDisplayText())
+                        .setPositiveButton("在 GitHub 打开") { _, _ ->
+                            runCatching {
+                                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(details.htmlUrl)))
+                            }.onFailure {
+                                toast("无法打开 GitHub Actions 页面")
+                            }
+                        }
+                        .setNegativeButton("关闭", null)
+                        .show()
+                }.onFailure { error ->
+                    requestStatus.text = "Actions 运行详情读取失败"
                     toast(error.message ?: error.javaClass.simpleName)
                 }
             }
