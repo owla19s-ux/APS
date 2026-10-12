@@ -250,8 +250,9 @@ class AISettingsActivity : AppCompatActivity() {
             statusCode != null && statusCode >= 500 -> "服务端返回 HTTP $statusCode，请稍后重试或查看服务商状态。"
             error is UnknownHostException -> "无法解析 API 域名，请检查网络、域名和代理设置。"
             error is SocketTimeoutException -> "请求超时，请检查网络或服务端响应时间。"
+            detail.contains("必须使用 HTTPS", ignoreCase = true) ->
+                "API 地址必须使用 HTTPS。为保护 API Key，请为自托管服务配置 HTTPS 后再连接。"
             error is IllegalArgumentException -> "API 地址或请求参数格式无效，请检查协议、地址和模型配置。"
-            detail.contains("以 http:// 或 https://", ignoreCase = true) -> "API 地址必须包含 http:// 或 https://。"
             else -> "请检查 API 地址、协议、密钥和模型配置。"
         }
         val safeDetail = detail.takeIf { it.isNotBlank() }?.let { "\n详情：$it" }.orEmpty()
