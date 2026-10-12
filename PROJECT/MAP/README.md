@@ -240,3 +240,12 @@
 - 架构基线：`PROJECT/ARCHITECTURE/APS-CURRENT-ARCHITECTURE.md`
 
 本索引不会替代这些规范或源码。出现冲突时，按正式产品语义判断设计，再以当前源码与实际 Verify 证据更新实现状态。
+
+
+
+### 2026-10-12 实施状态补记：结构树与施工卡
+
+- **软件开发结构**：Context 工作面已接入结构树只读查看及节点新增、编辑、添加子节点、移动、删除。节点 ID 在编辑和移动时保持稳定；父子层级仍由 parentId 表达，删除节点时数据层清理关联边和 Task-node links，并拒绝直接删除仍有子节点的节点。
+- **施工卡 / Task**：当前批次接入 Context-scoped 基础列表和详情，复用 DevelopmentTaskStore 生命周期；支持新建、状态迁移、节点多关联、查看生命周期事件及已保存的 GitHub 验证记录。
+- **边界**：Task 标记 COMPLETED 仅表示当前本地 Task 状态，不代表 GitHub Verify 成功。验证页面显示的是已保存快照，不自动拉取远端结果。自动调度、执行记录/产物、子 Task、Verify gate、真实设备验收仍未完成。
+- **验证纪律**：以上代码进入主线前以 PR Android Tests 为门槛；不得将 PR 测试通过等同于真实设备端到端验收。
