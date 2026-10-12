@@ -49,6 +49,12 @@ class DevelopmentTaskStore(context: Context) {
         require(target in allowedTransitions(current.status)) {
             "不允许的 Task 状态迁移：${current.status} → $target"
         }
+        if (target == DevelopmentTaskStatus.REVIEW_REQUIRED || target == DevelopmentTaskStatus.COMPLETED) {
+            require(resultSummary.isNotBlank()) { "执行结果/审查摘要不能为空" }
+        }
+        if (target == DevelopmentTaskStatus.FAILED) {
+            require(errorMessage.isNotBlank()) { "失败原因不能为空" }
+        }
         val attempt = when {
             target == DevelopmentTaskStatus.RUNNING -> current.attempt + 1
             else -> current.attempt
@@ -56,7 +62,11 @@ class DevelopmentTaskStore(context: Context) {
         val updated = current.copy(
             status = target,
             attempt = attempt,
-            resultSummary = if (target == DevelopmentTaskStatus.COMPLETED) resultSummary else current.resultSummary,
+            resultSummary = when {
+                target == DevelopmentTaskStatus.REVIEW_REQUIRED || target == DevelopmentTaskStatus.COMPLETED -> resultSummary
+                target == DevelopmentTaskStatus.READY -> ""
+                else -> current.resultSummary
+            },
             errorMessage = if (target == DevelopmentTaskStatus.FAILED) errorMessage else "",
             updatedAtMillis = maxOf(nowMillis, current.updatedAtMillis)
         )
@@ -64,7 +74,7 @@ class DevelopmentTaskStore(context: Context) {
             UUID.randomUUID().toString(), contextId, taskId, current.status, target,
             updated.updatedAtMillis,
             when (target) {
-                DevelopmentTaskStatus.COMPLETED -> resultSummary
+                DevelopmentTaskStatus.REVIEW_REQUIRED, DevelopmentTaskStatus.COMPLETED -> resultSummary
                 DevelopmentTaskStatus.FAILED -> errorMessage
                 else -> ""
             }
@@ -88,6 +98,9 @@ class DevelopmentTaskStore(context: Context) {
             DevelopmentTaskStatus.CREATED -> setOf(DevelopmentTaskStatus.READY, DevelopmentTaskStatus.CANCELLED)
             DevelopmentTaskStatus.READY -> setOf(DevelopmentTaskStatus.RUNNING, DevelopmentTaskStatus.CANCELLED)
             DevelopmentTaskStatus.RUNNING -> setOf(
+                DevelopmentTaskStatus.REVIEW_REQUIRED, DevelopmentTaskStatus.FAILED, DevelopmentTaskStatus.CANCELLED
+            )
+            DevelopmentTaskStatus.REVIEW_REQUIRED -> setOf(
                 DevelopmentTaskStatus.COMPLETED, DevelopmentTaskStatus.FAILED, DevelopmentTaskStatus.CANCELLED
             )
             DevelopmentTaskStatus.FAILED -> setOf(DevelopmentTaskStatus.READY, DevelopmentTaskStatus.CANCELLED)
