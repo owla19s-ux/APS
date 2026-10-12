@@ -10,6 +10,9 @@ internal object ApiEndpoint {
     fun build(baseUrl: String, path: String, ensureV1: Boolean = false): okhttp3.HttpUrl {
         val base = baseUrl.trim().toHttpUrlOrNull()
             ?: throw IllegalArgumentException("API 地址无效，请填写完整的 http:// 或 https:// Base URL")
+        require(base.username.isEmpty() && base.password.isEmpty()) {
+            "API Base URL 不能包含用户名或密码，请将凭据放入 API Key / 认证字段"
+        }
         require(base.encodedFragment == null) {
             "API Base URL 不能包含片段标识（#）"
         }
