@@ -800,11 +800,35 @@ class ConversationActivity : AppCompatActivity() {
         }
         AlertDialog.Builder(this)
             .setTitle("本地文件")
-            .setItems(arrayOf("浏览当前目录", "选择其他目录")) { _, which ->
-                if (which == 0) showLocalEntries(connection, null)
-                else pickLocalDirectory()
+            .setItems(arrayOf("浏览当前目录", "选择其他目录", "撤销当前目录授权")) { _, which ->
+                when (which) {
+                    0 -> showLocalEntries(connection, null)
+                    1 -> pickLocalDirectory()
+                    2 -> confirmRevokeLocalDirectory(connection)
+                }
             }
             .setNegativeButton("关闭", null)
+            .show()
+    }
+
+    private fun confirmRevokeLocalDirectory(connection: LocalConnection) {
+        AlertDialog.Builder(this)
+            .setTitle("撤销本地目录授权")
+            .setMessage("撤销后 APS 将删除此本地连接记录，并释放系统授予的目录访问权限。再次使用时需要重新选择目录。")
+            .setNegativeButton("取消", null)
+            .setPositiveButton("撤销授权") { _, _ ->
+                val flags = (if (connection.canRead) Intent.FLAG_GRANT_READ_URI_PERMISSION else 0) or
+                    (if (connection.canWrite) Intent.FLAG_GRANT_WRITE_URI_PERMISSION else 0)
+                val result = runCatching {
+                    contentResolver.releasePersistableUriPermission(Uri.parse(connection.treeUri), flags)
+                }
+                result.onSuccess {
+                    localConnectionStore.delete(connection.id)
+                    toast("本地目录授权已撤销")
+                }.onFailure { error ->
+                    toast("撤销授权失败：" + (error.message ?: error.javaClass.simpleName))
+                }
+            }
             .show()
     }
 
