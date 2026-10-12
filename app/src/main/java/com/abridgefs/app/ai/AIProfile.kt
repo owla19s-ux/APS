@@ -24,7 +24,7 @@ data class AIProfile(
         get() = baseUrl.trim().trimEnd('/')
 
     override fun toString(): String =
-        "AIProfile(id=$id, name=$name, baseUrl=$baseUrl, model=$model, protocol=$protocol, apiKey=[redacted])"
+        "AIProfile(id=$id, name=$name, baseUrl=${ApiErrorSanitizer.sanitize(baseUrl)}, model=$model, protocol=$protocol, apiKey=[redacted])"
 
     companion object {
         const val DEFAULT_ID = "default-ai"

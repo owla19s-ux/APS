@@ -31,6 +31,20 @@ class AIProfileTest {
         assertTrue(profile.toString().contains("[redacted]"))
     }
 
+    @Test
+    fun to_string_redacts_credentials_in_base_url_query() {
+        val profile = AIProfile(
+            name = "Test API",
+            baseUrl = "https://api.example.com/v1?api_key=url-query-secret",
+            model = "model-x",
+            apiKey = "sensitive-api-key"
+        )
+
+        val summary = profile.toString()
+        assertFalse(summary.contains("url-query-secret"))
+        assertTrue(summary.contains("[URL with query redacted]"))
+    }
+
     @Test(expected = IllegalArgumentException::class)
     fun blank_model_is_rejected() {
         AIProfile(
