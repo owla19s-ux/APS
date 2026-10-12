@@ -27,6 +27,11 @@ class DevelopmentVerificationStore(context: Context) {
         }
         if (sameRun != null) {
             require(sameRun.id == record.id) { "同一 Task 的 Workflow 运行记录 ID 不一致" }
+            require(record.updatedAtMillis >= sameRun.updatedAtMillis) { "验证记录更新时间不能倒退" }
+            require(record.workflowUrl == sameRun.workflowUrl &&
+                record.workflowName == sameRun.workflowName &&
+                record.headSha == sameRun.headSha &&
+                record.createdAtMillis == sameRun.createdAtMillis) { "同一 Workflow 运行的身份信息不能改变" }
             require(allowedUpdate(sameRun, record)) { "验证记录不能回退到较早的状态或覆盖已结束结论" }
         }
         val next = existing.filterNot {
