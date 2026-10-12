@@ -49,7 +49,7 @@ class DevelopmentTaskStore(context: Context) {
             attempt = attempt,
             resultSummary = if (target == DevelopmentTaskStatus.COMPLETED) resultSummary else current.resultSummary,
             errorMessage = if (target == DevelopmentTaskStatus.FAILED) errorMessage else "",
-            updatedAtMillis = nowMillis
+            updatedAtMillis = maxOf(nowMillis, current.updatedAtMillis)
         )
         writeAll(tasks.map { if (it.id == taskId && it.contextId == contextId) updated else it })
         return updated
