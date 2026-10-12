@@ -123,7 +123,7 @@ class AIProfileStore(context: Context) {
                 baseUrl = baseUrl,
                 model = model,
                 apiKey = apiKey
-            )
+            ).also { ApiEndpoint.validateBaseUrl(it.baseUrl) }
         }.getOrNull() ?: return
 
         val encryptedKey = encrypt(profile.apiKey, profileKeyAlias(profile.id))
