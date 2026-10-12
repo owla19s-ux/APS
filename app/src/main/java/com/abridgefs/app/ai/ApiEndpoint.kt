@@ -8,13 +8,18 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
  */
 internal object ApiEndpoint {
     fun build(baseUrl: String, path: String, ensureV1: Boolean = false): okhttp3.HttpUrl {
-        val base = baseUrl.trim().trimEnd('/').toHttpUrlOrNull()
+        val base = baseUrl.trim().toHttpUrlOrNull()
             ?: throw IllegalArgumentException("API 地址无效，请填写完整的 http:// 或 https:// Base URL")
         require(base.encodedFragment == null) {
             "API Base URL 不能包含片段标识（#）"
         }
         val builder = base.newBuilder()
-        if (ensureV1 && base.encodedPathSegments.lastOrNull() != "v1") {
+        while (builder.encodedPathSegments.size > 1 &&
+            builder.encodedPathSegments.lastOrNull() == ""
+        ) {
+            builder.removePathSegment(builder.encodedPathSegments.lastIndex)
+        }
+        if (ensureV1 && builder.encodedPathSegments.lastOrNull() != "v1") {
             builder.addPathSegment("v1")
         }
         return builder.addPathSegments(path).build()
