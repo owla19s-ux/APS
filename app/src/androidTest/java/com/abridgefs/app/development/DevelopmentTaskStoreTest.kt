@@ -63,7 +63,22 @@ class DevelopmentTaskStoreTest {
             store.transition("ctx-a", "task-terminal", DevelopmentTaskStatus.COMPLETED, 4L, resultSummary = "passed")
             store.transition("ctx-a", "task-terminal", DevelopmentTaskStatus.READY, 5L)
         } finally {
-            prefs.edit().remove("tasks").commit()
+            prefs.edit().remove("tasks").remove("events").remove("tasks.corrupt_backup").remove("events.corrupt_backup").commit()
+        }
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun review_handoff_requires_nonblank_summary_and_does_not_change_state() {
+        val prefs = context.getSharedPreferences("aps_development_tasks", Context.MODE_PRIVATE)
+        prefs.edit().remove("tasks").remove("events").remove("tasks.corrupt_backup").remove("events.corrupt_backup").commit()
+        try {
+            val store = DevelopmentTaskStore(context)
+            store.create(DevelopmentTask("task-review-required", "ctx-a", "Review summary test"))
+            store.transition("ctx-a", "task-review-required", DevelopmentTaskStatus.READY, 1L)
+            store.transition("ctx-a", "task-review-required", DevelopmentTaskStatus.RUNNING, 2L)
+            store.transition("ctx-a", "task-review-required", DevelopmentTaskStatus.REVIEW_REQUIRED, 3L)
+        } finally {
+            prefs.edit().remove("tasks").remove("events").remove("tasks.corrupt_backup").remove("events.corrupt_backup").commit()
         }
     }
 
