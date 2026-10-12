@@ -20,7 +20,6 @@ class DevelopmentTaskStore(context: Context) {
     @Synchronized
     fun events(contextId: String, taskId: String): List<DevelopmentTaskEvent> =
         readEvents().filter { it.contextId == contextId && it.taskId == taskId }
-            .sortedWith(compareBy<DevelopmentTaskEvent> { it.occurredAtMillis }.thenBy { it.id })
 
     @Synchronized
     fun create(task: DevelopmentTask) {
