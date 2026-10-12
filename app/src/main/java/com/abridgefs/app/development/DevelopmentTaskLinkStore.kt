@@ -8,6 +8,7 @@ import org.json.JSONObject
 class DevelopmentTaskLinkStore(context: Context) {
     private val prefs = context.getSharedPreferences("aps_development_task_links", Context.MODE_PRIVATE)
     private val tree = DevelopmentTreeStore(context)
+    private val tasks = DevelopmentTaskStore(context)
 
     fun all(contextId: String): List<DevelopmentTaskLink> =
         read().filter { it.contextId == contextId }
@@ -18,6 +19,7 @@ class DevelopmentTaskLinkStore(context: Context) {
 
     @Synchronized
     fun save(link: DevelopmentTaskLink) {
+        require(tasks.get(link.contextId, link.taskId) != null) { "施工卡不存在或不属于当前 Context" }
         require(tree.getNode(link.contextId, link.nodeId) != null) { "结构节点不存在或不属于当前 Context" }
         val next = read().filterNot { it.id == link.id || it.uniquenessKey == link.uniquenessKey } + link
         write(next)
