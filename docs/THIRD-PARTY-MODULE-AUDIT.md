@@ -1,6 +1,6 @@
 # APS 第三方模块兼容性现状盘点
 
-盘点基线：`main` commit `ab5e0c49bc76a5f97ce07ef8df41f6fe2909f930`
+盘点基线：`main` commit `6ddf0a643d4babb78d515c8ec9738b615e245416`
 
 范围：AI、GitHub、Local 三条连接链及其现有测试。本文只记录可从当前源码确认的事实；“有接口”不等于“已验证可接入任意第三方模块”。
 
@@ -11,7 +11,7 @@
 | AI 接口 | `AIConnector` 提供 `send`、默认流式回退、取消接口；`AIConnectorRegistry` 按 Connection ID 解析 | Registry 单元测试覆盖注入、Profile 构造与未注册错误 | `AIConnectorFactory` 已内置 OpenAI 兼容、Anthropic Messages、Google Gemini 三种适配器，并支持注入额外适配器；请求消息模型、能力声明、统一错误分类、超时与服务能力差异尚未形成完整公共契约 | 中高 |
 | API Base URL / OpenAI 兼容 API | 通过 OkHttp 发起普通和 SSE 请求；模型列表和聊天测试由 Connector 提供 | 已有 URL 校验逻辑，并由 `AIProfileStore.save()` 在持久化前调用；拒绝 URL 内用户名 / 密码和 fragment | 仍允许 HTTP Base URL；Bearer Token 可能明文传输，需评估是否要求 HTTPS 或为本地开发提供明确例外；同时补充协议适配器共用的负向契约测试 | 高 |
 | GitHub API | Retrofit `GitHubApi` 声明用户、仓库、分支、文件、提交、Actions 查询、文件写入和 workflow dispatch | `GitHubConnectorTest` 覆盖地址转发、写权限拒绝与工厂装配 | API 层使用 `JsonObject` 等弱类型结果；`GitHubApiFactory` 固定 `https://api.github.com/`；Connector 暴露的 API 范围有限，尚不能等同完整 GitHub REST 覆盖；旧语义边界仍需继续盘点 | 中高 |
-| GitHub 写操作 | `GitHubConnector` 通过默认关闭的 `GitHubWritePolicy` 门禁文件写入和 workflow dispatch | 测试验证未授权写操作不会调用 API | 权限策略目前只以一个 enabled 开关覆盖两类写操作，尚未细分文件修改、工作流触发等操作权限 | 高 |
+| GitHub 写操作 | `GitHubConnector` 通过默认关闭的 `GitHubWritePolicy` 门禁文件写入和 workflow dispatch | 测试验证未授权写操作不会调用 API | 已拆分为独立的 `allowFileWrites` 与 `allowWorkflowDispatch`；需由对应测试验证两种授权不能相互替代，且实际调用入口仍需显式配置权限 | 高 |
 | Local 文件 | `LocalFileConnector` 依赖 Android 文档树 URI 与 `LocalDocumentGateway`，可列目录、读写受支持文本文件，支持编辑冲突保护 | 测试覆盖读取、写授权、写入、并发内容变化和拒绝二进制文件 | 仅是用户授权文档树内的文本文件操作；不代表任意文件系统、二进制、大文件、批量操作、移动/复制/删除能力均已支持 | 中高 |
 | 第三方模块装配 | AI 有 Factory / Registry，GitHub 有 Factory；Local 通过 Gateway 注入平台访问 | 各自存在单元测试 | 三条链没有统一的能力清单、版本契约、通用错误模型或可复用的 Connector 契约测试；没有模块动态发现/热加载证据 | 中 |
 | 工程依赖 | 当前 Gradle 工程是单个 Android app 模块；已直接依赖 Retrofit、Gson、OkHttp、Coroutines | Android 单元测试由 workflow 运行 | 不能仅凭 Gradle 依赖推断第三方 Android 模块可直接集成；许可证、传递依赖、minSdk、Manifest 和生命周期仍需逐个审查 | 中 |
@@ -41,11 +41,11 @@ AI 的消息与流式契约、GitHub 的 Repository / Workflow 操作、Local �
 ## 4. 推荐实施顺序
 
 1. 继续收口 API 传输安全：当前已在保存前拒绝 URL 内嵌用户名 / 密码及 fragment；仍需明确 HTTP Base URL 的策略，避免 Bearer Token 明文传输。
-2. 为 GitHub 写操作拆分最小权限策略，至少区分内容修改与 workflow dispatch。
+2. 已将 GitHub 文件修改与 workflow dispatch 拆分为独立权限；合并前应确认独立授权测试通过，并继续检查 UI 是否提供清晰、默认关闭的授权入口。
 3. 为 Local 定义能力声明，明确已支持的文本文件操作与尚未支持的文件操作。
 4. 再补跨 Connector 的错误分类和契约测试；不要为统一而牺牲具体 API 的类型信息。
 5. 选一个实际开源库做试接入，用结果评估是否需要公共 Module Manifest 或 Gradle 多模块。
 
 ## 5. 验证限制
 
-本文依据源码与现有测试文件进行静态盘点；没有在本次变更中运行 Android 构建或测试，也没有实际引入第三方库。任何“已通过”结论都应引用对应的工作流结果，不能由这份文档替代。
+本文依据源码与现有测试文件进行静态盘点；当前 PR 的新增测试和 Android 构建结果以对应 GitHub Actions 为准，没有实际引入第三方库。任何“已通过”结论都应引用对应的工作流结果，不能由这份文档替代。
