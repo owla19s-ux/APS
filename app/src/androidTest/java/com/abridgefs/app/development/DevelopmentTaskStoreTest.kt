@@ -40,7 +40,7 @@ class DevelopmentTaskStoreTest {
             assertEquals(DevelopmentTaskStatus.CREATED, events.first().toStatus)
             assertEquals(DevelopmentTaskStatus.COMPLETED, events.last().toStatus)
         } finally {
-            prefs.edit().remove("tasks").remove("tasks.corrupt_backup").commit()
+            prefs.edit().remove("tasks").remove("tasks.corrupt_backup").remove("events").remove("events.corrupt_backup").commit()
         }
     }
 
