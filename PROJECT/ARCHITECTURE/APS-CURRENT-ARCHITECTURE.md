@@ -84,6 +84,28 @@ Context
 
 结构层负责描述关系，Task 负责实际工作交接，Resource / Connection 提供实际材料和外部能力，Receipt / Evidence / Verify 提供事实依据。关系允许一对多和多对多；UI 可以将同一结构以树、表、关系或施工视图呈现，但这些视图共享同一结构数据。
 
+### 软件开发结构的数据模型约束（实施基线）
+
+软件开发结构先定义为 Context 内可组合的数据模型；UI 的树视图、表格视图、施工视图和验证视图都读取同一份结构数据，不各自维护副本。
+
+1. **节点身份独立于层级**：每个节点有稳定且不可因改名、移动而变化的 `id`；`code` 用于人类识别与文档引用，不能替代数据库身份。节点至少记录所属 `context_id`、类型、名称、排序信息和必要的创建/更新时间。
+2. **父子关系只用 `parent_id`**：它表达树中的直接归属；根节点的 `parent_id` 为空。不得从 ID 前缀、节点名称或类型字符串推断父子关系。
+3. **跨层/跨模块关系独立存储**：用关系边记录 `source_id`、`target_id`、`relation_type`，可选记录创建时间和备注。唯一性约束应防止同一关系重复写入；节点删除时需明确定义相关边的清理或阻止策略。
+4. **一个节点允许多个关系**：UI、功能、架构、施工点、施工卡、产物、Verify 之间可以一对多或多对多。不得把功能 ID、Task ID、Evidence ID 堆进节点的单一字符串字段。
+5. **Task 与结构节点分离**：结构节点描述“软件由什么组成、如何关联”；Task 描述一次实际工作交接和执行生命周期。一个结构节点可关联多个 Task，同一 Task 也可关联多个结构节点。
+6. **产物、Receipt、Verify/Evidence 分离**：产物记录实际交付内容或资源引用；Receipt 记录实际执行结果；Verify 记录验证要求、状态与尝试；Evidence 记录支持结论的具体事实（例如测试运行、workflow run、设备结果或日志引用）。不得只凭人工点击或预设状态将 Verify 标记成功。
+7. **模块调用不是节点层级**：AI/API、GitHub、Local/File 是可按需调用的能力模块，不需要在每个树节点下复制三份模块子节点。结构节点通过独立关系或任务执行记录引用所需能力；访问仍受各 Connector 的授权边界约束。
+8. **先本地持久化，再连接外部证据**：首个实现批次只建立节点/关系的类型化模型、Store 与单元测试；后续批次再接 Task/Verify/Evidence 和 GitHub Actions 证据，避免将 GitHub API 直接耦合进结构数据层。
+9. **兼容性与删除边界**：节点类型采用明确的稳定类型值；未知类型/损坏数据应保留原始数据并记录诊断，不得静默清空整个结构。移动节点前校验不能把节点移动到自身或后代之下；删除/归档与关联边处理必须有测试覆盖。
+
+建议的首批核心实体：
+
+- `DevelopmentNode`：`id`、`context_id`、`code`、`type`、`name`、`parent_id`、`sort_order`、`notes`。
+- `DevelopmentRelation`：`id`、`context_id`、`source_id`、`target_id`、`relation_type`、`notes`。
+- 后续独立实体：`Task`、`ArtifactRef`、`VerifyRecord`、`EvidenceRef`；首批不预先实现 Dispatcher 或写入授权。
+
+以上字段是逻辑模型，不要求将其直接映射成单一数据库表。实现时需保持稳定 ID、关系完整性和可迁移性，并以单测覆盖新增、移动、关联去重、删除边界、持久化往返与损坏数据恢复。
+
 ## 四、Connection / Resource / Connector
 
 第一阶段 Connection 类型正式定义为：
