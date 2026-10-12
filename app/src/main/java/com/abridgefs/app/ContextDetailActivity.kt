@@ -119,7 +119,8 @@ class ContextDetailActivity : AppCompatActivity() {
             text = "打开本地文件"
             setOnClickListener {
                 startActivity(Intent(this@ContextDetailActivity, ConversationActivity::class.java)
-                    .putExtra("aps.open.local.files", true))
+                    .putExtra("aps.open.local.files", true)
+                    .putExtra("aps.context.id", contextId))
             }
         }, params())
         root.addView(Button(this).apply {
