@@ -176,6 +176,10 @@ class ConversationActivity : AppCompatActivity() {
             text = "Actions 结果"
             setOnClickListener { showGitHubActionsResults() }
         })
+        header.addView(Button(this).apply {
+            text = "验证记录"
+            setOnClickListener { showSavedVerificationRecords() }
+        })
         val headerScroll = HorizontalScrollView(this).apply {
             isHorizontalScrollBarEnabled = false
             addView(header)
@@ -522,6 +526,60 @@ class ConversationActivity : AppCompatActivity() {
                 refresh()
                 toast(if (model == null) "已恢复连接默认模型" else "当前对话模型已保存")
             }
+            .show()
+    }
+
+    private fun showSavedVerificationRecords() {
+        val contextId = current?.contextId
+        if (contextId.isNullOrBlank()) {
+            toast("当前对话未关联 Context")
+            return
+        }
+        val records = runCatching { DevelopmentVerificationStore(this).all(contextId) }
+            .getOrElse {
+                toast(it.message ?: "读取验证记录失败")
+                return
+            }
+        if (records.isEmpty()) {
+            AlertDialog.Builder(this)
+                .setTitle("验证记录")
+                .setMessage("当前 Context 暂无已保存的 GitHub Actions 验证记录。可先打开“Actions 结果”，进入某次运行详情后关联到 Task。")
+                .setPositiveButton("关闭", null)
+                .show()
+            return
+        }
+        val tasks = runCatching { DevelopmentTaskStore(this).all(contextId).associateBy { it.id } }
+            .getOrDefault(emptyMap())
+        val labels = records.map { record ->
+            val taskTitle = tasks[record.taskId]?.title ?: record.taskId
+            val result = if (record.status == "completed") record.conclusion ?: "无结论" else record.status
+            "#${record.runNumber} · ${taskTitle} · ${result} · ${record.branch}"
+        }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("验证记录（${records.size}）")
+            .setItems(labels) { _, index ->
+                val record = records[index]
+                AlertDialog.Builder(this)
+                    .setTitle("验证记录详情")
+                    .setMessage(
+                        "Task：${tasks[record.taskId]?.title ?: record.taskId}\n" +
+                            "工作流：${record.workflowName}\n" +
+                            "运行编号：#${record.runNumber}\n" +
+                            "状态：${record.status}\n" +
+                            "结论：${record.conclusion ?: "尚无结论"}\n" +
+                            "分支：${record.branch}\n" +
+                            "提交：${record.headSha.ifBlank { "未提供" }}\n" +
+                            "更新时间：${java.text.DateFormat.getDateTimeInstance().format(java.util.Date(record.updatedAtMillis))}"
+                    )
+                    .setPositiveButton("在 GitHub 打开") { _, _ ->
+                        runCatching {
+                            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(record.workflowUrl)))
+                        }.onFailure { toast("无法打开 GitHub Actions 页面") }
+                    }
+                    .setNegativeButton("关闭", null)
+                    .show()
+            }
+            .setNegativeButton("关闭", null)
             .show()
     }
 
