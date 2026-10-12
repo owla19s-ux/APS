@@ -90,8 +90,8 @@
 | FN-015 | GitHub 写操作 | 明确授权后写文件或触发操作；默认拒绝未授权写入；记录实际返回 | 已确认 | 部分实现 | GitHubWritePolicy 默认 disabled；writeFile/dispatchWorkflow 有权限守卫；用户操作入口、写入后验证待接 |
 | FN-016 | GitHub Actions / 验证结果 | 查询 workflow runs、单次 run、artifacts；支持授权触发 workflow | 已确认 | 部分实现 | 普通对话页可查看最近 20 条运行记录，并进入单次 run 详情查看状态/结论、分支、触发方式、触发者、时间与提交 SHA；合并后 Android Tests、Verify、Build and Release 均已通过；真实设备验收待完成；dispatch 用户入口、结果与施工卡/Verify 证据关联仍未接入 |
 | FN-017 | 软件开发结构 | 维护 UI/功能/架构/施工点等节点，支持结构、施工、验证视图 | 已确认 | 部分实现 | 节点/关系 Store、只读树查询、Task—节点多对多关联与 Task 生命周期已合并；PR #98 Android Tests #38225525007 通过。当前补齐 TaskLink 对真实 Task 的存在性校验与删除节点时的关联清理；结构 UI、Dispatcher、Verify/Evidence 尚未接入 |
-| FN-018 | Task / Dispatcher | Task 生命周期、拆分/做/审查职责、并发写入互斥、执行结果与失败恢复 | 已确认 | 部分实现 | `DevelopmentTask` / `DevelopmentTaskStore` 提供最小状态机、执行次数、结果摘要、失败信息、重试入口；本批将加入生命周期事件回执。Dispatcher、职责分派、跨实例并发互斥与完整失败恢复仍未实现。PR #99 的独立 ConstructionTask 模型不直接合并，审查状态和事件设计收敛到现有模型 |
-| FN-019 | Verify / Evidence | Verify 关联 Task 与产物；失败可重试；只凭实际结果/证据更新状态 | 已确认 | 未实现 / 待核实 | 当前可见主源码未发现统一 Verify/Evidence 实现 |
+| FN-018 | Task / Dispatcher | Task 生命周期、拆分/做/审查职责、并发写入互斥、执行结果与失败恢复 | 已确认 | 部分实现 | `DevelopmentTask` / `DevelopmentTaskStore` 提供最小状态机、执行次数、结果摘要、失败信息、重试入口；Task 创建和状态迁移已有生命周期事件回执，并在 PR #104 中改为与 Task 状态同一次 SharedPreferences 提交（Android Tests #38234490761 通过）。跨实例并发仍未解决。Dispatcher、职责分派、跨实例并发互斥与完整失败恢复仍未实现。PR #99 的独立 ConstructionTask 模型不直接合并，审查状态和事件设计收敛到现有模型 |
+| FN-019 | Verify / Evidence | Verify 关联 Task 与产物；失败可重试；只凭实际结果/证据更新状态 | 已确认 | 部分实现 | 新增 `DevelopmentVerification` / `DevelopmentVerificationStore`，可把实际 GitHub Actions run 的 ID、URL、状态/结论、提交 SHA、分支与时间关联到同一 Context 的真实 Task；instrumentation tests 已新增，等待 CI。尚未从 Actions 查询结果自动同步到 Store，尚未接 UI / Artifact / 重试流程，也不代表本地单测本身就是 Verify 结论 |
 | FN-020 | AI Code 权限策略 | 普通对话页三级执行策略；同时受系统权限与 Connection 授权约束 | 已确认 | 未实现 | 未发现策略状态、执行守卫或对应 UI |
 | FN-021 | Android / APP 系统权限 | 处理运行所需系统授权，并与连接资源授权分离 | 需细化 | 待核实 | Manifest 当前可见声明较少；系统权限 UI/检查流程未发现 |
 | FN-022 | 通用 Connection 管理 | 统一列出连接，管理类型、启停、认证、测试与授权；不把 AI 固定为角色 | 已确认 | 部分实现 | Connection 接口及 AI/GitHub 组件存在；通用注册/配置/设置 UI 未发现 |
@@ -117,8 +117,8 @@
 | ME-010 | GitHub 写入权限守卫 | 远端写操作必须经过明确授权，默认关闭 | 部分实现 | `GitHubConnector.kt` 的 GitHubWritePolicy 默认 disabled，并守卫写文件/触发 workflow；授权配置和审计记录未接入 |
 | ME-011 | Local / File Connector | 选择本地资源、授权、读写、冲突检测与失败恢复 | 部分实现 | `local/LocalConnection.kt`、`LocalConnectionStore.kt`、`LocalFileConnector.kt`、`AndroidLocalDocumentGateway.kt` 已支持 SAF 文档树列目录、文本读取/写入、连接级读写开关和 2 MiB 限制；普通对话页已接目录选择、文件浏览、编辑与显式保存入口。编辑器保存时将打开文件时的原始内容传入 Connector，写入前比对当前内容，发现外部修改则取消保存并提示冲突；保存失败或冲突时编辑器保持打开，避免未保存文本因对话框自动关闭而丢失。随后再次检查以缩小检查与写入之间的竞态。写入后回读校验字节一致性，异常或校验不一致时通过 `LocalWriteRecovery` 尝试恢复；单测覆盖写入失败恢复、恢复失败、成功路径及过期编辑快照冲突。该机制不是原子保存，检查与写入之间仍有竞态，跨 Provider 行为及真实设备故障仍待验证；Context 工作面复用，以及显式冲突解决界面仍待补；目录列表、文件读取和保存失败时已提供重新选择目录引导。重新选择目录不会自动将旧文件映射到新目录，需重新打开目标文件；保存失败或冲突时编辑器保留当前文本 |
 | ME-012 | 通用 Connection 授权机制 | 把 Android 系统授权、Connection 访问授权、AI Code 策略分层判断 | 未发现完整实现 | GitHub 存在局部写策略；统一授权对象、授权检查入口与撤销/过期流程待设计 |
-| ME-013 | Task / Dispatcher 状态机 | 任务排队、拆分/做/审查交接、单写入者、取消、重试、恢复与状态持久化 | 未发现完整实现 | 规范已有目标；当前可见源码尚未定位到可运行的统一调度机制 |
-| ME-014 | Verify / Evidence 机制 | 保存验证要求、实际结果、证据、失败/重试历史；状态以事实更新 | 未发现完整实现 | 规范已有关系定义；需要正式模型、接口、持久化与测试 |
+| ME-013 | Task / Dispatcher 状态机 | 任务排队、拆分/做/审查交接、单写入者、取消、重试、恢复与状态持久化 | 未发现完整实现 | 规范已有目标；Task 状态与事件回执已具备本地持久化；统一调度、审查阶段状态和跨实例并发互斥仍未实现 |
+| ME-014 | Verify / Evidence 机制 | 保存验证要求、实际结果、证据、失败/重试历史；状态以事实更新 | 部分实现 | `DevelopmentVerification` / `DevelopmentVerificationStore` 持久化已观察到的 GitHub Actions run，并限制同一 run 的状态只能前进、完成结论不可覆盖；自动拉取/同步、Artifacts、UI 和失败重试仍待施工与验证 |
 | ME-015 | 本地运行日志与诊断 | 0.1.1 最小要求：启动/运行关键阶段、可捕获崩溃/未捕获异常线索、API 连接测试与请求失败类别、耗时和结果；日志与项目文件分离，凭证/令牌/敏感请求内容脱敏；日志失败不得拖垮主流程 | 已实现基础代码，单元测试通过 | `RuntimeDiagnostics.kt` 写入应用私有目录 `aps-diagnostics/`，按日追加，保留 7 天且单日日志上限 1 MiB；`APSApplication` 初始化日志并安装未捕获异常处理器；AI chat、SSE、模型目录请求记录开始/成功/失败、耗时、失败类别及可识别 HTTP 状态；`ConversationService` 记录发送阶段。AI/API 设置页可查看和复制最近日志。Android Tests #488 已通过；真实设备上的文件写入、崩溃记录和隐私边界仍需验证。完整日志检索、远程监控、趋势分析、自动根因诊断属于后续增强 |
 | ME-016 | 测试与验证证据 | 以测试、实际连接结果和必要的端到端证据核对功能状态 | 部分实现 | Conversation、Context、GitHub 有单元测试文件；每个业务闭环的测试覆盖与当前 Verify 状态需要逐项核对 |
 | ME-017 | Connection 基础抽象 | 提供连接稳定 ID 与类型；具体 Connector 通过连接身份解析，不把 Connection 当成实际资源 | 部分实现 | `connection/Connection.kt` 目前只定义 GITHUB、AI 两种类型；Local、File、API/Service 等通用类型尚未纳入该接口，需按模块施工时扩展，不提前一次性实现全部类型 |
