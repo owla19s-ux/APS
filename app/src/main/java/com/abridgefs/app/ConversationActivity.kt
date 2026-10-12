@@ -33,6 +33,7 @@ import com.owla19s.aps.local.LocalEntry
 import com.owla19s.aps.local.LocalFileConnector
 import com.owla19s.aps.github.GitHubConversationReadConfigStore
 import com.owla19s.aps.github.GitHubConversationReader
+import com.owla19s.aps.github.GitHubWorkflowRunSummary
 import com.owla19s.aps.github.GitHubCredential
 import com.owla19s.aps.github.GitHubCredentialStore
 import com.owla19s.aps.github.GitHubCredentialVerifier
@@ -165,6 +166,10 @@ class ConversationActivity : AppCompatActivity() {
         header.addView(Button(this).apply {
             text = "GitHub 只读"
             setOnClickListener { openGitHubReadDialog() }
+        })
+        header.addView(Button(this).apply {
+            text = "Actions 结果"
+            setOnClickListener { showGitHubActionsResults() }
         })
         val headerScroll = HorizontalScrollView(this).apply {
             isHorizontalScrollBarEnabled = false
@@ -513,6 +518,70 @@ class ConversationActivity : AppCompatActivity() {
                 toast(if (model == null) "已恢复连接默认模型" else "当前对话模型已保存")
             }
             .show()
+    }
+
+    private fun showGitHubActionsResults() {
+        val credential = githubCredentialStore.load()
+        if (credential == null) {
+            toast("请先在 GitHub 只读中验证并保存访问令牌")
+            return
+        }
+        val savedTarget = githubReadConfigStore.load()
+        if (savedTarget == null) {
+            toast("请先在 GitHub 只读中选择并保存仓库")
+            return
+        }
+        val target = runCatching {
+            GitHubReadTarget(savedTarget.repository, savedTarget.branch)
+        }.getOrElse {
+            toast(it.message ?: "GitHub 仓库配置无效")
+            return
+        }
+        val parts = target.repository.split('/')
+        requestStatus.text = "正在读取 GitHub Actions 运行结果……"
+        Thread {
+            val result = runCatching {
+                val api = GitHubApiFactory.create(credential.accessToken)
+                val response = kotlinx.coroutines.runBlocking {
+                    api.workflowRuns(parts[0], parts[1], target.branch, null, 20)
+                }
+                check(response.isSuccessful) {
+                    "GitHub Actions 查询失败：HTTP ${response.code()}"
+                }
+                val body = response.body() ?: error("GitHub 未返回 Actions 运行结果")
+                GitHubWorkflowRunSummary.parse(body)
+            }
+            runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
+                result.onSuccess { runs ->
+                    requestStatus.text = "GitHub Actions：已读取 ${runs.size} 条运行记录"
+                    if (runs.isEmpty()) {
+                        AlertDialog.Builder(this)
+                            .setTitle("GitHub Actions")
+                            .setMessage("该仓库暂时没有可显示的工作流运行记录。")
+                            .setPositiveButton("关闭", null)
+                            .show()
+                    } else {
+                        val labels = runs.map { it.displayLabel() }.toTypedArray()
+                        AlertDialog.Builder(this)
+                            .setTitle("${target.repository} · Actions")
+                            .setItems(labels) { _, index ->
+                                val url = runs[index].htmlUrl
+                                runCatching {
+                                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                                }.onFailure {
+                                    toast("无法打开 GitHub Actions 页面")
+                                }
+                            }
+                            .setNegativeButton("关闭", null)
+                            .show()
+                    }
+                }.onFailure { error ->
+                    requestStatus.text = "GitHub Actions 查询失败"
+                    toast(error.message ?: error.javaClass.simpleName)
+                }
+            }
+        }.start()
     }
 
     private fun openGitHubReadDialog() {
