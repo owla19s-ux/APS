@@ -48,7 +48,7 @@
 | UI-007 | UI-006 | Context 基本信息与管理 | 名称、备注；创建、查看、编辑、删除、移动、复制、归档 | FN-002 | 已确认 | 部分实现：Context 数据模型和 SharedPreferences Store 存在；统一 CRUD UI/完整动作未发现 |
 | UI-008 | UI-006 | Address / Resource 区域 | 管理多个地址；选择资源；区分位置与实际内容 | FN-004,FN-011 | 已确认 | 部分实现：Context 目前可关联 GitHub ResourceRef；通用 Address 与 Local/File Resource 尚未发现 |
 | UI-009 | UI-006 | 连接与权限区域 | 选择 Context 可用连接并管理资源操作授权 | FN-022,FN-011,FN-020 | 已确认 | 部分实现：GitHub Connection 装配/写权限边界有代码；通用授权与 UI 未发现 |
-| UI-010 | UI-006 | 软件开发结构 | 结构树、施工表、验证视图；用户确认 UI 方案 | FN-017,FN-018,FN-019 | 已确认 | 未发现对应结构数据模型和 UI 实现 |
+| UI-010 | UI-006 | 软件开发结构 | 结构树、施工表、验证视图；用户确认 UI 方案 | FN-017,FN-018,FN-019 | 已确认 | 数据层第一批已实现节点/关系模型与本地 Store；结构树、施工表、验证视图及用户确认交互仍未实现，待批次验证 |
 | UI-011 | UI-001 | 普通对话页 | 独立对话，不强制关联 Context | FN-005,FN-006,FN-007,FN-008,FN-009,FN-013,FN-014,FN-016 | 已确认 | 部分实现：ConversationActivity 是 Launcher，真实 AI 对话、本地文件入口、GitHub 只读文件入口已接入；Actions 运行列表与单次运行详情已接入；合并后 Android Tests #38205186446、Verify #38205186448、Build and Release #38205186456 均通过，真实设备验收待完成 |
 | UI-012 | UI-011 | 对话分组 | 新建、重命名、删除分组；移动对话 | FN-006 | 已确认 | 已实现待验证：Activity 已接入分组筛选、新建/重命名/删除分组及移动对话入口；CI 已通过，仍需设备交互验收 |
 | UI-013 | UI-011 | 对话管理列表 | 新建、查看、切换、重命名、删除对话 | FN-005,FN-007 | 已确认 | 已实现待验证：Activity 已接入新建/切换/重命名/删除；保存失败边界与设备交互仍待验收 |
@@ -89,7 +89,7 @@
 | FN-014 | GitHub 仓库资源读取 | 仓库/分支/提交/文件读取；支持按需并发读取并返回真实响应 | 已确认 | 部分实现 | GitHubApi/Connector/ConcurrentReader 已存在；普通对话页已接入独立于 Context 的多文件只读路径（每次最多 5 个文件、单文件 32 KiB、总内容 64 KiB），顺序读取 UTF-8 文本并仅注入下一条 AI 请求；仓库目录浏览入口已接入并待 CI 验证，真实设备链路仍待验收 |
 | FN-015 | GitHub 写操作 | 明确授权后写文件或触发操作；默认拒绝未授权写入；记录实际返回 | 已确认 | 部分实现 | GitHubWritePolicy 默认 disabled；writeFile/dispatchWorkflow 有权限守卫；用户操作入口、写入后验证待接 |
 | FN-016 | GitHub Actions / 验证结果 | 查询 workflow runs、单次 run、artifacts；支持授权触发 workflow | 已确认 | 部分实现 | 普通对话页可查看最近 20 条运行记录，并进入单次 run 详情查看状态/结论、分支、触发方式、触发者、时间与提交 SHA；合并后 Android Tests、Verify、Build and Release 均已通过；真实设备验收待完成；dispatch 用户入口、结果与施工卡/Verify 证据关联仍未接入 |
-| FN-017 | 软件开发结构 | 维护 UI/功能/架构/施工点等节点，支持结构、施工、验证视图 | 已确认 | 未实现 | 当前主要存在规范文档；未发现对应实际数据模型/视图 |
+| FN-017 | 软件开发结构 | 维护 UI/功能/架构/施工点等节点，支持结构、施工、验证视图 | 已确认 | 部分实现 | 新增 DevelopmentNode、DevelopmentRelation、DevelopmentTreeStore；支持 Context 隔离、树层级校验、移动防循环、关系去重及关联清理；UI、施工卡/Task、Verify/Evidence 尚未接入，CI 待验证 |
 | FN-018 | Task / Dispatcher | Task 生命周期、拆分/做/审查职责、并发写入互斥、执行结果与失败恢复 | 已确认 | 未实现 / 待核实 | 当前可见主源码未发现完整 Task/Dispatcher 运行链 |
 | FN-019 | Verify / Evidence | Verify 关联 Task 与产物；失败可重试；只凭实际结果/证据更新状态 | 已确认 | 未实现 / 待核实 | 当前可见主源码未发现统一 Verify/Evidence 实现 |
 | FN-020 | AI Code 权限策略 | 普通对话页三级执行策略；同时受系统权限与 Connection 授权约束 | 已确认 | 未实现 | 未发现策略状态、执行守卫或对应 UI |
