@@ -109,6 +109,13 @@ class ContextDetailActivity : AppCompatActivity() {
         addressesList = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         root.addView(addressesList)
         root.addView(Button(this).apply {
+            text = "软件开发结构"
+            setOnClickListener {
+                startActivity(Intent(this@ContextDetailActivity, DevelopmentTreeActivity::class.java)
+                    .putExtra(DevelopmentTreeActivity.EXTRA_CONTEXT_ID, contextId))
+            }
+        }, params())
+        root.addView(Button(this).apply {
             text = "从此 Context 开始对话"
             setOnClickListener {
                 startActivity(Intent(this@ContextDetailActivity, ConversationActivity::class.java)

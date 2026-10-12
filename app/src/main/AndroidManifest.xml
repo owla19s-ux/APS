@@ -10,6 +10,7 @@
         <activity android:name="com.owla19s.aps.AISettingsActivity" android:exported="false" />
         <activity android:name="com.owla19s.aps.SettingsActivity" android:exported="false" />
         <activity android:name="com.owla19s.aps.ContextDetailActivity" android:exported="false" />
+        <activity android:name="com.owla19s.aps.DevelopmentTreeActivity" android:exported="false" />
         <activity android:name="com.owla19s.aps.SpaceActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
