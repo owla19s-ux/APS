@@ -8,8 +8,8 @@
 
 | 能力域 | 当前源码事实 | 已有验证 | 主要缺口 / 风险 | 建议优先级 |
 | --- | --- | --- | --- | --- |
-| AI 接口 | `AIConnector` 提供 `send`、默认流式回退、取消接口；`AIConnectorRegistry` 按 Connection ID 解析 | Registry 单元测试覆盖注入、Profile 构造与未注册错误 | `AIConnectorFactory` 当前固定创建 `OpenAICompatibleConnector`；请求模型只有 USER / ASSISTANT，能力声明、统一错误分类、超时与服务能力差异尚未形成公共契约 | 高 |
-| OpenAI 兼容 API | 通过 OkHttp 发起普通和 SSE 请求；模型列表和连通性测试在连接器中 | 测试覆盖请求地址、鉴权头、历史消息、流式片段等 | 地址规范化仅 trim 和去尾斜线；当前接受外部 HTTP，Bearer Token 有明文传输风险；需共享 URL 校验并补负向测试 | 最高 |
+| AI 接口 | `AIConnector` 提供 `send`、默认流式回退、取消接口；`AIConnectorRegistry` 按 Connection ID 解析 | Registry 单元测试覆盖注入、Profile 构造与未注册错误 | `AIConnectorFactory` 已内置 OpenAI 兼容、Anthropic Messages、Google Gemini 三种适配器，并支持注入额外适配器；请求消息模型、能力声明、统一错误分类、超时与服务能力差异尚未形成完整公共契约 | 中高 |
+| API Base URL / OpenAI 兼容 API | 通过 OkHttp 发起普通和 SSE 请求；模型列表和聊天测试由 Connector 提供 | 已有 URL 校验逻辑，并由 `AIProfileStore.save()` 在持久化前调用；拒绝 URL 内用户名 / 密码和 fragment | 仍允许 HTTP Base URL；Bearer Token 可能明文传输，需评估是否要求 HTTPS 或为本地开发提供明确例外；同时补充协议适配器共用的负向契约测试 | 高 |
 | GitHub API | Retrofit `GitHubApi` 声明用户、仓库、分支、文件、提交、Actions 查询、文件写入和 workflow dispatch | `GitHubConnectorTest` 覆盖地址转发、写权限拒绝与工厂装配 | API 层使用 `JsonObject` 等弱类型结果；`GitHubApiFactory` 固定 `https://api.github.com/`；Connector 暴露的 API 范围有限，尚不能等同完整 GitHub REST 覆盖；旧语义边界仍需继续盘点 | 中高 |
 | GitHub 写操作 | `GitHubConnector` 通过默认关闭的 `GitHubWritePolicy` 门禁文件写入和 workflow dispatch | 测试验证未授权写操作不会调用 API | 权限策略目前只以一个 enabled 开关覆盖两类写操作，尚未细分文件修改、工作流触发等操作权限 | 高 |
 | Local 文件 | `LocalFileConnector` 依赖 Android 文档树 URI 与 `LocalDocumentGateway`，可列目录、读写受支持文本文件，支持编辑冲突保护 | 测试覆盖读取、写授权、写入、并发内容变化和拒绝二进制文件 | 仅是用户授权文档树内的文本文件操作；不代表任意文件系统、二进制、大文件、批量操作、移动/复制/删除能力均已支持 | 中高 |
@@ -40,7 +40,7 @@ AI 的消息与流式契约、GitHub 的 Repository / Workflow 操作、Local �
 
 ## 4. 推荐实施顺序
 
-1. 先修复并测试 AI API URL 安全校验；这是当前有明确安全风险的缺口。
+1. 继续收口 API 传输安全：当前已在保存前拒绝 URL 内嵌用户名 / 密码及 fragment；仍需明确 HTTP Base URL 的策略，避免 Bearer Token 明文传输。
 2. 为 GitHub 写操作拆分最小权限策略，至少区分内容修改与 workflow dispatch。
 3. 为 Local 定义能力声明，明确已支持的文本文件操作与尚未支持的文件操作。
 4. 再补跨 Connector 的错误分类和契约测试；不要为统一而牺牲具体 API 的类型信息。
