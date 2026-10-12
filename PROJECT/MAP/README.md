@@ -90,7 +90,7 @@
 | FN-015 | GitHub 写操作 | 明确授权后写文件或触发操作；默认拒绝未授权写入；记录实际返回 | 已确认 | 部分实现 | GitHubWritePolicy 默认 disabled；writeFile/dispatchWorkflow 有权限守卫；用户操作入口、写入后验证待接 |
 | FN-016 | GitHub Actions / 验证结果 | 查询 workflow runs、单次 run、artifacts；支持授权触发 workflow | 已确认 | 部分实现 | 普通对话页可查看最近 20 条运行记录，并进入单次 run 详情查看状态/结论、分支、触发方式、触发者、时间与提交 SHA；合并后 Android Tests、Verify、Build and Release 均已通过；真实设备验收待完成；dispatch 用户入口、结果与施工卡/Verify 证据关联仍未接入 |
 | FN-017 | 软件开发结构 | 维护 UI/功能/架构/施工点等节点，支持结构、施工、验证视图 | 已确认 | 部分实现 | 节点/关系 Store 与只读树查询已实现并通过各自 Android Tests；第三批新增独立 Task—节点多对多关联模型与持久化，CI 待验证；结构 UI、Task 生命周期与 Verify/Evidence 尚未接入 |
-| FN-018 | Task / Dispatcher | Task 生命周期、拆分/做/审查职责、并发写入互斥、执行结果与失败恢复 | 已确认 | 未实现 / 待核实 | 当前可见主源码未发现完整 Task/Dispatcher 运行链 |
+| FN-018 | Task / Dispatcher | Task 生命周期、拆分/做/审查职责、并发写入互斥、执行结果与失败恢复 | 部分实现 | `ConstructionTask` / `ConstructionTaskEvent` / `ConstructionTaskStore` 提供本地生命周期记录、状态转换守卫、执行次数与事件记录；尚无 Dispatcher、并发执行互斥、AI 调用或真实执行结果接入，当前分支待 CI 验证 |
 | FN-019 | Verify / Evidence | Verify 关联 Task 与产物；失败可重试；只凭实际结果/证据更新状态 | 已确认 | 未实现 / 待核实 | 当前可见主源码未发现统一 Verify/Evidence 实现 |
 | FN-020 | AI Code 权限策略 | 普通对话页三级执行策略；同时受系统权限与 Connection 授权约束 | 已确认 | 未实现 | 未发现策略状态、执行守卫或对应 UI |
 | FN-021 | Android / APP 系统权限 | 处理运行所需系统授权，并与连接资源授权分离 | 需细化 | 待核实 | Manifest 当前可见声明较少；系统权限 UI/检查流程未发现 |
