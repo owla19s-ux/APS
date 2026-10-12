@@ -78,7 +78,7 @@ class GeminiConnector(
         val model = (request.modelId?.takeIf(String::isNotBlank) ?: profile.model).removePrefix("models/")
         val action = if (stream) "streamGenerateContent" else "generateContent"
         val endpointUrl = endpoint("models/${encodePathSegment(model)}:$action")
-        val requestUrl = if (stream) endpointUrl.newBuilder().addQueryParameter("alt", "sse").build() else endpointUrl
+        val requestUrl = if (stream) endpointUrl.newBuilder().removeAllQueryParameters("alt").addQueryParameter("alt", "sse").build() else endpointUrl
         val builder = Request.Builder().url(requestUrl)
             .header("x-goog-api-key", profile.apiKey)
             .header("content-type", "application/json")
