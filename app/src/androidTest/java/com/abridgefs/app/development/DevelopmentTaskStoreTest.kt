@@ -47,8 +47,23 @@ class DevelopmentTaskStoreTest {
             val store = DevelopmentTaskStore(context)
             store.create(DevelopmentTask("task-terminal", "ctx-a", "Terminal test"))
             store.transition("ctx-a", "task-terminal", DevelopmentTaskStatus.READY, 1L)
-            store.transition("ctx-a", "task-terminal", DevelopmentTaskStatus.CANCELLED, 2L)
-            store.transition("ctx-a", "task-terminal", DevelopmentTaskStatus.READY, 3L)
+            store.transition("ctx-a", "task-terminal", DevelopmentTaskStatus.RUNNING, 2L)
+            store.transition("ctx-a", "task-terminal", DevelopmentTaskStatus.COMPLETED, 3L, resultSummary = "passed")
+            store.transition("ctx-a", "task-terminal", DevelopmentTaskStatus.READY, 4L)
+        } finally {
+            prefs.edit().remove("tasks").commit()
+        }
+    }
+
+    @Test
+    fun update_timestamp_never_moves_backwards() {
+        val prefs = context.getSharedPreferences("aps_development_tasks", Context.MODE_PRIVATE)
+        prefs.edit().remove("tasks").commit()
+        try {
+            val store = DevelopmentTaskStore(context)
+            store.create(DevelopmentTask("task-time", "ctx-a", "Timestamp test", createdAtMillis = 100L))
+            val updated = store.transition("ctx-a", "task-time", DevelopmentTaskStatus.READY, 10L)
+            assertEquals(100L, updated.updatedAtMillis)
         } finally {
             prefs.edit().remove("tasks").commit()
         }
