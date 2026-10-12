@@ -3,6 +3,7 @@ package com.owla19s.aps.task
 import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.UUID
 
 /** Local task lifecycle store. It records state only; it does not execute or dispatch work. */
 class ConstructionTaskStore(context: Context) {
@@ -90,7 +91,7 @@ class ConstructionTaskStore(context: Context) {
         tasks[index] = updated
         writeTasks(tasks)
         appendEvent(ConstructionTaskEvent(
-            "event:" + taskId + ":" + now + ":" + nextStatus.name, contextId, taskId,
+            UUID.randomUUID().toString(), contextId, taskId,
             old.status, nextStatus, maxOf(now, old.updatedAt), summary
         ))
     }
