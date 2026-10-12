@@ -65,7 +65,7 @@ class DevelopmentVerificationStore(context: Context) {
         val raw = prefs.getString(KEY_RECORDS, null) ?: return emptyList()
         return try {
             val array = JSONArray(raw)
-            buildList { for (i in 0 until array.length()) add(DevelopmentVerification.fromJson(array.getJSONObject(i))) }
+            buildList { for (i in 0 until array.length()) add(fromJson(array.getJSONObject(i))) }
         } catch (_: Exception) {
             if (!prefs.contains(KEY_BACKUP)) prefs.edit().putString(KEY_BACKUP, raw).commit()
             emptyList()
