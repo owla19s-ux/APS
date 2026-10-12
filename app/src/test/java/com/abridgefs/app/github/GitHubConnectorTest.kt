@@ -57,34 +57,75 @@ class GitHubConnectorTest {
     }
 
     @Test
-    fun connector_requires_explicit_write_permission() = runBlocking {
+    fun file_write_permission_does_not_authorize_workflow_dispatch() = runBlocking {
         val calls = mutableListOf<String>()
         val api = proxyApi { method, _, _ ->
             calls += method.name
-            Response.success(JsonObject())
+            when (method.name) {
+                "updateFile" -> Response.success(JsonObject())
+                "dispatchWorkflow" -> Response.success(Unit)
+                else -> null
+            }
         }
         val connection = GitHubConnection(
             id = "github-main",
             address = GitHubAddress("owla19s-ux/APS", "main")
         )
-        val connector = GitHubConnector(api, connection)
+        val connector = GitHubConnector(
+            api,
+            connection,
+            GitHubWritePolicy(allowFileWrites = true)
+        )
 
-        var denied = false
+        connector.writeFile(
+            "README.md",
+            FileWriteRequest(message = "test", content = "dGVzdA==", branch = "main")
+        )
+        var dispatchDenied = false
+        try {
+            connector.dispatchWorkflow("verify.yml", WorkflowDispatchRequest(ref = "main"))
+        } catch (_: IllegalStateException) {
+            dispatchDenied = true
+        }
+
+        assertTrue(dispatchDenied)
+        assertEquals(listOf("updateFile"), calls)
+    }
+
+    @Test
+    fun workflow_dispatch_permission_does_not_authorize_file_write() = runBlocking {
+        val calls = mutableListOf<String>()
+        val api = proxyApi { method, _, _ ->
+            calls += method.name
+            when (method.name) {
+                "updateFile" -> Response.success(JsonObject())
+                "dispatchWorkflow" -> Response.success(Unit)
+                else -> null
+            }
+        }
+        val connection = GitHubConnection(
+            id = "github-main",
+            address = GitHubAddress("owla19s-ux/APS", "main")
+        )
+        val connector = GitHubConnector(
+            api,
+            connection,
+            GitHubWritePolicy(allowWorkflowDispatch = true)
+        )
+
+        connector.dispatchWorkflow("verify.yml", WorkflowDispatchRequest(ref = "main"))
+        var fileWriteDenied = false
         try {
             connector.writeFile(
                 "README.md",
-                FileWriteRequest(
-                    message = "test",
-                    content = "dGVzdA==",
-                    branch = "main"
-                )
+                FileWriteRequest(message = "test", content = "dGVzdA==", branch = "main")
             )
         } catch (_: IllegalStateException) {
-            denied = true
+            fileWriteDenied = true
         }
 
-        assertTrue(denied)
-        assertTrue(calls.isEmpty())
+        assertTrue(fileWriteDenied)
+        assertEquals(listOf("dispatchWorkflow"), calls)
     }
 
     @Test
