@@ -1,5 +1,6 @@
 package com.owla19s.aps.ai
 
+import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 /**
@@ -7,7 +8,8 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
  * Credentials belong in protocol headers, not in the Base URL.
  */
 internal object ApiEndpoint {
-    fun build(baseUrl: String, path: String, ensureV1: Boolean = false): okhttp3.HttpUrl {
+    /** Validates a Base URL before it can be persisted as profile metadata. */
+    fun validateBaseUrl(baseUrl: String): HttpUrl {
         val base = baseUrl.trim().toHttpUrlOrNull()
             ?: throw IllegalArgumentException("API 地址无效，请填写完整的 http:// 或 https:// Base URL")
         require(base.username.isEmpty() && base.password.isEmpty()) {
@@ -16,6 +18,11 @@ internal object ApiEndpoint {
         require(base.encodedFragment == null) {
             "API Base URL 不能包含片段标识（#）"
         }
+        return base
+    }
+
+    fun build(baseUrl: String, path: String, ensureV1: Boolean = false): HttpUrl {
+        val base = validateBaseUrl(baseUrl)
         val builder = base.newBuilder()
         val pathSegments = base.encodedPathSegments.toMutableList()
         while (pathSegments.size > 1 && pathSegments.lastOrNull() == "") {
