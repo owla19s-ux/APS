@@ -64,7 +64,7 @@ Context 对话
 - Commit 前置条件。
 
 ### T4 — GitHub / Commit / Verify
-**状态：普通对话 GitHub 只读、多文件上下文和目录浏览入口已接入；Actions 运行列表与单次运行详情已接入。合并提交 `b22b720` 的 Android Tests #38205186446、Verify #38205186448 已通过；Android Build and Release #38205186456 仍在运行，真实设备链路待验收**
+**状态：普通对话 GitHub 只读、多文件上下文和目录浏览入口已接入；Actions 运行列表与单次运行详情已接入。合并提交 `b22b720` 的 Android Tests #38205186446、Verify #38205186448、Android Build and Release #38205186456 均已通过，真实设备链路待验收**
 
 继续验证：
 - GitHub Connector；
