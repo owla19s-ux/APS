@@ -208,7 +208,8 @@ class DevelopmentTaskActivity : AppCompatActivity() {
     private fun allowedActions(status: DevelopmentTaskStatus): List<String> = when (status) {
         DevelopmentTaskStatus.CREATED -> listOf("设为待执行", "取消任务")
         DevelopmentTaskStatus.READY -> listOf("标记开始执行", "取消任务")
-        DevelopmentTaskStatus.RUNNING -> listOf("标记已完成（仅 Task 状态）", "标记失败", "取消任务")
+        DevelopmentTaskStatus.RUNNING -> listOf("提交审查", "标记失败", "取消任务")
+        DevelopmentTaskStatus.REVIEW_REQUIRED -> listOf("审查通过并完成", "标记失败", "取消任务")
         DevelopmentTaskStatus.FAILED -> listOf("重新设为待执行", "取消任务")
         DevelopmentTaskStatus.COMPLETED, DevelopmentTaskStatus.CANCELLED -> emptyList()
     }
@@ -217,17 +218,27 @@ class DevelopmentTaskActivity : AppCompatActivity() {
         val target = when (label) {
             "设为待执行", "重新设为待执行" -> DevelopmentTaskStatus.READY
             "标记开始执行" -> DevelopmentTaskStatus.RUNNING
-            "标记已完成（仅 Task 状态）" -> DevelopmentTaskStatus.COMPLETED
+            "提交审查" -> DevelopmentTaskStatus.REVIEW_REQUIRED
+            "审查通过并完成" -> DevelopmentTaskStatus.COMPLETED
             "标记失败" -> DevelopmentTaskStatus.FAILED
             else -> DevelopmentTaskStatus.CANCELLED
         }
-        val result = EditText(this).apply { hint = if (target == DevelopmentTaskStatus.COMPLETED) "结果摘要（注意：不代表 GitHub Verify 通过）" else "说明 / 错误信息（可留空）" }
-        val requiresInput = target == DevelopmentTaskStatus.COMPLETED || target == DevelopmentTaskStatus.FAILED
+        val result = EditText(this).apply {
+            hint = when (target) {
+                DevelopmentTaskStatus.REVIEW_REQUIRED -> "执行结果 / 审查摘要（必填）"
+                DevelopmentTaskStatus.COMPLETED -> "审查结论 / 结果摘要（必填；不代表 GitHub Verify 通过）"
+                DevelopmentTaskStatus.FAILED -> "失败原因（必填）"
+                else -> "说明（可留空）"
+            }
+        }
+        val requiresInput = target == DevelopmentTaskStatus.REVIEW_REQUIRED ||
+            target == DevelopmentTaskStatus.COMPLETED || target == DevelopmentTaskStatus.FAILED
         val save = {
             try {
                 tasks.transition(
                     contextId, task.id, target, System.currentTimeMillis(),
-                    resultSummary = if (target == DevelopmentTaskStatus.COMPLETED) result.text.toString().trim() else "",
+                    resultSummary = if (target == DevelopmentTaskStatus.REVIEW_REQUIRED ||
+                        target == DevelopmentTaskStatus.COMPLETED) result.text.toString().trim() else "",
                     errorMessage = if (target == DevelopmentTaskStatus.FAILED) result.text.toString().trim() else ""
                 )
                 render(); toast("Task 状态已更新")
