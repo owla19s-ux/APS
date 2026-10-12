@@ -29,15 +29,21 @@ class DevelopmentTaskStoreTest {
             store.transition("ctx-a", "task-1", DevelopmentTaskStatus.READY, 50L)
             val retry = store.transition("ctx-a", "task-1", DevelopmentTaskStatus.RUNNING, 60L)
             assertEquals(2, retry.attempt)
-            val done = store.transition(
-                "ctx-a", "task-1", DevelopmentTaskStatus.COMPLETED, 70L, resultSummary = "tests passed"
+            val review = store.transition(
+                "ctx-a", "task-1", DevelopmentTaskStatus.REVIEW_REQUIRED, 70L, resultSummary = "implementation ready"
             )
-            assertEquals("tests passed", done.resultSummary)
+            assertEquals("implementation ready", review.resultSummary)
+            val done = store.transition(
+                "ctx-a", "task-1", DevelopmentTaskStatus.COMPLETED, 80L, resultSummary = "review passed"
+            )
+            assertEquals("review passed", done.resultSummary)
             assertEquals(DevelopmentTaskStatus.COMPLETED, DevelopmentTaskStore(context).get("ctx-a", "task-1")?.status)
             val events = DevelopmentTaskStore(context).events("ctx-a", "task-1")
-            assertEquals(7, events.size)
+            assertEquals(8, events.size)
             assertEquals(null, events.first().fromStatus)
             assertEquals(DevelopmentTaskStatus.CREATED, events.first().toStatus)
+            assertEquals(DevelopmentTaskStatus.REVIEW_REQUIRED, events[6].toStatus)
+            assertEquals("implementation ready", events[6].summary)
             assertEquals(DevelopmentTaskStatus.COMPLETED, events.last().toStatus)
         } finally {
             prefs.edit().remove("tasks").remove("tasks.corrupt_backup").remove("events").remove("events.corrupt_backup").commit()
@@ -53,10 +59,34 @@ class DevelopmentTaskStoreTest {
             store.create(DevelopmentTask("task-terminal", "ctx-a", "Terminal test"))
             store.transition("ctx-a", "task-terminal", DevelopmentTaskStatus.READY, 1L)
             store.transition("ctx-a", "task-terminal", DevelopmentTaskStatus.RUNNING, 2L)
-            store.transition("ctx-a", "task-terminal", DevelopmentTaskStatus.COMPLETED, 3L, resultSummary = "passed")
-            store.transition("ctx-a", "task-terminal", DevelopmentTaskStatus.READY, 4L)
+            store.transition("ctx-a", "task-terminal", DevelopmentTaskStatus.REVIEW_REQUIRED, 3L, resultSummary = "ready")
+            store.transition("ctx-a", "task-terminal", DevelopmentTaskStatus.COMPLETED, 4L, resultSummary = "passed")
+            store.transition("ctx-a", "task-terminal", DevelopmentTaskStatus.READY, 5L)
         } finally {
-            prefs.edit().remove("tasks").commit()
+            prefs.edit().remove("tasks").remove("events").remove("tasks.corrupt_backup").remove("events.corrupt_backup").commit()
+        }
+    }
+
+    @Test
+    fun review_handoff_requires_nonblank_summary_and_does_not_change_state() {
+        val prefs = context.getSharedPreferences("aps_development_tasks", Context.MODE_PRIVATE)
+        prefs.edit().remove("tasks").remove("events").remove("tasks.corrupt_backup").remove("events.corrupt_backup").commit()
+        try {
+            val store = DevelopmentTaskStore(context)
+            store.create(DevelopmentTask("task-review-required", "ctx-a", "Review summary test"))
+            store.transition("ctx-a", "task-review-required", DevelopmentTaskStatus.READY, 1L)
+            store.transition("ctx-a", "task-review-required", DevelopmentTaskStatus.RUNNING, 2L)
+            var rejected = false
+            try {
+                store.transition("ctx-a", "task-review-required", DevelopmentTaskStatus.REVIEW_REQUIRED, 3L)
+            } catch (_: IllegalArgumentException) {
+                rejected = true
+            }
+            assertEquals(true, rejected)
+            assertEquals(DevelopmentTaskStatus.RUNNING, store.get("ctx-a", "task-review-required")?.status)
+            assertEquals(3, store.events("ctx-a", "task-review-required").size)
+        } finally {
+            prefs.edit().remove("tasks").remove("events").remove("tasks.corrupt_backup").remove("events.corrupt_backup").commit()
         }
     }
 

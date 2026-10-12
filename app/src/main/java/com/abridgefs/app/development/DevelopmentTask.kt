@@ -26,6 +26,7 @@ enum class DevelopmentTaskStatus {
     CREATED,
     READY,
     RUNNING,
+    REVIEW_REQUIRED,
     COMPLETED,
     FAILED,
     CANCELLED
