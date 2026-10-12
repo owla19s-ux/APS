@@ -89,7 +89,7 @@
 | FN-014 | GitHub 仓库资源读取 | 仓库/分支/提交/文件读取；支持按需并发读取并返回真实响应 | 已确认 | 部分实现 | GitHubApi/Connector/ConcurrentReader 已存在；普通对话页已接入独立于 Context 的多文件只读路径（每次最多 5 个文件、单文件 32 KiB、总内容 64 KiB），顺序读取 UTF-8 文本并仅注入下一条 AI 请求；仓库目录浏览入口已接入并待 CI 验证，真实设备链路仍待验收 |
 | FN-015 | GitHub 写操作 | 明确授权后写文件或触发操作；默认拒绝未授权写入；记录实际返回 | 已确认 | 部分实现 | GitHubWritePolicy 默认 disabled；writeFile/dispatchWorkflow 有权限守卫；用户操作入口、写入后验证待接 |
 | FN-016 | GitHub Actions / 验证结果 | 查询 workflow runs、单次 run、artifacts；支持授权触发 workflow | 已确认 | 部分实现 | 普通对话页可查看最近 20 条运行记录，并进入单次 run 详情查看状态/结论、分支、触发方式、触发者、时间与提交 SHA；合并后 Android Tests、Verify、Build and Release 均已通过；真实设备验收待完成；dispatch 用户入口、结果与施工卡/Verify 证据关联仍未接入 |
-| FN-017 | 软件开发结构 | 维护 UI/功能/架构/施工点等节点，支持结构、施工、验证视图 | 已确认 | 部分实现 | 新增 DevelopmentNode、DevelopmentRelation、DevelopmentTreeStore；支持 Context 隔离、树层级校验、移动防循环、关系去重及关联清理；第二批补充树投影、根/子节点与入边/出边查询及仪器测试；UI、施工卡/Task、Verify/Evidence 尚未接入，第二批 CI 待验证 |
+| FN-017 | 软件开发结构 | 维护 UI/功能/架构/施工点等节点，支持结构、施工、验证视图 | 已确认 | 部分实现 | 节点/关系 Store 与只读树查询已实现并通过各自 Android Tests；第三批新增独立 Task—节点多对多关联模型与持久化，CI 待验证；结构 UI、Task 生命周期与 Verify/Evidence 尚未接入 |
 | FN-018 | Task / Dispatcher | Task 生命周期、拆分/做/审查职责、并发写入互斥、执行结果与失败恢复 | 已确认 | 未实现 / 待核实 | 当前可见主源码未发现完整 Task/Dispatcher 运行链 |
 | FN-019 | Verify / Evidence | Verify 关联 Task 与产物；失败可重试；只凭实际结果/证据更新状态 | 已确认 | 未实现 / 待核实 | 当前可见主源码未发现统一 Verify/Evidence 实现 |
 | FN-020 | AI Code 权限策略 | 普通对话页三级执行策略；同时受系统权限与 Connection 授权约束 | 已确认 | 未实现 | 未发现策略状态、执行守卫或对应 UI |
@@ -105,7 +105,7 @@
 
 | 机制 ID | 机制名称 | 责任边界 | 当前实现状态 | 源码 / 规范证据与缺口 |
 |---|---|---|---|---|
-| ME-001 | 稳定 ID、父子关系与关系边 | 分离对象身份、树形归属、跨对象映射；关系不能从 ID 字符串推导 | 设计已明确，运行实现未发现 | `PROJECT/UI/README.md` 定义规则；实际通用节点/边存储待建 |
+| ME-001 | 稳定 ID、父子关系与关系边 | 分离对象身份、树形归属、跨对象映射；关系不能从 ID 字符串推导 | 部分实现 | `DevelopmentNode`、`DevelopmentRelation`、`DevelopmentTreeStore` 与 `DevelopmentTaskLinkStore` 已分别承载节点、节点边及 Task—节点关联；关联生命周期与原子事务仍待完善 |
 | ME-002 | Context Store | 保存/加载/删除 Context；唯一维护 Context 本身状态 | 部分实现 | `context/Context.kt`、`context/ContextStore.kt`；目前 Context Resource 类型覆盖不足，且 Store 测试/错误恢复需补核 |
 | ME-003 | Conversation Store | 对话/消息/分组持久化；分组与对话记录分离；移动和删除边界清晰 | 部分实现 | `conversation/ConversationStore.kt` 使用 SharedPreferences + JSON；大数据量、迁移、写入失败保障需后续评估 |
 | ME-004 | Conversation Service | 把用户消息、AI 调用、响应消息和保存组合起来 | 部分实现 | `ConversationService.kt`、相关测试；用户消息先保存；可把显式选择的 GitHub 文件作为一次性 AI 请求上下文传入，但不写入对话消息；错误/取消边界仍需设备验收 |
