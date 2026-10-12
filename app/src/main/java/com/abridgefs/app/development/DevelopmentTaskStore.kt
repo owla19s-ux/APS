@@ -3,6 +3,7 @@ package com.owla19s.aps.development
 import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.UUID
 
 /** Local Task lifecycle store. State changes are validated here, not inferred from UI text. */
 class DevelopmentTaskStore(context: Context) {
@@ -17,11 +18,17 @@ class DevelopmentTaskStore(context: Context) {
         readAll().firstOrNull { it.contextId == contextId && it.id == taskId }
 
     @Synchronized
+    fun events(contextId: String, taskId: String): List<DevelopmentTaskEvent> =
+        readEvents().filter { it.contextId == contextId && it.taskId == taskId }
+            .sortedWith(compareBy<DevelopmentTaskEvent> { it.occurredAtMillis }.thenBy { it.id })
+
+    @Synchronized
     fun create(task: DevelopmentTask) {
         require(task.status == DevelopmentTaskStatus.CREATED) { "新建 Task 必须处于 CREATED 状态" }
         require(task.attempt == 0) { "新建 Task 的执行次数必须为 0" }
         require(readAll().none { it.id == task.id }) { "Task ID 已存在" }
         writeAll(readAll() + task)
+        appendEvent(DevelopmentTaskEvent("created:${task.id}", task.contextId, task.id, null, task.status, task.createdAtMillis, "created"))
     }
 
     @Synchronized
@@ -52,6 +59,15 @@ class DevelopmentTaskStore(context: Context) {
             updatedAtMillis = maxOf(nowMillis, current.updatedAtMillis)
         )
         writeAll(tasks.map { if (it.id == taskId && it.contextId == contextId) updated else it })
+        appendEvent(DevelopmentTaskEvent(
+            UUID.randomUUID().toString(), contextId, taskId, current.status, target,
+            updated.updatedAtMillis,
+            when (target) {
+                DevelopmentTaskStatus.COMPLETED -> resultSummary
+                DevelopmentTaskStatus.FAILED -> errorMessage
+                else -> ""
+            }
+        ))
         return updated
     }
 
@@ -101,6 +117,47 @@ class DevelopmentTaskStore(context: Context) {
             }
             emptyList()
         }
+    }
+
+    private fun readEvents(): List<DevelopmentTaskEvent> {
+        val raw = prefs.getString("events", null) ?: return emptyList()
+        return try {
+            val array = JSONArray(raw)
+            buildList {
+                for (i in 0 until array.length()) {
+                    val item = array.getJSONObject(i)
+                    add(DevelopmentTaskEvent(
+                        item.getString("id"), item.getString("contextId"), item.getString("taskId"),
+                        if (item.isNull("fromStatus")) null else DevelopmentTaskStatus.valueOf(item.getString("fromStatus")),
+                        DevelopmentTaskStatus.valueOf(item.getString("toStatus")),
+                        item.getLong("occurredAtMillis"), item.optString("summary")
+                    ))
+                }
+            }
+        } catch (_: Exception) {
+            if (!prefs.contains("events.corrupt_backup")) {
+                prefs.edit().putString("events.corrupt_backup", raw).commit()
+            }
+            emptyList()
+        }
+    }
+
+    private fun appendEvent(event: DevelopmentTaskEvent) {
+        val events = readEvents()
+        require(events.none { it.id == event.id }) { "Task 事件 ID 重复" }
+        val array = JSONArray()
+        (events + event).forEach { item ->
+            array.put(JSONObject().apply {
+                put("id", item.id)
+                put("contextId", item.contextId)
+                put("taskId", item.taskId)
+                put("fromStatus", item.fromStatus?.name ?: JSONObject.NULL)
+                put("toStatus", item.toStatus.name)
+                put("occurredAtMillis", item.occurredAtMillis)
+                put("summary", item.summary)
+            })
+        }
+        check(prefs.edit().putString("events", array.toString()).commit()) { "Task 事件保存失败" }
     }
 
     private fun writeAll(tasks: List<DevelopmentTask>) {
