@@ -100,7 +100,7 @@ Context 对话
 **状态：UI 已确认 / 开发中**
 
 ### T8 — 软件开发结构
-**状态：已设计 / 待实现**
+**状态：基础数据层首批已实现，等待批次验证；UI / Task / Verify 仍待施工**
 
 基础组织前提：Space → 目录（分组）→ Context（项目）。每个 Context 具有名称，并可维护多个 Address（名称 / 地址 / 备注）。
 
@@ -111,6 +111,8 @@ Context 对话
 ```
 
 原则：不新增 Project 顶层模型；不做独立 Dashboard；底层关系允许一对多 / 多对多；Task 负责施工交接，结构负责语义关系，Receipt / Evidence / Verify 负责事实依据。
+
+本批基础数据层已新增 `DevelopmentNode`、`DevelopmentRelation`、`DevelopmentTreeStore` 与测试：稳定 ID / code / parentId 分离；关系单独存储并去重；节点限制在同一 Context 内；移动节点防止形成循环；父节点存在子节点时拒绝删除；删除节点时清理关联边；损坏 JSON 原文备份后恢复为空集合。此批尚未接入 UI、Task、Dispatcher、Verify 或 GitHub Actions 证据；Android Tests / Verify / Build 结果待确认后再合并。
 
 其中 UI / 交互必须预留“待用户确认 → 已确认 → 已变更 / 待重新确认”的状态；用户确认是设计认可，不等同于代码 Verify。第一版可以暂不实现完整确认交互。
 
