@@ -7,8 +7,12 @@ import com.owla19s.aps.github.api.WorkflowDispatchRequest
 import com.google.gson.JsonObject
 import retrofit2.Response
 
-data class GitHubWritePolicy(val enabled: Boolean = false) {
-    fun requireEnabled() = check(enabled) { "GitHub 修改权限未授权" }
+data class GitHubWritePolicy(
+    val allowFileWrites: Boolean = false,
+    val allowWorkflowDispatch: Boolean = false
+) {
+    fun requireFileWrite() = check(allowFileWrites) { "GitHub 文件修改权限未授权" }
+    fun requireWorkflowDispatch() = check(allowWorkflowDispatch) { "GitHub 工作流触发权限未授权" }
 }
 
 class GitHubConnector(
@@ -61,7 +65,7 @@ class GitHubConnector(
         path: String,
         request: FileWriteRequest
     ): Response<JsonObject> {
-        writePolicy.requireEnabled()
+        writePolicy.requireFileWrite()
         return api.updateFile(address.owner, address.repo, path, request)
     }
 
@@ -69,7 +73,7 @@ class GitHubConnector(
         workflowId: String,
         request: WorkflowDispatchRequest
     ): Response<Unit> {
-        writePolicy.requireEnabled()
+        writePolicy.requireWorkflowDispatch()
         return api.dispatchWorkflow(address.owner, address.repo, workflowId, request)
     }
 
