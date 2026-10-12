@@ -36,6 +36,8 @@ class DevelopmentTaskLinkStoreTest {
             assertEquals(0, store.all("ctx-b").size)
             store.deleteForTask("ctx-a", "task-a")
             assertEquals(listOf("task-b"), store.all("ctx-a").map { it.taskId })
+            tree.deleteNode("ctx-a", "node-a")
+            assertEquals(0, store.forNode("ctx-a", "node-a").size)
         } finally {
             prefs.edit().remove("links").remove("links.corrupt_backup").commit()
             treePrefs.edit().remove("nodes").remove("relations").remove("nodes.corrupt_backup").remove("relations.corrupt_backup").commit()
