@@ -34,6 +34,9 @@ import com.owla19s.aps.local.LocalFileConnector
 import com.owla19s.aps.github.GitHubConversationReadConfigStore
 import com.owla19s.aps.github.GitHubConversationReader
 import com.owla19s.aps.github.GitHubWorkflowRunSummary
+import com.owla19s.aps.development.DevelopmentTaskStore
+import com.owla19s.aps.development.DevelopmentVerification
+import com.owla19s.aps.development.DevelopmentVerificationStore
 import com.owla19s.aps.github.GitHubWorkflowRunDetails
 import com.owla19s.aps.github.GitHubCredential
 import com.owla19s.aps.github.GitHubCredentialStore
@@ -41,6 +44,7 @@ import com.owla19s.aps.github.GitHubCredentialVerifier
 import com.owla19s.aps.github.GitHubReadTarget
 import com.owla19s.aps.github.api.GitHubApiFactory
 import java.util.UUID
+import java.time.Instant
 
 class ConversationActivity : AppCompatActivity() {
     private lateinit var store: ConversationStore
@@ -618,6 +622,9 @@ class ConversationActivity : AppCompatActivity() {
                                 toast("无法打开 GitHub Actions 页面")
                             }
                         }
+                        .setNeutralButton("关联到 Task") { _, _ ->
+                            associateWorkflowRunWithTask(details)
+                        }
                         .setNegativeButton("关闭", null)
                         .show()
                 }.onFailure { error ->
@@ -626,6 +633,58 @@ class ConversationActivity : AppCompatActivity() {
                 }
             }
         }.start()
+    }
+
+    private fun associateWorkflowRunWithTask(details: GitHubWorkflowRunDetails) {
+        val contextId = current?.contextId
+        if (contextId.isNullOrBlank()) {
+            toast("当前对话未关联 Context，无法将验证记录关联到 Task")
+            return
+        }
+        val tasks = runCatching { DevelopmentTaskStore(this).all(contextId) }
+            .getOrElse {
+                toast(it.message ?: "读取 Task 失败")
+                return
+            }
+        if (tasks.isEmpty()) {
+            toast("当前 Context 没有 Task，请先建立施工卡")
+            return
+        }
+        val labels = tasks.map { task -> "${task.title} · ${task.status}" }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("选择关联的 Task")
+            .setItems(labels) { _, index ->
+                val task = tasks[index]
+                val saved = runCatching {
+                    val createdAt = Instant.parse(details.createdAt).toEpochMilli()
+                    val updatedAt = Instant.parse(details.updatedAt).toEpochMilli()
+                    DevelopmentVerificationStore(this).save(
+                        DevelopmentVerification(
+                            id = "github-run:${task.id}:${details.id}",
+                            contextId = contextId,
+                            taskId = task.id,
+                            workflowRunId = details.id,
+                            runNumber = details.runNumber,
+                            workflowName = details.name,
+                            workflowUrl = details.htmlUrl,
+                            status = details.status,
+                            conclusion = details.conclusion,
+                            branch = details.branch,
+                            headSha = details.headSha,
+                            createdAtMillis = createdAt,
+                            updatedAtMillis = updatedAt
+                        )
+                    )
+                }
+                saved.onSuccess {
+                    requestStatus.text = "已将 Actions #${details.runNumber} 关联到 Task：${task.title}"
+                    toast("验证记录已保存")
+                }.onFailure { error ->
+                    toast(error.message ?: "验证记录保存失败")
+                }
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
 
     private fun openGitHubReadDialog() {
