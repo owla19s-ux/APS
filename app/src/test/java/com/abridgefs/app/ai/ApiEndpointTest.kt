@@ -32,6 +32,14 @@ class ApiEndpointTest {
         )
     }
 
+    @Test
+    fun removesTrailingSlashBeforeQueryParameters() {
+        assertEquals(
+            "https://api.example.com/v1/models?tenant=example",
+            ApiEndpoint.build("https://api.example.com/v1/?tenant=example", "models").toString()
+        )
+    }
+
     @Test(expected = IllegalArgumentException::class)
     fun rejectsBaseUrlWithFragment() {
         ApiEndpoint.build("https://api.example.com/v1#fragment", "models")
