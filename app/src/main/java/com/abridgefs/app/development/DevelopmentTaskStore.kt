@@ -26,8 +26,11 @@ class DevelopmentTaskStore(context: Context) {
         require(task.status == DevelopmentTaskStatus.CREATED) { "新建 Task 必须处于 CREATED 状态" }
         require(task.attempt == 0) { "新建 Task 的执行次数必须为 0" }
         require(readAll().none { it.id == task.id }) { "Task ID 已存在" }
-        writeAll(readAll() + task)
-        appendEvent(DevelopmentTaskEvent("created:${task.id}", task.contextId, task.id, null, task.status, task.createdAtMillis, "created"))
+        val tasks = readAll() + task
+        val events = readEvents()
+        val event = DevelopmentTaskEvent("created:${task.id}", task.contextId, task.id, null, task.status, task.createdAtMillis, "created")
+        require(events.none { it.id == event.id }) { "Task 事件 ID 重复" }
+        writeSnapshot(tasks, events + event)
     }
 
     @Synchronized
@@ -57,8 +60,7 @@ class DevelopmentTaskStore(context: Context) {
             errorMessage = if (target == DevelopmentTaskStatus.FAILED) errorMessage else "",
             updatedAtMillis = maxOf(nowMillis, current.updatedAtMillis)
         )
-        writeAll(tasks.map { if (it.id == taskId && it.contextId == contextId) updated else it })
-        appendEvent(DevelopmentTaskEvent(
+        val event = DevelopmentTaskEvent(
             UUID.randomUUID().toString(), contextId, taskId, current.status, target,
             updated.updatedAtMillis,
             when (target) {
@@ -66,7 +68,10 @@ class DevelopmentTaskStore(context: Context) {
                 DevelopmentTaskStatus.FAILED -> errorMessage
                 else -> ""
             }
-        ))
+        )
+        val events = readEvents()
+        require(events.none { it.id == event.id }) { "Task 事件 ID 重复" }
+        writeSnapshot(tasks.map { if (it.id == taskId && it.contextId == contextId) updated else it }, events + event)
         return updated
     }
 
@@ -141,22 +146,24 @@ class DevelopmentTaskStore(context: Context) {
         }
     }
 
-    private fun appendEvent(event: DevelopmentTaskEvent) {
-        val events = readEvents()
-        require(events.none { it.id == event.id }) { "Task 事件 ID 重复" }
-        val array = JSONArray()
-        (events + event).forEach { item ->
-            array.put(JSONObject().apply {
-                put("id", item.id)
-                put("contextId", item.contextId)
-                put("taskId", item.taskId)
-                put("fromStatus", item.fromStatus?.name ?: JSONObject.NULL)
-                put("toStatus", item.toStatus.name)
-                put("occurredAtMillis", item.occurredAtMillis)
-                put("summary", item.summary)
-            })
-        }
-        check(prefs.edit().putString("events", array.toString()).commit()) { "Task 事件保存失败" }
+    private fun writeSnapshot(tasks: List<DevelopmentTask>, events: List<DevelopmentTaskEvent>) {
+        val taskArray = JSONArray()
+        tasks.forEach { task -> taskArray.put(JSONObject().apply {
+            put("id", task.id); put("contextId", task.contextId); put("title", task.title)
+            put("description", task.description); put("status", task.status.name)
+            put("attempt", task.attempt); put("resultSummary", task.resultSummary)
+            put("errorMessage", task.errorMessage); put("createdAtMillis", task.createdAtMillis)
+            put("updatedAtMillis", task.updatedAtMillis)
+        }) }
+        val eventArray = JSONArray()
+        events.forEach { item -> eventArray.put(JSONObject().apply {
+            put("id", item.id); put("contextId", item.contextId); put("taskId", item.taskId)
+            put("fromStatus", item.fromStatus?.name ?: JSONObject.NULL)
+            put("toStatus", item.toStatus.name); put("occurredAtMillis", item.occurredAtMillis)
+            put("summary", item.summary)
+        }) }
+        check(prefs.edit().putString("tasks", taskArray.toString())
+            .putString("events", eventArray.toString()).commit()) { "Task 与事件记录保存失败" }
     }
 
     private fun writeAll(tasks: List<DevelopmentTask>) {
