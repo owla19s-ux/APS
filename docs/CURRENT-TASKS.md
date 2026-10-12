@@ -100,7 +100,7 @@ Context 对话
 **状态：UI 已确认 / 开发中**
 
 ### T8 — 软件开发结构
-**状态：基础模型、查询层与 Task—结构节点关联层分批施工中；结构 UI / Task 生命周期 / Verify 仍待施工**
+**状态：结构基础层与 Task 生命周期记录层分批施工中；结构 UI / Dispatcher / Verify-Evidence 仍待施工**
 
 基础组织前提：Space → 目录（分组）→ Context（项目）。每个 Context 具有名称，并可维护多个 Address（名称 / 地址 / 备注）。
 
@@ -112,7 +112,7 @@ Context 对话
 
 原则：不新增 Project 顶层模型；不做独立 Dashboard；底层关系允许一对多 / 多对多；Task 负责施工交接，结构负责语义关系，Receipt / Evidence / Verify 负责事实依据。
 
-本批基础数据层已新增 `DevelopmentNode`、`DevelopmentRelation`、`DevelopmentTreeStore` 与测试：稳定 ID / code / parentId 分离；关系单独存储并去重；节点限制在同一 Context 内；移动节点防止形成循环；父节点存在子节点时拒绝删除；删除节点时清理关联边；损坏 JSON 原文备份后恢复为空集合。首批 Android Tests 已通过（run 38222950294），已合并至 main（43fc960）。main 上 Verify / Build and Release 当时仍在运行。第二批新增树投影、根节点/子节点查询、入边/出边查询与对应仪器测试；尚未接入 UI、Task、Dispatcher、Verify 或 GitHub Actions 证据。
+基础层第一批 `DevelopmentNode`、`DevelopmentRelation`、`DevelopmentTreeStore` 与第二批只读树查询已合并并通过各自 Android Tests；第三批 PR #97 已合并（`2c4f6a2`），新增 `DevelopmentTaskLink` / `DevelopmentTaskLinkStore`，将 Task ID 与结构节点多对多关联，保持 Task 与节点模型分离。第四批当前分支新增 `ConstructionTask`、`ConstructionTaskEvent` 与 `ConstructionTaskStore`，支持 CREATED → READY → RUNNING → REVIEW_REQUIRED → SUCCEEDED 的明确流程、失败记录、有限重试、取消、执行次数及生命周期事件；本批待 CI 验证。当前任务 Store 仅记录状态，不执行 AI/Dispatcher；Verify/Evidence 尚未与真实测试或 GitHub Actions 结果关联。
 
 其中 UI / 交互必须预留“待用户确认 → 已确认 → 已变更 / 待重新确认”的状态；用户确认是设计认可，不等同于代码 Verify。第一版可以暂不实现完整确认交互。
 
