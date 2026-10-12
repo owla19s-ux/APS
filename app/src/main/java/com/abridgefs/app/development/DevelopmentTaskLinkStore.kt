@@ -7,6 +7,7 @@ import org.json.JSONObject
 /** Persists Task-to-node links independently from task lifecycle. */
 class DevelopmentTaskLinkStore(context: Context) {
     private val prefs = context.getSharedPreferences("aps_development_task_links", Context.MODE_PRIVATE)
+    private val taskPrefs = context.getSharedPreferences("aps_development_tasks", Context.MODE_PRIVATE)
     private val tree = DevelopmentTreeStore(context)
 
     fun all(contextId: String): List<DevelopmentTaskLink> =
@@ -18,6 +19,7 @@ class DevelopmentTaskLinkStore(context: Context) {
 
     @Synchronized
     fun save(link: DevelopmentTaskLink) {
+        require(taskExists(link.contextId, link.taskId)) { "施工卡不存在或不属于当前 Context" }
         require(tree.getNode(link.contextId, link.nodeId) != null) { "结构节点不存在或不属于当前 Context" }
         val next = read().filterNot { it.id == link.id || it.uniquenessKey == link.uniquenessKey } + link
         write(next)
@@ -34,6 +36,19 @@ class DevelopmentTaskLinkStore(context: Context) {
     @Synchronized
     fun deleteForTask(contextId: String, taskId: String) =
         write(read().filterNot { it.contextId == contextId && it.taskId == taskId })
+
+    private fun taskExists(contextId: String, taskId: String): Boolean {
+        val raw = taskPrefs.getString("tasks", null) ?: return false
+        return try {
+            val array = JSONArray(raw)
+            (0 until array.length()).any { index ->
+                val task = array.getJSONObject(index)
+                task.optString("contextId") == contextId && task.optString("id") == taskId
+            }
+        } catch (_: Exception) {
+            false
+        }
+    }
 
     private fun read(): List<DevelopmentTaskLink> {
         val raw = prefs.getString("links", null) ?: return emptyList()

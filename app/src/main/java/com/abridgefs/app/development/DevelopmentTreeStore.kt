@@ -9,7 +9,8 @@ import org.json.JSONObject
  * Task execution, connectors and Verify conclusions are deliberately out of scope.
  */
 class DevelopmentTreeStore(context: Context) {
-    private val prefs = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
+    private val appContext = context.applicationContext
+    private val prefs = appContext.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
 
     fun allNodes(contextId: String): List<DevelopmentNode> =
         readNodes().filter { it.contextId == contextId }
@@ -77,6 +78,7 @@ class DevelopmentTreeStore(context: Context) {
         writeRelations(readRelations().filterNot {
             it.contextId == contextId && (it.sourceId == id || it.targetId == id)
         })
+        DevelopmentTaskLinkStore(appContext).deleteForNode(contextId, id)
     }
 
     fun allRelations(contextId: String): List<DevelopmentRelation> =
