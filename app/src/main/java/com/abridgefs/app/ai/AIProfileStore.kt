@@ -50,6 +50,8 @@ class AIProfileStore(context: Context) {
 
     /** Saves or replaces a profile without making it default unless requested or none exists. */
     fun save(profile: AIProfile, makeDefault: Boolean = false) {
+        // Validate before writing either the URL metadata or encrypted API key.
+        ApiEndpoint.validateBaseUrl(profile.baseUrl)
         migrateLegacyProfileIfNeeded()
         val metadata = readMetadata().toMutableList()
         val replacement = ProfileMetadata(profile.id, profile.name, profile.normalizedBaseUrl, profile.model, profile.protocol.id)
