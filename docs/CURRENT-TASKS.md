@@ -131,6 +131,14 @@ Context 对话
 
 **当前只保留“请求 AI 协助”的入口和边界，不提前确定具体协作协议。**
 
+### 下次 APK 构建前：应用标识调整（用户已确认，暂不立即修改）
+
+- 将 Android `namespace` 与 `applicationId` 从 `com.owla19s.aps` 调整为 `com.aps`，去掉 `owla19s`；应用桌面显示名称继续保持 `APS`。
+- 这是下次 APK 构建前的计划，不代表当前主线已经修改；在此之前不单独触发 APK 构建。
+- 修改时同步检查 Kotlin/Java 源文件的 `package` 声明、Manifest、相对类名、测试包名、BuildConfig 引用及 Gradle 配置，确保重构完整并通过编译和测试。
+- 因 `applicationId` 改变，Android 会将新包识别为不同应用，通常不能作为旧 `com.owla19s.aps` 的直接覆盖升级；构建前说明安装/数据影响，并检查是否需要保留旧版数据或提供迁移方案。
+- 同次 APK 验收：检查实际 APK Manifest 中的包标识、应用标签 `APS`、桌面图标名称，以及版本号（当前 `0.1.1`，以届时版本决策为准）。
+
 ### T10 — 正式 APK / 真机验收
 **状态：待主链收口后验收**
 
