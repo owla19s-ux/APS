@@ -24,9 +24,12 @@ class ApiEndpointTest {
         )
     }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun rejectsBaseUrlWithQueryParameters() {
-        ApiEndpoint.build("https://api.example.com/v1?api_key=secret", "models")
+    @Test
+    fun preservesBaseUrlQueryParametersAfterAppendingEndpointPath() {
+        assertEquals(
+            "https://api.example.com/v1/models?tenant=example",
+            ApiEndpoint.build("https://api.example.com/v1?tenant=example", "models").toString()
+        )
     }
 
     @Test(expected = IllegalArgumentException::class)
