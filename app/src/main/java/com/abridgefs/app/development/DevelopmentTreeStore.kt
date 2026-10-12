@@ -18,6 +18,29 @@ class DevelopmentTreeStore(context: Context) {
     fun getNode(contextId: String, id: String): DevelopmentNode? =
         readNodes().firstOrNull { it.contextId == contextId && it.id == id }
 
+    /** Root nodes, ordered for deterministic tree rendering. */
+    fun roots(contextId: String): List<DevelopmentNode> =
+        allNodes(contextId).filter { it.parentId == null }
+
+    /** Direct children only; callers can build a partial tree without loading unrelated Contexts. */
+    fun childrenOf(contextId: String, parentId: String): List<DevelopmentNode> =
+        allNodes(contextId).filter { it.parentId == parentId }
+
+    /** Build a UI-ready tree projection from the persisted parent-child relation. */
+    fun tree(contextId: String): List<DevelopmentTreeBranch> {
+        val nodes = allNodes(contextId)
+        val byParent = nodes.groupBy { it.parentId }
+        fun branch(node: DevelopmentNode): DevelopmentTreeBranch =
+            DevelopmentTreeBranch(node, (byParent[node.id] ?: emptyList()).map(::branch))
+        return (byParent[null] ?: emptyList()).map(::branch)
+    }
+
+    fun relationsFrom(contextId: String, nodeId: String): List<DevelopmentRelation> =
+        allRelations(contextId).filter { it.sourceId == nodeId }
+
+    fun relationsTo(contextId: String, nodeId: String): List<DevelopmentRelation> =
+        allRelations(contextId).filter { it.targetId == nodeId }
+
     @Synchronized
     fun saveNode(node: DevelopmentNode) {
         val nodes = readNodes().filterNot { it.id == node.id } + node
