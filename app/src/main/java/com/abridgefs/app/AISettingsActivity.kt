@@ -49,6 +49,7 @@ class AISettingsActivity : AppCompatActivity() {
 
     private fun buildContent(): ScrollView {
         val saved = profileStore.load()
+        val migrationWarning = profileStore.legacyMigrationWarning()
         selectedProfileId = saved?.id
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -127,7 +128,7 @@ class AISettingsActivity : AppCompatActivity() {
             setOnClickListener { testChatConnection() }
         }, buttonParams())
         status = TextView(this).apply {
-            text = if (saved == null) "状态：尚未配置" else "状态：已保存配置；尚未测试连接"
+            text = migrationWarning ?: if (saved == null) "状态：尚未配置" else "状态：已保存配置；尚未测试连接"
             textSize = 14f
             setTextColor(Color.rgb(45, 65, 86))
             setPadding(dp(12), dp(12), dp(12), dp(12))
