@@ -200,13 +200,8 @@ class OpenAICompatibleConnector(
         }
     }
 
-    private fun endpoint(path: String): String {
-        val base = profile.normalizedBaseUrl
-        require(base.startsWith("https://") || base.startsWith("http://")) {
-            "API 地址必须以 http:// 或 https:// 开头"
-        }
-        return "$base/$path"
-    }
+    private fun endpoint(path: String): okhttp3.HttpUrl =
+        ApiEndpoint.build(profile.normalizedBaseUrl, path)
 
     private fun safeError(body: String): String = ApiErrorSanitizer.sanitize(body)
 

@@ -135,11 +135,8 @@ class AnthropicConnector(
         }
     }
 
-    private fun endpoint(path: String): String {
-        val base = profile.normalizedBaseUrl
-        require(base.startsWith("https://") || base.startsWith("http://")) { "API 地址必须以 http:// 或 https:// 开头" }
-        return if (base.endsWith("/v1")) "$base/$path" else "$base/v1/$path"
-    }
+    private fun endpoint(path: String): okhttp3.HttpUrl =
+        ApiEndpoint.build(profile.normalizedBaseUrl, path, ensureV1 = true)
 
     private fun parse(body: String): JsonObject = runCatching { JsonParser.parseString(body).asJsonObject }
         .getOrElse { throw IOException("Anthropic API 返回了无法解析的 JSON") }
