@@ -14,7 +14,7 @@ class DevelopmentTaskStoreTest {
     @Test
     fun task_state_transitions_persist_and_failed_task_can_retry() {
         val prefs = context.getSharedPreferences("aps_development_tasks", Context.MODE_PRIVATE)
-        prefs.edit().remove("tasks").remove("tasks.corrupt_backup").commit()
+        prefs.edit().remove("tasks").remove("events").remove("tasks.corrupt_backup").remove("events.corrupt_backup").commit()
         try {
             val store = DevelopmentTaskStore(context)
             store.create(DevelopmentTask("task-1", "ctx-a", "Build screen", createdAtMillis = 10L))
@@ -35,14 +35,14 @@ class DevelopmentTaskStoreTest {
             assertEquals("tests passed", done.resultSummary)
             assertEquals(DevelopmentTaskStatus.COMPLETED, DevelopmentTaskStore(context).get("ctx-a", "task-1")?.status)
         } finally {
-            prefs.edit().remove("tasks").remove("tasks.corrupt_backup").commit()
+            prefs.edit().remove("tasks").remove("events").remove("tasks.corrupt_backup").remove("events.corrupt_backup").commit()
         }
     }
 
     @Test(expected = IllegalArgumentException::class)
     fun completed_task_cannot_be_reopened() {
         val prefs = context.getSharedPreferences("aps_development_tasks", Context.MODE_PRIVATE)
-        prefs.edit().remove("tasks").commit()
+        prefs.edit().remove("tasks").remove("events").remove("tasks.corrupt_backup").remove("events.corrupt_backup").commit()
         try {
             val store = DevelopmentTaskStore(context)
             store.create(DevelopmentTask("task-terminal", "ctx-a", "Terminal test"))
@@ -50,14 +50,14 @@ class DevelopmentTaskStoreTest {
             store.transition("ctx-a", "task-terminal", DevelopmentTaskStatus.CANCELLED, 2L)
             store.transition("ctx-a", "task-terminal", DevelopmentTaskStatus.READY, 3L)
         } finally {
-            prefs.edit().remove("tasks").commit()
+            prefs.edit().remove("tasks").remove("events").remove("tasks.corrupt_backup").remove("events.corrupt_backup").commit()
         }
     }
 
     @Test
     fun task_lookup_is_context_scoped_and_unknown_task_is_absent() {
         val prefs = context.getSharedPreferences("aps_development_tasks", Context.MODE_PRIVATE)
-        prefs.edit().remove("tasks").commit()
+        prefs.edit().remove("tasks").remove("events").remove("tasks.corrupt_backup").remove("events.corrupt_backup").commit()
         try {
             val store = DevelopmentTaskStore(context)
             store.create(DevelopmentTask("task-a", "ctx-a", "Task A"))
@@ -65,7 +65,7 @@ class DevelopmentTaskStoreTest {
             assertEquals(1, store.all("ctx-a").size)
             assertEquals(0, store.all("ctx-b").size)
         } finally {
-            prefs.edit().remove("tasks").commit()
+            prefs.edit().remove("tasks").remove("events").remove("tasks.corrupt_backup").remove("events.corrupt_backup").commit()
         }
     }
 }
