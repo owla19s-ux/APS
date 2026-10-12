@@ -9,6 +9,7 @@ internal object ApiErrorSanitizer {
     private val credentialPattern = Regex(
         """(?i)(["']?(?:x-api-key|x-goog-api-key|api.?key|key|authorization|access_token|refresh_token|token|secret|password|client_secret)["']?\s*[:=]\s*["']?)[^"'\s&,}]+"""
     )
+    private val urlUserInfoPattern = Regex("""(?i)(https?://)[^/@\s]+@""")
     private val urlQueryPattern = Regex("""https?://[^\s?"'<>]+\?[^\s"'<>]*""")
 
     fun sanitize(body: String): String {
@@ -17,7 +18,10 @@ internal object ApiErrorSanitizer {
         val credentialsRedacted = credentialPattern.replace(bearerRedacted) {
             it.groupValues[1] + "[redacted]"
         }
-        return urlQueryPattern.replace(credentialsRedacted, "[URL with query redacted]")
+        val userInfoRedacted = urlUserInfoPattern.replace(credentialsRedacted) {
+            it.groupValues[1] + "[credentials redacted]@"
+        }
+        return urlQueryPattern.replace(userInfoRedacted, "[URL with query redacted]")
             .replace(Regex("""[\r\n\t]+"""), " ")
             .take(240)
     }

@@ -30,6 +30,17 @@ class ApiErrorSanitizerTest {
     }
 
     @Test
+    fun redactsCredentialsEmbeddedInUrlUserInfo() {
+        val body = "Request failed for https://user:secret-password@example.com/v1"
+
+        val sanitized = ApiErrorSanitizer.sanitize(body)
+
+        assertTrue(sanitized.contains("https://[credentials redacted]@example.com/v1"))
+        assertFalse(sanitized.contains("secret-password"))
+        assertFalse(sanitized.contains("user:secret-password"))
+    }
+
+    @Test
     fun blankProviderErrorUsesSafeFallback() {
         assertTrue(ApiErrorSanitizer.sanitize("  ").contains("服务未提供错误详情"))
     }

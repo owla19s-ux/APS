@@ -45,6 +45,11 @@ class ApiEndpointTest {
         ApiEndpoint.build("https://api.example.com/v1#fragment", "models")
     }
 
+    @Test(expected = IllegalArgumentException::class)
+    fun rejectsBaseUrlWithEmbeddedCredentials() {
+        ApiEndpoint.build("https://user:secret@api.example.com/v1", "models")
+    }
+
     @Test
     fun geminiStreamingQueryIsAddedAfterPathConstruction() {
         val endpoint = ApiEndpoint.build(
