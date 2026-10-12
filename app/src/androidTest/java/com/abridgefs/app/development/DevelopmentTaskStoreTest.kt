@@ -67,7 +67,7 @@ class DevelopmentTaskStoreTest {
         }
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun review_handoff_requires_nonblank_summary_and_does_not_change_state() {
         val prefs = context.getSharedPreferences("aps_development_tasks", Context.MODE_PRIVATE)
         prefs.edit().remove("tasks").remove("events").remove("tasks.corrupt_backup").remove("events.corrupt_backup").commit()
@@ -76,7 +76,15 @@ class DevelopmentTaskStoreTest {
             store.create(DevelopmentTask("task-review-required", "ctx-a", "Review summary test"))
             store.transition("ctx-a", "task-review-required", DevelopmentTaskStatus.READY, 1L)
             store.transition("ctx-a", "task-review-required", DevelopmentTaskStatus.RUNNING, 2L)
-            store.transition("ctx-a", "task-review-required", DevelopmentTaskStatus.REVIEW_REQUIRED, 3L)
+            var rejected = false
+            try {
+                store.transition("ctx-a", "task-review-required", DevelopmentTaskStatus.REVIEW_REQUIRED, 3L)
+            } catch (_: IllegalArgumentException) {
+                rejected = true
+            }
+            assertEquals(true, rejected)
+            assertEquals(DevelopmentTaskStatus.RUNNING, store.get("ctx-a", "task-review-required")?.status)
+            assertEquals(3, store.events("ctx-a", "task-review-required").size)
         } finally {
             prefs.edit().remove("tasks").remove("events").remove("tasks.corrupt_backup").remove("events.corrupt_backup").commit()
         }
