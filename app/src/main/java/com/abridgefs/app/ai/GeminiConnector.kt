@@ -76,8 +76,10 @@ class GeminiConnector(
         }
         val payload = JsonObject().apply { add("contents", contents) }
         val model = (request.modelId?.takeIf(String::isNotBlank) ?: profile.model).removePrefix("models/")
-        val action = if (stream) "streamGenerateContent?alt=sse" else "generateContent"
-        val builder = Request.Builder().url(endpoint("models/${encodePathSegment(model)}:$action"))
+        val action = if (stream) "streamGenerateContent" else "generateContent"
+        val endpointUrl = endpoint("models/${encodePathSegment(model)}:$action")
+        val requestUrl = if (stream) endpointUrl.newBuilder().addQueryParameter("alt", "sse").build() else endpointUrl
+        val builder = Request.Builder().url(requestUrl)
             .header("x-goog-api-key", profile.apiKey)
             .header("content-type", "application/json")
             .post(payload.toString().toRequestBody(JSON))
@@ -128,11 +130,8 @@ class GeminiConnector(
             ?.mapNotNull { part -> runCatching { part.asJsonObject.get("text")?.asString }.getOrNull() }
             ?.joinToString("") { it }.orEmpty()
 
-    private fun endpoint(path: String): String {
-        val base = profile.normalizedBaseUrl
-        require(base.startsWith("https://") || base.startsWith("http://")) { "API 地址必须以 http:// 或 https:// 开头" }
-        return "$base/$path"
-    }
+    private fun endpoint(path: String): okhttp3.HttpUrl =
+        ApiEndpoint.build(profile.normalizedBaseUrl, path)
 
     private fun parse(body: String): JsonObject = runCatching { JsonParser.parseString(body).asJsonObject }
         .getOrElse { throw IOException("Gemini API 返回了无法解析的 JSON") }
