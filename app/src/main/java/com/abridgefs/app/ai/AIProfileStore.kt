@@ -48,6 +48,33 @@ class AIProfileStore(context: Context) {
             ?: metadata.firstOrNull()?.id
     }
 
+    /**
+     * Returns a safe explanation when legacy settings remain after migration was attempted.
+     * Legacy keys and values are only read here; this method never deletes or rewrites them.
+     */
+    fun legacyMigrationWarning(): String? {
+        if (prefs.contains(KEY_PROFILES_JSON)) return null
+        val hasLegacyData = listOf(KEY_NAME, KEY_BASE_URL, KEY_MODEL, KEY_API_KEY)
+            .any(prefs::contains)
+        if (!hasLegacyData) return null
+        val encryptedKey = prefs.getString(KEY_API_KEY, null)
+        val baseUrl = prefs.getString(KEY_BASE_URL, null)
+        val name = prefs.getString(KEY_NAME, null)
+        val model = prefs.getString(KEY_MODEL, null)
+        return LegacyProfileMigrationGuidance.message(
+            hasLegacyData = true,
+            name = name,
+            baseUrl = baseUrl,
+            model = model,
+            encryptedKey = encryptedKey,
+            keyCanBeRead = {
+                // Do not attempt key access until the endpoint passes the new HTTPS policy.
+                runCatching { ApiEndpoint.validateBaseUrl(baseUrl.orEmpty()) }.isSuccess &&
+                    encryptedKey != null && decrypt(encryptedKey, LEGACY_KEY_ALIAS) != null
+            }
+        )
+    }
+
     /** Saves or replaces a profile without making it default unless requested or none exists. */
     fun save(profile: AIProfile, makeDefault: Boolean = false) {
         // Validate before writing either the URL metadata or encrypted API key.
