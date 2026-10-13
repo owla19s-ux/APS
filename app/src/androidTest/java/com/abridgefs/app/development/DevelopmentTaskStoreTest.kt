@@ -118,4 +118,43 @@ class DevelopmentTaskStoreTest {
             prefs.edit().remove("tasks").commit()
         }
     }
+
+    @Test
+    fun separate_store_instances_do_not_lose_concurrent_task_creates() {
+        val prefs = context.getSharedPreferences("aps_development_tasks", Context.MODE_PRIVATE)
+        prefs.edit().remove("tasks").remove("tasks.corrupt_backup").remove("events").remove("events.corrupt_backup").commit()
+        val workers = 6
+        val tasksPerWorker = 8
+        val ready = java.util.concurrent.CountDownLatch(workers)
+        val start = java.util.concurrent.CountDownLatch(1)
+        val failures = java.util.Collections.synchronizedList(mutableListOf<Throwable>())
+        val threads = (0 until workers).map { worker ->
+            Thread {
+                try {
+                    val store = DevelopmentTaskStore(context)
+                    ready.countDown()
+                    start.await()
+                    repeat(tasksPerWorker) { index ->
+                        val id = "concurrent-$worker-$index"
+                        store.create(DevelopmentTask(id, "ctx-concurrent", id, createdAtMillis = 1L))
+                    }
+                } catch (error: Throwable) {
+                    failures.add(error)
+                }
+            }
+        }
+        try {
+            threads.forEach { it.start() }
+            ready.await()
+            start.countDown()
+            threads.forEach { it.join() }
+            assertEquals(emptyList<Throwable>(), failures.toList())
+            val store = DevelopmentTaskStore(context)
+            assertEquals(workers * tasksPerWorker, store.all("ctx-concurrent").size)
+            assertEquals(workers * tasksPerWorker, prefs.getString("events", "[]")!!.let { org.json.JSONArray(it).length() })
+        } finally {
+            prefs.edit().remove("tasks").remove("tasks.corrupt_backup").remove("events").remove("events.corrupt_backup").commit()
+        }
+    }
+
 }

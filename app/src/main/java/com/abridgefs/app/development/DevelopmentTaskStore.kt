@@ -5,6 +5,9 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
 
+/** Shared lock for Task read-modify-write operations across store instances. */
+private val PROCESS_LOCK = Any()
+
 /** Local Task lifecycle store. State changes are validated here, not inferred from UI text. */
 class DevelopmentTaskStore(context: Context) {
     private val prefs = context.getSharedPreferences("aps_development_tasks", Context.MODE_PRIVATE)
@@ -23,6 +26,7 @@ class DevelopmentTaskStore(context: Context) {
 
     @Synchronized
     fun create(task: DevelopmentTask) {
+        synchronized(PROCESS_LOCK) {
         require(task.status == DevelopmentTaskStatus.CREATED) { "新建 Task 必须处于 CREATED 状态" }
         require(task.attempt == 0) { "新建 Task 的执行次数必须为 0" }
         require(readAll().none { it.id == task.id }) { "Task ID 已存在" }
@@ -31,6 +35,8 @@ class DevelopmentTaskStore(context: Context) {
         val event = DevelopmentTaskEvent("created:${task.id}", task.contextId, task.id, null, task.status, task.createdAtMillis, "created")
         require(events.none { it.id == event.id }) { "Task 事件 ID 重复" }
         writeSnapshot(tasks, events + event)
+    
+        }
     }
 
     @Synchronized
@@ -42,6 +48,7 @@ class DevelopmentTaskStore(context: Context) {
         resultSummary: String = "",
         errorMessage: String = ""
     ): DevelopmentTask {
+        synchronized(PROCESS_LOCK) {
         require(nowMillis >= 0L) { "时间戳不能为负数" }
         val tasks = readAll()
         val current = tasks.firstOrNull { it.contextId == contextId && it.id == taskId }
@@ -83,14 +90,19 @@ class DevelopmentTaskStore(context: Context) {
         require(events.none { it.id == event.id }) { "Task 事件 ID 重复" }
         writeSnapshot(tasks.map { if (it.id == taskId && it.contextId == contextId) updated else it }, events + event)
         return updated
+    
+        }
     }
 
     @Synchronized
     fun delete(contextId: String, taskId: String) {
+        synchronized(PROCESS_LOCK) {
         val tasks = readAll()
         if (tasks.none { it.contextId == contextId && it.id == taskId }) return
         writeAll(tasks.filterNot { it.contextId == contextId && it.id == taskId })
         links.deleteForTask(contextId, taskId)
+    
+        }
     }
 
     private fun allowedTransitions(status: DevelopmentTaskStatus): Set<DevelopmentTaskStatus> =
