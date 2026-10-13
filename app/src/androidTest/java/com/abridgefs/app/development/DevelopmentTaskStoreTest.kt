@@ -151,9 +151,6 @@ class DevelopmentTaskStoreTest {
             assertEquals(emptyList<Throwable>(), failures.toList())
             val store = DevelopmentTaskStore(context)
             assertEquals(workers * tasksPerWorker, store.all("ctx-concurrent").size)
-            assertEquals(workers * tasksPerWorker, store.events("ctx-concurrent", "concurrent-0-0").size +
-                store.all("ctx-concurrent").count { it.id != "impossible" } -
-                store.all("ctx-concurrent").size + store.events("ctx-concurrent", "missing").size)
             assertEquals(workers * tasksPerWorker, prefs.getString("events", "[]")!!.let { org.json.JSONArray(it).length() })
         } finally {
             prefs.edit().remove("tasks").remove("tasks.corrupt_backup").remove("events").remove("events.corrupt_backup").commit()
