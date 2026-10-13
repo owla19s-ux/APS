@@ -56,6 +56,7 @@ class ContextStore(context: AndroidContext) {
         put("id", value.id)
         put("name", value.name)
         put("notes", value.notes)
+        put("enabledCapabilities", JSONArray().apply { value.enabledCapabilities.sorted().forEach { put(it) } })
         value.aiConnectionId?.let { put("aiConnectionId", it) }
         put("addresses", JSONArray().apply {
             value.addresses.forEach { address ->
@@ -111,6 +112,9 @@ class ContextStore(context: AndroidContext) {
             },
             aiConnectionId = json.optString("aiConnectionId").ifBlank { null },
             notes = json.optString("notes"),
+            enabledCapabilities = json.optJSONArray("enabledCapabilities")?.let { values ->
+                buildSet { for (i in 0 until values.length()) add(values.getString(i)) }
+            } ?: ContextCapability.legacyDefault,
             addresses = buildList {
                 val addresses = json.optJSONArray("addresses") ?: JSONArray()
                 for (i in 0 until addresses.length()) {
