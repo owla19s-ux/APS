@@ -43,6 +43,7 @@ import com.owla19s.aps.github.GitHubCredential
 import com.owla19s.aps.github.GitHubCredentialStore
 import com.owla19s.aps.github.GitHubCredentialVerifier
 import com.owla19s.aps.github.GitHubReadTarget
+import com.owla19s.aps.context.ContextCapability
 import com.owla19s.aps.github.api.GitHubApiFactory
 import java.util.UUID
 import java.time.Instant
@@ -63,6 +64,10 @@ class ConversationActivity : AppCompatActivity() {
     private lateinit var sendButton: Button
     private lateinit var cancelButton: Button
     private lateinit var requestStatus: TextView
+    private lateinit var localFilesButton: Button
+    private lateinit var githubReadButton: Button
+    private lateinit var actionsButton: Button
+    private lateinit var verificationButton: Button
     @Volatile private var requestInFlight = false
     @Volatile private var requestCancelled = false
     private var current: Conversation? = null
@@ -100,6 +105,10 @@ class ConversationActivity : AppCompatActivity() {
         if (intent.getBooleanExtra(EXTRA_OPEN_LOCAL_FILES, false)) {
             intent.removeExtra(EXTRA_OPEN_LOCAL_FILES)
             openLocalFiles()
+        }
+        if (intent.getBooleanExtra(EXTRA_OPEN_GITHUB, false)) {
+            intent.removeExtra(EXTRA_OPEN_GITHUB)
+            openGitHubReadDialog()
         }
     }
 
@@ -165,22 +174,26 @@ class ConversationActivity : AppCompatActivity() {
             text = "新对话"
             setOnClickListener { createConversation() }
         })
-        header.addView(Button(this).apply {
+        localFilesButton = Button(this).apply {
             text = "本地文件"
             setOnClickListener { openLocalFiles() }
-        })
-        header.addView(Button(this).apply {
+        }
+        header.addView(localFilesButton)
+        githubReadButton = Button(this).apply {
             text = "GitHub 只读"
             setOnClickListener { openGitHubReadDialog() }
-        })
-        header.addView(Button(this).apply {
+        }
+        header.addView(githubReadButton)
+        actionsButton = Button(this).apply {
             text = "Actions 结果"
             setOnClickListener { showGitHubActionsResults() }
-        })
-        header.addView(Button(this).apply {
+        }
+        header.addView(actionsButton)
+        verificationButton = Button(this).apply {
             text = "验证记录"
             setOnClickListener { showSavedVerificationRecords() }
-        })
+        }
+        header.addView(verificationButton)
         val headerScroll = HorizontalScrollView(this).apply {
             isHorizontalScrollBarEnabled = false
             addView(header)
@@ -286,6 +299,19 @@ class ConversationActivity : AppCompatActivity() {
         renderGroups()
         renderConversationList(store.allConversations())
         renderCurrent()
+        applyContextCapabilities()
+    }
+
+    private fun applyContextCapabilities() {
+        val contextId = current?.contextId
+        val context = contextId?.let { com.owla19s.aps.context.ContextStore(this).get(it) }
+        // Independent conversations retain global tools; Context-linked conversations obey their module selection.
+        val enabled = context?.enabledCapabilities
+        localFilesButton.visibility = if (enabled == null || ContextCapability.LOCAL_FILES in enabled) View.VISIBLE else View.GONE
+        val githubEnabled = enabled == null || ContextCapability.GITHUB in enabled
+        githubReadButton.visibility = if (githubEnabled) View.VISIBLE else View.GONE
+        actionsButton.visibility = if (githubEnabled) View.VISIBLE else View.GONE
+        verificationButton.visibility = if (githubEnabled || (enabled != null && ContextCapability.TASKS in enabled)) View.VISIBLE else View.GONE
     }
 
     private fun createConversation() {
@@ -1611,6 +1637,7 @@ class ConversationActivity : AppCompatActivity() {
         const val UNGROUPED_FILTER = "__aps_ungrouped__"
         const val REQUEST_LOCAL_TREE = 4107
         const val EXTRA_OPEN_LOCAL_FILES = "aps.open.local.files"
+        const val EXTRA_OPEN_GITHUB = "aps.open.github"
         const val EXTRA_CONTEXT_ID = "aps.context.id"
     }
 }
