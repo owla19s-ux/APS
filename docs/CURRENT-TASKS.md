@@ -79,7 +79,7 @@ Context 对话
 
 本地项目能力保留。
 
-当前已新增 Local Connection、元数据 Store、Android SAF Gateway 与 LocalFileConnector；普通对话页可以选择目录、浏览文件、读取文本、编辑并显式保存；连接级读写开关守卫实际操作。
+当前已新增 Local Connection、元数据 Store、Android SAF Gateway 与 LocalFileConnector；普通对话页可以选择目录、浏览文件、读取文本、编辑并显式保存；连接级读写开关守卫实际操作。 保存已有文件必须带上编辑器打开时的原始内容快照；Connector 通过内容比对拒绝覆盖期间已变化的文件，避免调用方无意绕过冲突检测。
 
 后续目标：
 - 补撤权后的状态提示与重新授权；
