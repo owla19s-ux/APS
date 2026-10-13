@@ -211,11 +211,11 @@ class ContextDetailActivity : AppCompatActivity() {
         addCapability(ContextCapability.LOCAL_FILES, "打开本地文件") {
             startActivity(Intent(this, ConversationActivity::class.java)
                 .putExtra("aps.open.local.files", true)
-                .putExtra(ConversationActivity.EXTRA_CONTEXT_ID, contextId))
+                .putExtra("aps.context.id", contextId))
         }
         addCapability(ContextCapability.GITHUB, "GitHub / Actions") {
             startActivity(Intent(this, ConversationActivity::class.java)
-                .putExtra(ConversationActivity.EXTRA_CONTEXT_ID, contextId)
+                .putExtra("aps.context.id", contextId)
                 .putExtra("aps.open.github", true))
         }
         addCapability(ContextCapability.DEVELOPMENT_TREE, "软件开发结构") {
