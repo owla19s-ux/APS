@@ -6,6 +6,7 @@ data class DevelopmentTask(
     val contextId: String,
     val title: String,
     val description: String = "",
+    val duty: DevelopmentTaskDuty = DevelopmentTaskDuty.BUILD,
     val status: DevelopmentTaskStatus = DevelopmentTaskStatus.CREATED,
     val attempt: Int = 0,
     val resultSummary: String = "",
@@ -20,6 +21,12 @@ data class DevelopmentTask(
         require(attempt >= 0) { "执行次数不能为负数" }
         require(createdAtMillis >= 0L && updatedAtMillis >= 0L) { "时间戳不能为负数" }
     }
+}
+
+enum class DevelopmentTaskDuty(val displayName: String) {
+    SPLIT("拆分"),
+    BUILD("施工"),
+    REVIEW("审查")
 }
 
 enum class DevelopmentTaskStatus {
