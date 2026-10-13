@@ -15,6 +15,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.owla19s.aps.context.ContextStore
+import com.owla19s.aps.ai.AIConnectorRegistry
+import com.owla19s.aps.ai.AIProfileStore
+import com.owla19s.aps.development.DevelopmentTaskExecutionService
 import com.owla19s.aps.development.DevelopmentNode
 import com.owla19s.aps.development.DevelopmentTask
 import com.owla19s.aps.development.DevelopmentTaskEvent
@@ -270,7 +273,10 @@ class DevelopmentTaskActivity : AppCompatActivity() {
             .setNeutralButton("关闭", null)
             .setItems(actions.toTypedArray()) { _, which ->
                 when {
-                    which < allowed.size -> changeStatus(task, allowed[which])
+                    which < allowed.size -> {
+                    if (allowed[which] == "交给 AI 执行") executeTask(task.id)
+                    else changeStatus(task, allowed[which])
+                }
                     which == allowed.size -> chooseNode(task.id)
                     taskLinks.isNotEmpty() && which == allowed.size + 1 -> chooseLinkToRemove(task.id)
                     else -> confirmDelete(task.id)
@@ -280,11 +286,64 @@ class DevelopmentTaskActivity : AppCompatActivity() {
 
     private fun allowedActions(status: DevelopmentTaskStatus): List<String> = when (status) {
         DevelopmentTaskStatus.CREATED -> listOf("设为待执行", "取消任务")
-        DevelopmentTaskStatus.READY -> listOf("标记开始执行", "取消任务")
+        DevelopmentTaskStatus.READY -> listOf("交给 AI 执行", "取消任务")
         DevelopmentTaskStatus.RUNNING -> listOf("提交审查", "标记失败", "取消任务")
         DevelopmentTaskStatus.REVIEW_REQUIRED -> listOf("审查通过并完成", "标记失败", "取消任务")
         DevelopmentTaskStatus.FAILED -> listOf("重新设为待执行", "取消任务")
         DevelopmentTaskStatus.COMPLETED, DevelopmentTaskStatus.CANCELLED -> emptyList()
+    }
+
+    private fun executeTask(taskId: String) {
+        val context = ContextStore(this).get(contextId)
+        val connectionId = context?.aiConnectionId
+        if (context == null || connectionId.isNullOrBlank()) {
+            toast("当前 Context 尚未绑定 AI Connection")
+            return
+        }
+        val profileStore = AIProfileStore(this)
+        val profile = profileStore.load(connectionId)
+        if (profile == null) {
+            toast("找不到当前 Context 的 AI 配置，请检查连接与密钥")
+            return
+        }
+        val connector = runCatching {
+            AIConnectorRegistry(profileProvider = profileStore::load).resolve(
+                AIConnectorRegistry(profileProvider = profileStore::load).connection(profile)
+            )
+        }.getOrElse {
+            toast("AI Connector 初始化失败：${it.javaClass.simpleName}")
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("交给 AI 执行")
+            .setMessage("将施工卡说明发送给当前 Context 绑定的 AI。返回内容会保存为“待审查”结果；此操作不会自动修改本地文件、提交代码或触发 GitHub Verify。")
+            .setNegativeButton("取消", null)
+            .setPositiveButton("开始执行") { _, _ ->
+                toast("AI 执行已开始")
+                Thread {
+                    try {
+                        kotlinx.coroutines.runBlocking {
+                            DevelopmentTaskExecutionService().execute(
+                                contextId = contextId,
+                                taskId = taskId,
+                                store = tasks,
+                                connector = connector
+                            )
+                        }
+                        runOnUiThread {
+                            render()
+                            showDetails(taskId)
+                            toast("AI 已返回结果，施工卡进入待审查")
+                        }
+                    } catch (error: Exception) {
+                        runOnUiThread {
+                            render()
+                            showDetails(taskId)
+                            toast("AI 执行未完成：${error.message ?: error.javaClass.simpleName}")
+                        }
+                    }
+                }.start()
+            }.show()
     }
 
     private fun changeStatus(task: DevelopmentTask, label: String) {
