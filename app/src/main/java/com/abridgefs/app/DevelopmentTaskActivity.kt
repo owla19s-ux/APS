@@ -193,6 +193,7 @@ class DevelopmentTaskActivity : AppCompatActivity() {
         val allowed = allowedActions(task.status)
         actions += allowed
         actions += "关联结构节点"
+        if (taskLinks.isNotEmpty()) actions += "解除结构节点关联"
         actions += "删除施工卡"
         AlertDialog.Builder(this).setTitle("施工卡详情").setView(ScrollView(this).apply { addView(box) })
             .setNeutralButton("关闭", null)
@@ -200,6 +201,7 @@ class DevelopmentTaskActivity : AppCompatActivity() {
                 when {
                     which < allowed.size -> changeStatus(task, allowed[which])
                     which == allowed.size -> chooseNode(task.id)
+                    taskLinks.isNotEmpty() && which == allowed.size + 1 -> chooseLinkToRemove(task.id)
                     else -> confirmDelete(task.id)
                 }
             }.show()
@@ -268,6 +270,32 @@ class DevelopmentTaskActivity : AppCompatActivity() {
                     showDetails(taskId)
                     render()
                 } catch (e: Exception) { toast("关联失败：${e.message ?: "未知错误"}") }
+            }.setNegativeButton("取消", null).show()
+    }
+
+    private fun chooseLinkToRemove(taskId: String) {
+        val currentLinks = links.forTask(contextId, taskId)
+        if (currentLinks.isEmpty()) { toast("此施工卡没有结构节点关联"); return }
+        val nodeNames = tree.allNodes(contextId).associateBy { it.id }
+        val labels = currentLinks.map { link ->
+            "${nodeNames[link.nodeId]?.name ?: link.nodeId} · ${link.relationType}"
+        }
+        AlertDialog.Builder(this).setTitle("选择要解除的结构节点关联")
+            .setItems(labels.toTypedArray()) { _, which ->
+                val link = currentLinks[which]
+                AlertDialog.Builder(this).setTitle("解除关联")
+                    .setMessage("只会删除施工卡与结构节点之间的关联，不会删除施工卡、结构节点或验证记录。")
+                    .setNegativeButton("取消", null)
+                    .setPositiveButton("解除") { _, _ ->
+                        try {
+                            links.delete(contextId, link.id)
+                            toast("结构节点关联已解除")
+                            render()
+                            showDetails(taskId)
+                        } catch (e: Exception) {
+                            toast("解除关联失败：${e.message ?: "未知错误"}")
+                        }
+                    }.show()
             }.setNegativeButton("取消", null).show()
     }
 
