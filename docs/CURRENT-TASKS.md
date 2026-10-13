@@ -1,6 +1,6 @@
 # APS 当前任务总表
 
-更新时间：2026-10-12
+更新时间：2026-10-13
 
 > 本文件只维护当前仍需施工 / 验收 / 设计的任务。产品定义、架构原则、UI 正式设计和仓库操作规则分别由 PROJECT 与对应 docs 负责。
 
@@ -100,7 +100,7 @@ Context 对话
 **状态：UI 已确认 / 开发中**
 
 ### T8 — 软件开发结构
-**状态：节点、查询、Task 关联与最小 Task 生命周期已部分落地；当前补齐关联完整性，结构 UI / Dispatcher / Verify-Evidence 仍待施工**
+**状态：结构树、Task 生命周期、Task—节点关联增删与已保存 Verify 快照已进入主线；Dispatcher、关系边管理与真机验收仍待施工**
 
 基础组织前提：Space → 目录（分组）→ Context（项目）。每个 Context 具有名称，并可维护多个 Address（名称 / 地址 / 备注）。
 
@@ -112,7 +112,7 @@ Context 对话
 
 原则：不新增 Project 顶层模型；不做独立 Dashboard；底层关系允许一对多 / 多对多；Task 负责施工交接，结构负责语义关系，Receipt / Evidence / Verify 负责事实依据。
 
-本批基础数据层已新增 `DevelopmentNode`、`DevelopmentRelation`、`DevelopmentTreeStore` 与测试：稳定 ID / code / parentId 分离；关系单独存储并去重；节点限制在同一 Context 内；移动节点防止形成循环；父节点存在子节点时拒绝删除；删除节点时清理关联边；损坏 JSON 原文备份后恢复为空集合。首批 Android Tests 已通过（run 38222950294），已合并至 main（43fc960）。main 上 Verify / Build and Release 当时仍在运行。第二批新增树投影、根节点/子节点查询、入边/出边查询与对应仪器测试。第三批独立建立 `DevelopmentTaskLink` / `DevelopmentTaskLinkStore`，支持 Task—节点多对多关联、Context 校验与查询；PR #97 Android Tests #38224193343 已通过并已合并（`2c4f6a2`）。第四批 PR #98 已合并（Android Tests #38225525007 通过），建立 `DevelopmentTask` / `DevelopmentTaskStore`，包含 CREATED、READY、RUNNING、COMPLETED、FAILED、CANCELLED 状态、迁移守卫、执行次数、结果摘要、失败信息与本地持久化。PR #102 已合并（Android Tests #38226828700 通过），修复时间戳倒退并纠正已完成任务终态测试。生命周期事件记录已整合进 `DevelopmentTaskStore`，避免引入第二套 Task 身份；PR #103 已合并，Android Tests #38234148573 通过。PR #104 已合并，Android Tests #38234490761 通过，Task 状态与事件回执在单次操作中使用同一 SharedPreferences Editor 提交；跨实例并发仍未解决。TaskLink 对真实 Task 的存在性校验与节点删除清理已合并。PR #105 已合并，新增 `DevelopmentVerification` / `DevelopmentVerificationStore` 保存实际 Actions 运行快照。普通对话页 Actions 详情已增加“关联到 Task”入口，限制为当前对话已关联的 Context，并保存 API 返回的运行状态、结论、URL、提交 SHA 与时间；PR #106 Android Tests #38236109281 通过并已合并。后续批次增加“验证记录”入口，按当前 Context 列出记录、查看详情并打开对应 GitHub 页面；该批等待 CI，真机链路待验收。自动同步、Artifacts、失败重试、关系边管理、结构页直接进入施工卡、Dispatcher 与用户确认交互仍未完成。PR #99 的 `ConstructionTask` 仍暂缓合并，避免形成两套任务模型。 本轮关联管理补齐：施工卡详情除新增结构节点关联外，也可逐条解除关联；解除只删除 Task—节点关系，不删除 Task、节点或已保存的 Verify 记录。待本批 Android Tests 与主线工作流验证。
+本批基础数据层已新增 `DevelopmentNode`、`DevelopmentRelation`、`DevelopmentTreeStore` 与测试：稳定 ID / code / parentId 分离；关系单独存储并去重；节点限制在同一 Context 内；移动节点防止形成循环；父节点存在子节点时拒绝删除；删除节点时清理关联边；损坏 JSON 原文备份后恢复为空集合。首批 Android Tests 已通过（run 38222950294），已合并至 main（43fc960）。main 上 Verify / Build and Release 当时仍在运行。第二批新增树投影、根节点/子节点查询、入边/出边查询与对应仪器测试。第三批独立建立 `DevelopmentTaskLink` / `DevelopmentTaskLinkStore`，支持 Task—节点多对多关联、Context 校验与查询；PR #97 Android Tests #38224193343 已通过并已合并（`2c4f6a2`）。第四批 PR #98 已合并（Android Tests #38225525007 通过），建立 `DevelopmentTask` / `DevelopmentTaskStore`，包含 CREATED、READY、RUNNING、COMPLETED、FAILED、CANCELLED 状态、迁移守卫、执行次数、结果摘要、失败信息与本地持久化。PR #102 已合并（Android Tests #38226828700 通过），修复时间戳倒退并纠正已完成任务终态测试。生命周期事件记录已整合进 `DevelopmentTaskStore`，避免引入第二套 Task 身份；PR #103 已合并，Android Tests #38234148573 通过。PR #104 已合并，Android Tests #38234490761 通过，Task 状态与事件回执在单次操作中使用同一 SharedPreferences Editor 提交；跨实例并发仍未解决。TaskLink 对真实 Task 的存在性校验与节点删除清理已合并。PR #105 已合并，新增 `DevelopmentVerification` / `DevelopmentVerificationStore` 保存实际 Actions 运行快照。普通对话页 Actions 详情已增加“关联到 Task”入口，限制为当前对话已关联的 Context，并保存 API 返回的运行状态、结论、URL、提交 SHA 与时间；PR #106 Android Tests #38236109281 通过并已合并。后续批次增加“验证记录”入口，按当前 Context 列出记录、查看详情并打开对应 GitHub 页面；该批等待 CI，真机链路待验收。自动同步、Artifacts、失败重试、关系边管理、结构页直接进入施工卡、Dispatcher 与用户确认交互仍未完成。PR #99 的 `ConstructionTask` 仍暂缓合并，避免形成两套任务模型。 本轮 PR #113 已合并（主线提交 `044b298c`）：施工卡详情支持逐条解除 Task—节点关联；解除只删除关联，不删除 Task、节点或已保存的 Verify 记录。合并后 Android Tests #679、Verify #298、Android Build and Release #850 均成功。
 
 其中 UI / 交互必须预留“待用户确认 → 已确认 → 已变更 / 待重新确认”的状态；用户确认是设计认可，不等同于代码 Verify。第一版可以暂不实现完整确认交互。
 
@@ -133,11 +133,13 @@ Context 对话
 
 **当前只保留“请求 AI 协助”的入口和边界，不提前确定具体协作协议。**
 
-### 下次 APK 构建前：应用标识调整（用户已确认，暂不立即修改）
+### APK 应用标识状态（2026-10-13 更新）
 
-- 将 Android `namespace` 与 `applicationId` 从 `com.owla19s.aps` 调整为 `com.aps`，去掉 `owla19s`；应用桌面显示名称继续保持 `APS`。
-- 这是下次 APK 构建前的计划，不代表当前主线已经修改；在此之前不单独触发 APK 构建。
-- 修改时同步检查 Kotlin/Java 源文件的 `package` 声明、Manifest、相对类名、测试包名、BuildConfig 引用及 Gradle 配置，确保重构完整并通过编译和测试。
+- 主线 `applicationId` 已调整为 `com.aps`；本次 Build and Release 产物 `APS.apk` 已从实际 APK 的二进制 Manifest 字符串中确认包含 `com.aps`，不再使用 `com.owla19s.aps` 作为安装包标识。
+- Android `namespace` 与 Kotlin/Java 源码 package 仍为 `com.owla19s.aps`，这是本次有意保留的内部命名空间，不应误报为已完成整体包名迁移。
+- 本次主线构建产物来自提交 `044b298c349b4d6a9252fecf13e23678095d9ba0`，Build and Release run #850 成功；应用标签与版本号尚未通过解包检查，本次只确认 application ID。
+- 因 `applicationId` 改变，Android 会将新包识别为不同应用，通常不能作为旧 `com.owla19s.aps` 的直接覆盖升级；真机安装前需考虑旧应用数据备份/迁移。
+- 后续若决定彻底移除内部 `owla19s` 命名空间，应单独施工并检查 Kotlin/Java package、Manifest、测试包名、BuildConfig 引用及 Gradle 配置。
 - 因 `applicationId` 改变，Android 会将新包识别为不同应用，通常不能作为旧 `com.owla19s.aps` 的直接覆盖升级；构建前说明安装/数据影响，并检查是否需要保留旧版数据或提供迁移方案。
 - 同次 APK 验收：检查实际 APK Manifest 中的包标识、应用标签 `APS`、桌面图标名称，以及版本号（当前 `0.1.1`，以届时版本决策为准）。
 
