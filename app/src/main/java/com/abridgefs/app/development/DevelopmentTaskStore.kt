@@ -1,12 +1,12 @@
 package com.owla19s.aps.development
 
-/** Shared lock for Task read-modify-write operations across store instances. */
-private val PROCESS_LOCK = Any()
-
 import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
+
+/** Shared lock for Task read-modify-write operations across store instances. */
+private val PROCESS_LOCK = Any()
 
 /** Local Task lifecycle store. State changes are validated here, not inferred from UI text. */
 class DevelopmentTaskStore(context: Context) {
