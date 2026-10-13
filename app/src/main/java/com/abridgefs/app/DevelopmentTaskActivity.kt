@@ -1,6 +1,7 @@
 package com.owla19s.aps
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.Gravity
@@ -30,6 +31,7 @@ import java.util.UUID
 /** Context-scoped Task list and details. Completion and GitHub verification remain separate facts. */
 class DevelopmentTaskActivity : AppCompatActivity() {
     private lateinit var contextId: String
+    private var filterNodeId: String? = null
     private lateinit var tasks: DevelopmentTaskStore
     private lateinit var tree: DevelopmentTreeStore
     private lateinit var links: DevelopmentTaskLinkStore
@@ -46,6 +48,13 @@ class DevelopmentTaskActivity : AppCompatActivity() {
         }
         tasks = DevelopmentTaskStore(this)
         tree = DevelopmentTreeStore(this)
+        val requestedNodeId = intent.getStringExtra(EXTRA_NODE_ID)
+        if (!requestedNodeId.isNullOrBlank() && tree.getNode(contextId, requestedNodeId) == null) {
+            Toast.makeText(this, "结构节点不存在或已删除", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
+        filterNodeId = requestedNodeId?.takeIf { it.isNotBlank() }
         links = DevelopmentTaskLinkStore(this)
         verifications = DevelopmentVerificationStore(this)
         content = LinearLayout(this).apply {
@@ -65,7 +74,7 @@ class DevelopmentTaskActivity : AppCompatActivity() {
     private fun render() {
         content.removeAllViews()
         content.addView(TextView(this).apply {
-            text = "施工卡 / Task"
+            text = filterNodeId?.let { nodeId -> "关联施工卡：${tree.getNode(contextId, nodeId)?.name ?: nodeId}" } ?: "施工卡 / Task"
             textSize = 26f
             setTextColor(Color.rgb(28, 43, 61))
             setTypeface(typeface, android.graphics.Typeface.BOLD)
@@ -80,10 +89,15 @@ class DevelopmentTaskActivity : AppCompatActivity() {
             text = "新建施工卡"
             setOnClickListener { createTask() }
         }, params())
-        val list = tasks.all(contextId)
+        if (filterNodeId != null) content.addView(Button(this).apply {
+            text = "查看全部施工卡"
+            setOnClickListener { filterNodeId = null; render() }
+        }, params())
+        val relatedTaskIds = filterNodeId?.let { nodeId -> links.forNode(contextId, nodeId).map { it.taskId }.toSet() }
+        val list = tasks.all(contextId).filter { relatedTaskIds == null || it.id in relatedTaskIds }
         if (list.isEmpty()) {
             content.addView(TextView(this).apply {
-                text = "此 Context 尚无施工卡。新建后可关联结构节点，并记录状态、事件和已保存的验证结果。"
+                text = if (filterNodeId != null) "此结构节点还没有关联施工卡。点击“新建施工卡”可直接创建并关联。" else "此 Context 尚无施工卡。新建后可关联结构节点，并记录状态、事件和已保存的验证结果。"
                 textSize = 15f
                 setPadding(dp(12), dp(14), dp(12), dp(14))
                 setBackgroundColor(Color.WHITE)
@@ -140,13 +154,25 @@ class DevelopmentTaskActivity : AppCompatActivity() {
                 if (name.isBlank()) { toast("施工卡名称不能为空"); return@setPositiveButton }
                 val now = System.currentTimeMillis()
                 try {
-                    tasks.create(DevelopmentTask(
+                    val created = DevelopmentTask(
                         id = UUID.randomUUID().toString(), contextId = contextId,
                         title = name, description = description.text.toString().trim(),
                         status = DevelopmentTaskStatus.CREATED, createdAtMillis = now, updatedAtMillis = now
-                    ))
+                    )
+                    tasks.create(created)
+                    try {
+                        filterNodeId?.let { nodeId ->
+                            links.save(DevelopmentTaskLink(
+                                id = UUID.randomUUID().toString(), contextId = contextId,
+                                taskId = created.id, nodeId = nodeId
+                            ))
+                        }
+                    } catch (linkError: Exception) {
+                        tasks.delete(contextId, created.id)
+                        throw linkError
+                    }
                     render()
-                    toast("施工卡已创建")
+                    toast(if (filterNodeId == null) "施工卡已创建" else "施工卡已创建并关联到结构节点")
                 } catch (e: Exception) { toast("创建失败：${e.message ?: "未知错误"}") }
             }.show()
     }
@@ -316,5 +342,8 @@ class DevelopmentTaskActivity : AppCompatActivity() {
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
     private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 
-    companion object { const val EXTRA_CONTEXT_ID = "aps.context.id" }
+    companion object {
+        const val EXTRA_CONTEXT_ID = "aps.context.id"
+        const val EXTRA_NODE_ID = "aps.development.node.id"
+    }
 }
