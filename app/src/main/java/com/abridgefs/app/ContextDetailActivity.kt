@@ -200,17 +200,17 @@ class ContextDetailActivity : AppCompatActivity() {
             if (capability in context.enabledCapabilities) {
                 capabilityActions.addView(Button(this).apply {
                     text = label
-                    setOnClickListener(action)
+                    setOnClickListener { action() }
                 }, params())
             }
         }
         addCapability(ContextCapability.CONVERSATION, "从此 Context 开始对话") {
             startActivity(Intent(this, ConversationActivity::class.java)
-                .putExtra(ConversationActivity.EXTRA_CONTEXT_ID, contextId))
+                .putExtra("aps.context.id", contextId))
         }
         addCapability(ContextCapability.LOCAL_FILES, "打开本地文件") {
             startActivity(Intent(this, ConversationActivity::class.java)
-                .putExtra(ConversationActivity.EXTRA_OPEN_LOCAL_FILES, true)
+                .putExtra("aps.open.local.files", true)
                 .putExtra(ConversationActivity.EXTRA_CONTEXT_ID, contextId))
         }
         addCapability(ContextCapability.GITHUB, "GitHub / Actions") {
