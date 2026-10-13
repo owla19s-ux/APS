@@ -157,4 +157,32 @@ class DevelopmentTaskStoreTest {
         }
     }
 
+
+    @Test
+    fun task_duty_persists_and_legacy_records_default_to_build() {
+        val prefs = context.getSharedPreferences("aps_development_tasks", Context.MODE_PRIVATE)
+        prefs.edit().remove("tasks").remove("tasks.corrupt_backup").remove("events").remove("events.corrupt_backup").commit()
+        try {
+            val store = DevelopmentTaskStore(context)
+            store.create(DevelopmentTask(
+                id = "task-review-duty", contextId = "ctx-duty", title = "Review task",
+                duty = DevelopmentTaskDuty.REVIEW, createdAtMillis = 1L
+            ))
+            assertEquals(
+                DevelopmentTaskDuty.REVIEW,
+                DevelopmentTaskStore(context).get("ctx-duty", "task-review-duty")?.duty
+            )
+            prefs.edit().putString(
+                "tasks",
+                """[{"id":"legacy-task","contextId":"ctx-duty","title":"Legacy task","status":"CREATED","attempt":0,"resultSummary":"","errorMessage":"","createdAtMillis":1,"updatedAtMillis":1}]"""
+            ).commit()
+            assertEquals(
+                DevelopmentTaskDuty.BUILD,
+                DevelopmentTaskStore(context).get("ctx-duty", "legacy-task")?.duty
+            )
+        } finally {
+            prefs.edit().remove("tasks").remove("tasks.corrupt_backup").remove("events").remove("events.corrupt_backup").commit()
+        }
+    }
+
 }
