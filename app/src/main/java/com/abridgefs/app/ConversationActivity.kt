@@ -1266,6 +1266,10 @@ class ConversationActivity : AppCompatActivity() {
         originalText: String,
         editor: EditText
     ) {
+        if (profileStore.load(aiConnection.id) == null) {
+            toast("当前没有可用的 AI 配置，请先配置 API 与模型")
+            return
+        }
         val instruction = EditText(this).apply {
             hint = "描述希望 AI 修改什么"
             minLines = 3
