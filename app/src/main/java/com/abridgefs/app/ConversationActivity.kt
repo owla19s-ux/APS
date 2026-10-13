@@ -1280,13 +1280,14 @@ class ConversationActivity : AppCompatActivity() {
 
     private fun safeLocalErrorMessage(error: Throwable): String {
         val message = error.message.orEmpty()
-        val safePrefixes = listOf(
-            "文件在编辑期间已发生变化",
-            "文件在保存前已发生变化",
-            "文件超过 2 MiB",
-            "原文件超过 2 MiB",
-            "写入后校验失败",
-            "当前本地连接只有读取权限",
+        val safeMessages = setOf(
+            "文件在编辑期间已发生变化；为避免覆盖新内容，已取消本次保存",
+            "文件在保存前已发生变化；为避免覆盖新内容，已取消本次保存",
+            "文件超过 2 MiB 文本读取上限",
+            "文件超过 2 MiB 文本写入上限",
+            "原文件超过 2 MiB 安全备份上限，已取消写入以保护现有内容",
+            "写入后校验失败，文件内容与目标内容不一致",
+            "当前本地连接只有读取权限，不能修改文件",
             "当前本地连接未授权读取",
             "当前只允许读取或修改可识别的文本文件",
             "不能读取目录内容为文本",
@@ -1296,9 +1297,8 @@ class ConversationActivity : AppCompatActivity() {
             "无法打开本地文件",
             "无法打开本地文件进行写入"
         )
-        val safeMessage = safePrefixes.firstOrNull { message.startsWith(it) }
-        return if (safeMessage != null) message.take(180)
-        else "文档提供方操作失败（" + error.javaClass.simpleName + "）。请检查目录授权后重试。"
+        return safeMessages.firstOrNull { it == message }
+            ?: "文档提供方操作失败（" + error.javaClass.simpleName + "）。请检查目录授权后重试。"
     }
 
     private fun promptCreateGroup() {
