@@ -1262,8 +1262,9 @@ class ConversationActivity : AppCompatActivity() {
         error: Throwable,
         keepEditorOpen: Boolean = false
     ) {
-        val detail = error.message?.takeIf { it.isNotBlank() }
-            ?: error.javaClass.simpleName
+        // Document providers can include internal paths or provider details in exception messages.
+        // Show only known app-authored messages; unknown provider errors stay generic.
+        val detail = safeLocalErrorMessage(error)
         val recoveryNote = if (keepEditorOpen) {
             "\n\n当前编辑器中的文本会保留。重新选择目录不会自动定位原文件；如需继续编辑，请重新打开目标文件。"
         } else {
@@ -1275,6 +1276,29 @@ class ConversationActivity : AppCompatActivity() {
             .setPositiveButton("重新选择目录") { _, _ -> pickLocalDirectory() }
             .setNegativeButton(if (keepEditorOpen) "保留编辑内容" else "关闭", null)
             .show()
+    }
+
+    private fun safeLocalErrorMessage(error: Throwable): String {
+        val message = error.message.orEmpty()
+        val safePrefixes = listOf(
+            "文件在编辑期间已发生变化",
+            "文件在保存前已发生变化",
+            "文件超过 2 MiB",
+            "原文件超过 2 MiB",
+            "写入后校验失败",
+            "当前本地连接只有读取权限",
+            "当前本地连接未授权读取",
+            "当前只允许读取或修改可识别的文本文件",
+            "不能读取目录内容为文本",
+            "不能把目录当作文本文件写入",
+            "无法读取原文件，已取消写入以保护现有内容",
+            "无法访问本地目录；请检查目录授权是否仍有效",
+            "无法打开本地文件",
+            "无法打开本地文件进行写入"
+        )
+        val safeMessage = safePrefixes.firstOrNull { message.startsWith(it) }
+        return if (safeMessage != null) message.take(180)
+        else "文档提供方操作失败（" + error.javaClass.simpleName + "）。请检查目录授权后重试。"
     }
 
     private fun promptCreateGroup() {
