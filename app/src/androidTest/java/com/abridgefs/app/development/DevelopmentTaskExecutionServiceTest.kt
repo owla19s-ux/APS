@@ -70,7 +70,7 @@ class DevelopmentTaskExecutionServiceTest {
             val saved = store.get("ctx-exec", "exec-fail")
             assertEquals(DevelopmentTaskStatus.FAILED, saved?.status)
             assertTrue(saved?.errorMessage?.contains("sensitive provider detail") == false)
-            assertEquals(3, store.events("ctx-exec", "exec-fail").size)
+            assertEquals(4, store.events("ctx-exec", "exec-fail").size)
         } finally {
             clear()
         }
