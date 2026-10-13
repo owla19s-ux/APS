@@ -274,9 +274,9 @@ class DevelopmentTaskActivity : AppCompatActivity() {
             .setItems(actions.toTypedArray()) { _, which ->
                 when {
                     which < allowed.size -> {
-                    if (allowed[which] == "交给 AI 执行") executeTask(task.id)
-                    else changeStatus(task, allowed[which])
-                }
+                        if (allowed[which] == "交给 AI 执行") executeTask(task.id)
+                        else changeStatus(task, allowed[which])
+                    }
                     which == allowed.size -> chooseNode(task.id)
                     taskLinks.isNotEmpty() && which == allowed.size + 1 -> chooseLinkToRemove(task.id)
                     else -> confirmDelete(task.id)
@@ -306,10 +306,9 @@ class DevelopmentTaskActivity : AppCompatActivity() {
             toast("找不到当前 Context 的 AI 配置，请检查连接与密钥")
             return
         }
+        val registry = AIConnectorRegistry(profileProvider = profileStore::load)
         val connector = runCatching {
-            AIConnectorRegistry(profileProvider = profileStore::load).resolve(
-                AIConnectorRegistry(profileProvider = profileStore::load).connection(profile)
-            )
+            registry.resolve(registry.connection(profile))
         }.getOrElse {
             toast("AI Connector 初始化失败：${it.javaClass.simpleName}")
             return
@@ -339,7 +338,8 @@ class DevelopmentTaskActivity : AppCompatActivity() {
                         runOnUiThread {
                             render()
                             showDetails(taskId)
-                            toast("AI 执行未完成：${error.message ?: error.javaClass.simpleName}")
+                            // Provider exceptions may contain URLs or request details; keep the UI message sanitized.
+                            toast("AI 执行未完成：${error.javaClass.simpleName}")
                         }
                     }
                 }.start()
