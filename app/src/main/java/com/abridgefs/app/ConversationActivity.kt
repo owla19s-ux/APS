@@ -1214,12 +1214,16 @@ class ConversationActivity : AppCompatActivity() {
                         // Keep the editor open on conflict or write failure so unsaved edits
                         // remain available for copying/reloading instead of being discarded.
                         dialogBuilder.setPositiveButton("保存修改", null)
+                        dialogBuilder.setNeutralButton("AI 修改建议", null)
                     } else {
                         dialogBuilder.setPositiveButton("完成", null)
                     }
                     val editorDialog = dialogBuilder.create()
                     editorDialog.setOnShowListener {
                         if (connection.canWrite) {
+                            editorDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
+                                promptLocalAiEdit(entry, fileText, editor)
+                            }
                             val saveButton = editorDialog.getButton(AlertDialog.BUTTON_POSITIVE)
                             saveButton.setOnClickListener {
                                 val newText = editor.text.toString()
@@ -1255,6 +1259,125 @@ class ConversationActivity : AppCompatActivity() {
                 }
             }
         }.start()
+    }
+
+    private fun promptLocalAiEdit(
+        entry: LocalEntry,
+        originalText: String,
+        editor: EditText
+    ) {
+        val instruction = EditText(this).apply {
+            hint = "描述希望 AI 修改什么"
+            minLines = 3
+            gravity = Gravity.TOP
+        }
+        AlertDialog.Builder(this)
+            .setTitle("生成 AI 修改建议")
+            .setMessage("文件内容将发送给当前对话选择的 AI 连接。AI 只生成建议，不会直接写入文件；你可以先检查差异，再选择是否载入编辑器。载入后仍需手动点击“保存修改”。")
+            .setView(instruction)
+            .setNegativeButton("取消", null)
+            .setPositiveButton("生成建议") { _, _ ->
+                val userInstruction = instruction.text.toString().trim()
+                if (userInstruction.isBlank()) {
+                    toast("请先描述修改要求")
+                    return@setPositiveButton
+                }
+                val request = AIRequest(
+                    contextId = current?.contextId,
+                    userText = buildString {
+                        appendLine("请根据用户要求修改下面的文本文件。")
+                        appendLine("文件名：${entry.displayName}")
+                        appendLine("用户要求：")
+                        appendLine(userInstruction)
+                        appendLine()
+                        appendLine("必须只返回修改后的完整文件内容，不要 Markdown 代码围栏、解释或前后缀。")
+                        appendLine("如果无法完成修改，请只返回以 APS_EDIT_ERROR: 开头的原因，不要编造文件内容。")
+                        appendLine()
+                        appendLine("原始文件内容开始：")
+                        appendLine(originalText)
+                        appendLine("原始文件内容结束。")
+                    }
+                )
+                toast("正在生成 AI 修改建议")
+                Thread {
+                    val result = runCatching {
+                        kotlinx.coroutines.runBlocking { connector.send(request) }.text
+                    }
+                    runOnUiThread {
+                        result.onSuccess { proposedText ->
+                            if (proposedText.isBlank()) {
+                                toast("AI 返回了空修改建议")
+                            } else if (proposedText.startsWith("APS_EDIT_ERROR:")) {
+                                toast("AI 无法生成修改建议，请调整要求后重试")
+                            } else if (proposedText.toByteArray(Charsets.UTF_8).size > 2 * 1024 * 1024) {
+                                toast("AI 修改建议超过 2 MiB 限制，未载入编辑器")
+                            } else if (proposedText == originalText) {
+                                toast("AI 建议与原文件相同，无需修改")
+                            } else {
+                                showLocalAiEditProposal(originalText, proposedText, editor)
+                            }
+                        }.onFailure { error ->
+                            toast("AI 修改建议生成失败：" + error.javaClass.simpleName)
+                        }
+                    }
+                }.start()
+            }
+            .show()
+    }
+
+    private fun showLocalAiEditProposal(
+        originalText: String,
+        proposedText: String,
+        editor: EditText
+    ) {
+        val oldLines = originalText.split("\\n")
+        val newLines = proposedText.split("\\n")
+        var prefix = 0
+        while (prefix < oldLines.size && prefix < newLines.size &&
+            oldLines[prefix] == newLines[prefix]
+        ) {
+            prefix++
+        }
+        var suffix = 0
+        while (suffix < oldLines.size - prefix && suffix < newLines.size - prefix &&
+            oldLines[oldLines.lastIndex - suffix] == newLines[newLines.lastIndex - suffix]
+        ) {
+            suffix++
+        }
+        val removed = oldLines.subList(prefix, oldLines.size - suffix)
+        val added = newLines.subList(prefix, newLines.size - suffix)
+        val previewLimit = 120
+        val preview = buildString {
+            appendLine("文件：原内容与 AI 建议的差异")
+            appendLine("共同前缀：${prefix} 行；共同后缀：${suffix} 行")
+            appendLine()
+            appendLine("--- 删除 / 原内容")
+            removed.take(previewLimit).forEach { appendLine("- $it") }
+            if (removed.size > previewLimit) appendLine("… 另有 ${removed.size - previewLimit} 行未显示")
+            appendLine()
+            appendLine("+++ 新增 / AI 建议")
+            added.take(previewLimit).forEach { appendLine("+ $it") }
+            if (added.size > previewLimit) appendLine("… 另有 ${added.size - previewLimit} 行未显示")
+            appendLine()
+            appendLine("采用建议只会替换当前编辑器文本，不会立即写入文件。")
+        }
+        val previewView = TextView(this).apply {
+            text = preview
+            textSize = 13f
+            setTextColor(Color.rgb(28, 43, 61))
+            setPadding(24, 16, 24, 16)
+            setTextIsSelectable(true)
+        }
+        AlertDialog.Builder(this)
+            .setTitle("审阅 AI 修改差异")
+            .setView(ScrollView(this).apply { addView(previewView) })
+            .setNegativeButton("放弃建议", null)
+            .setPositiveButton("采用建议") { _, _ ->
+                editor.setText(proposedText)
+                editor.setSelection(editor.text.length)
+                toast("建议已载入编辑器；尚未保存")
+            }
+            .show()
     }
 
     private fun showLocalAccessFailure(
