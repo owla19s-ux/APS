@@ -34,6 +34,32 @@ class ContextStoreTest {
     }
 
     @Test
+    fun context_persists_selected_capabilities() {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        val store = ContextStore(appContext)
+        store.delete("ctx-capability-test")
+        val context = Context("ctx-capability-test", "Capabilities", enabledCapabilities = setOf(
+            ContextCapability.CONVERSATION, ContextCapability.GITHUB, ContextCapability.TASKS
+        ))
+        store.save(context)
+        assertEquals(context, ContextStore(appContext).get(context.id))
+        store.delete(context.id)
+    }
+
+    @Test
+    fun legacy_context_without_capability_field_keeps_all_existing_entries() {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        val prefs = appContext.getSharedPreferences("aps_contexts", android.content.Context.MODE_PRIVATE)
+        val oldData = prefs.getString("data", null)
+        try {
+            prefs.edit().putString("data", "[{\\"id\\":\\"ctx-legacy-capabilities\\",\\"name\\":\\"Legacy\\"}]").commit()
+            assertEquals(ContextCapability.legacyDefault, ContextStore(appContext).get("ctx-legacy-capabilities")?.enabledCapabilities)
+        } finally {
+            if (oldData == null) prefs.edit().remove("data").commit() else prefs.edit().putString("data", oldData).commit()
+        }
+    }
+
+    @Test
     fun unreadable_context_data_is_backed_up_before_empty_recovery() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val prefs = appContext.getSharedPreferences("aps_contexts", android.content.Context.MODE_PRIVATE)
