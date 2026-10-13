@@ -53,7 +53,7 @@ class LocalFileConnectorTest {
         val connector = LocalFileConnector(connection(canWrite = false), gateway)
 
         val error = assertThrows(IllegalStateException::class.java) {
-            runBlocking { connector.writeText(gateway.entry, "after") }
+            runBlocking { connector.writeText(gateway.entry, "after", expectedOriginalContent = "before") }
         }
         assertTrue(error.message!!.contains("读取权限"))
         assertEquals(null, gateway.written)
@@ -64,7 +64,7 @@ class LocalFileConnectorTest {
         val gateway = FakeGateway()
         val connector = LocalFileConnector(connection(canWrite = true), gateway)
 
-        connector.writeText(gateway.entry, "after")
+        connector.writeText(gateway.entry, "after", expectedOriginalContent = "before")
 
         assertEquals("after", gateway.written)
     }

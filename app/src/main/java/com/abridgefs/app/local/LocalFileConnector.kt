@@ -23,22 +23,20 @@ class LocalFileConnector(
     suspend fun writeText(
         entry: LocalEntry,
         content: String,
-        expectedOriginalContent: String? = null
+        expectedOriginalContent: String
     ) = withContext(Dispatchers.IO) {
         requireRead()
         check(connection.canWrite) { "当前本地连接只有读取权限，不能修改文件" }
         requireTextFile(entry)
         check(!entry.isDirectory) { "不能把目录当作文本文件写入" }
-        if (expectedOriginalContent == null) {
-            gateway.writeText(connection.treeUri, entry.documentId, content)
-        } else {
-            gateway.writeTextIfUnchanged(
-                connection.treeUri,
-                entry.documentId,
-                expectedOriginalContent,
-                content
-            )
-        }
+        // Existing-file writes must be based on the exact snapshot shown to the editor.
+        // Requiring this value prevents callers from accidentally bypassing conflict detection.
+        gateway.writeTextIfUnchanged(
+            connection.treeUri,
+            entry.documentId,
+            expectedOriginalContent,
+            content
+        )
     }
 
     private fun requireRead() {
