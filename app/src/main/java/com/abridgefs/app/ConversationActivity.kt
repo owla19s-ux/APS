@@ -1056,7 +1056,7 @@ class ConversationActivity : AppCompatActivity() {
                     localConnectionStore.delete(connection.id)
                     toast("本地目录授权已撤销")
                 }.onFailure { error ->
-                    toast("撤销授权失败：" + (error.message ?: error.javaClass.simpleName))
+                    toast("撤销授权失败：" + safeLocalErrorMessage(error))
                 }
             }
             .show()
@@ -1126,7 +1126,7 @@ class ConversationActivity : AppCompatActivity() {
             toast(if (canWrite) "本地目录已授权读取和写入" else "本地目录已授权读取")
             showLocalEntries(connection, null)
         } catch (error: Exception) {
-            toast("保存本地目录授权失败：" + (error.message ?: "未知错误"))
+            toast("保存本地目录授权失败：" + safeLocalErrorMessage(error))
         }
     }
 
