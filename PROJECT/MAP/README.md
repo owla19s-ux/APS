@@ -262,5 +262,5 @@
 - 新增稳定功能标识：`conversation`、`local_files`、`github`、`development_tree`、`tasks`，由 `Context.enabledCapabilities` 保存并由 `ContextStore` 持久化。
 - 新建 Context 支持勾选功能，默认勾选对话和本地文件操作；Context 详情页可调整组合，并只显示已启用模块的入口。
 - 关联 Context 的对话页根据功能配置显示 Local、GitHub、Actions 和验证入口；独立普通对话继续保留全局工具。
-- 旧记录缺少功能配置时采用兼容默认值，保留既有入口；关闭功能只隐藏入口，不删除任何历史数据或远端资源。
+- 旧记录缺少功能配置时读取为兼容默认值，保留既有入口；记录下次保存时会写入显式配置。关闭功能只隐藏入口，不删除任何历史数据或远端资源。
 - 功能启用状态不是连接认证或操作授权；施工卡与 Verify 仍保持事实边界。以上实现待 PR CI，未作真机端到端声明。
