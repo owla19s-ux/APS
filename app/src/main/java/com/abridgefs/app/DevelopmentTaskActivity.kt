@@ -156,7 +156,14 @@ class DevelopmentTaskActivity : AppCompatActivity() {
         val form = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(20), dp(8), dp(20), 0)
-            addView(title, params()); addView(duty, params()); addView(description, params())
+            addView(title, params())
+            addView(TextView(this@DevelopmentTaskActivity).apply {
+                text = "职责（与 AI Code 权限等级分开）"
+                textSize = 13f
+                setTextColor(Color.rgb(69, 88, 108))
+            }, params())
+            addView(duty, params())
+            addView(description, params())
         }
         AlertDialog.Builder(this).setTitle("新建施工卡").setView(form)
             .setNegativeButton("取消", null)
