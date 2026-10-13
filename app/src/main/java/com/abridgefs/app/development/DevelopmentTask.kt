@@ -6,6 +6,7 @@ data class DevelopmentTask(
     val contextId: String,
     val title: String,
     val description: String = "",
+    val duty: DevelopmentTaskDuty = DevelopmentTaskDuty.BUILD,
     val status: DevelopmentTaskStatus = DevelopmentTaskStatus.CREATED,
     val attempt: Int = 0,
     val resultSummary: String = "",
@@ -30,4 +31,11 @@ enum class DevelopmentTaskStatus {
     COMPLETED,
     FAILED,
     CANCELLED
+}
+
+/** Responsibility assigned to a construction card; distinct from AI Code permission levels. */
+enum class DevelopmentTaskDuty(val displayName: String) {
+    SPLIT("拆分"),
+    BUILD("施工"),
+    REVIEW("审查")
 }
