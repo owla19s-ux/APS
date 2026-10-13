@@ -311,7 +311,7 @@ class ConversationActivity : AppCompatActivity() {
         val githubEnabled = enabled == null || ContextCapability.GITHUB in enabled
         githubReadButton.visibility = if (githubEnabled) View.VISIBLE else View.GONE
         actionsButton.visibility = if (githubEnabled) View.VISIBLE else View.GONE
-        verificationButton.visibility = if (githubEnabled || (enabled != null && ContextCapability.TASKS in enabled)) View.VISIBLE else View.GONE
+        verificationButton.visibility = if (enabled == null || ContextCapability.TASKS in enabled) View.VISIBLE else View.GONE
     }
 
     private fun createConversation() {
