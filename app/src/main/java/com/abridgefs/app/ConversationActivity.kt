@@ -1347,6 +1347,14 @@ class ConversationActivity : AppCompatActivity() {
         val removed = oldLines.subList(prefix, oldLines.size - suffix)
         val added = newLines.subList(prefix, newLines.size - suffix)
         val previewLimit = 120
+        if (removed.size > previewLimit || added.size > previewLimit) {
+            AlertDialog.Builder(this)
+                .setTitle("修改差异过大")
+                .setMessage("本次 AI 建议的变更超过安全预览上限（每侧 ${previewLimit} 行），为避免在未完整审阅的情况下采用，当前不会载入该建议。请缩小修改范围后重新生成。")
+                .setPositiveButton("关闭", null)
+                .show()
+            return
+        }
         val preview = buildString {
             appendLine("文件：原内容与 AI 建议的差异")
             appendLine("共同前缀：${prefix} 行；共同后缀：${suffix} 行")
