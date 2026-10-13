@@ -157,4 +157,49 @@ class DevelopmentTaskStoreTest {
         }
     }
 
+
+    @Test
+    fun task_duty_persists_across_store_instances() {
+        val prefs = context.getSharedPreferences("aps_development_tasks", Context.MODE_PRIVATE)
+        prefs.edit().remove("tasks").remove("tasks.corrupt_backup").remove("events").remove("events.corrupt_backup").commit()
+        try {
+            DevelopmentTaskStore(context).create(
+                DevelopmentTask("task-duty", "ctx-duty", "Duty persistence", duty = DevelopmentTaskDuty.REVIEW)
+            )
+            assertEquals(
+                DevelopmentTaskDuty.REVIEW,
+                DevelopmentTaskStore(context).get("ctx-duty", "task-duty")?.duty
+            )
+        } finally {
+            prefs.edit().remove("tasks").remove("tasks.corrupt_backup").remove("events").remove("events.corrupt_backup").commit()
+        }
+    }
+
+    @Test
+    fun legacy_task_without_duty_defaults_to_build() {
+        val prefs = context.getSharedPreferences("aps_development_tasks", Context.MODE_PRIVATE)
+        val legacyTask = org.json.JSONObject().apply {
+            put("id", "legacy-task")
+            put("contextId", "ctx-legacy")
+            put("title", "Legacy task")
+            put("description", "")
+            put("status", DevelopmentTaskStatus.CREATED.name)
+            put("attempt", 0)
+            put("resultSummary", "")
+            put("errorMessage", "")
+            put("createdAtMillis", 1L)
+            put("updatedAtMillis", 1L)
+        }
+        prefs.edit().putString("tasks", org.json.JSONArray().put(legacyTask).toString())
+            .remove("events").remove("tasks.corrupt_backup").remove("events.corrupt_backup").commit()
+        try {
+            assertEquals(
+                DevelopmentTaskDuty.BUILD,
+                DevelopmentTaskStore(context).get("ctx-legacy", "legacy-task")?.duty
+            )
+        } finally {
+            prefs.edit().remove("tasks").remove("tasks.corrupt_backup").remove("events").remove("events.corrupt_backup").commit()
+        }
+    }
+
 }
