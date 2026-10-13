@@ -91,6 +91,10 @@ class DevelopmentTaskActivity : AppCompatActivity() {
             text = "新建施工卡"
             setOnClickListener { createTask() }
         }, params())
+        content.addView(Button(this).apply {
+            text = "待调度队列"
+            setOnClickListener { showReadyQueue() }
+        }, params())
         if (filterNodeId != null) content.addView(Button(this).apply {
             text = "查看全部施工卡"
             setOnClickListener { filterNodeId = null; render() }
@@ -139,6 +143,27 @@ class DevelopmentTaskActivity : AppCompatActivity() {
             card.setOnClickListener { showDetails(task.id) }
             content.addView(card, params().apply { bottomMargin = dp(8) })
         }
+    }
+
+
+    private fun showReadyQueue() {
+        val queue = com.owla19s.aps.development.DevelopmentTaskDispatcher.readyQueue(tasks.all(contextId), contextId)
+        if (queue.isEmpty()) {
+            AlertDialog.Builder(this)
+                .setTitle("待调度队列")
+                .setMessage("当前 Context 没有待执行的 READY 施工卡。此队列只筛选本地任务，不会自动启动 AI 或 GitHub Workflow。")
+                .setPositiveButton("确定", null)
+                .show()
+            return
+        }
+        val labels = queue.map { task ->
+            "${task.duty.displayName} · ${task.title} · ${formatTime(task.createdAtMillis)}"
+        }
+        AlertDialog.Builder(this)
+            .setTitle("待调度队列（${queue.size}）")
+            .setItems(labels.toTypedArray()) { _, index -> showDetails(queue[index].id) }
+            .setNegativeButton("关闭", null)
+            .show()
     }
 
     private fun createTask() {
