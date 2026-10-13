@@ -131,6 +131,7 @@ class DevelopmentTaskStore(context: Context) {
                         contextId = item.getString("contextId"),
                         title = item.getString("title"),
                         description = item.optString("description"),
+                        duty = DevelopmentTaskDuty.valueOf(item.optString("duty", DevelopmentTaskDuty.BUILD.name)),
                         status = DevelopmentTaskStatus.valueOf(item.getString("status")),
                         attempt = item.optInt("attempt", 0),
                         resultSummary = item.optString("resultSummary"),
@@ -175,7 +176,7 @@ class DevelopmentTaskStore(context: Context) {
         val taskArray = JSONArray()
         tasks.forEach { task -> taskArray.put(JSONObject().apply {
             put("id", task.id); put("contextId", task.contextId); put("title", task.title)
-            put("description", task.description); put("status", task.status.name)
+            put("description", task.description); put("duty", task.duty.name); put("status", task.status.name)
             put("attempt", task.attempt); put("resultSummary", task.resultSummary)
             put("errorMessage", task.errorMessage); put("createdAtMillis", task.createdAtMillis)
             put("updatedAtMillis", task.updatedAtMillis)
@@ -198,6 +199,7 @@ class DevelopmentTaskStore(context: Context) {
             put("contextId", task.contextId)
             put("title", task.title)
             put("description", task.description)
+            put("duty", task.duty.name)
             put("status", task.status.name)
             put("attempt", task.attempt)
             put("resultSummary", task.resultSummary)
