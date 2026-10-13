@@ -1,6 +1,7 @@
 package com.owla19s.aps
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.Gravity
@@ -111,7 +112,7 @@ class DevelopmentTreeActivity : AppCompatActivity() {
     }
 
     private fun nodeActions(node: DevelopmentNode, hasChildren: Boolean) {
-        val actions = mutableListOf("编辑节点", "添加子节点", if (node.id in expanded) "收起子节点" else "展开子节点", "移动节点", "删除节点")
+        val actions = mutableListOf("编辑节点", "添加子节点", if (node.id in expanded) "收起子节点" else "展开子节点", "移动节点", "删除节点", "查看关联施工卡")
         AlertDialog.Builder(this).setTitle(node.name).setItems(actions.toTypedArray()) { dialog, which ->
             when (which) {
                 0 -> editNode(node, node.parentId)
@@ -119,6 +120,9 @@ class DevelopmentTreeActivity : AppCompatActivity() {
                 2 -> { if (!expanded.add(node.id)) expanded.remove(node.id); render() }
                 3 -> chooseParent(node)
                 4 -> confirmDelete(node, hasChildren)
+                5 -> startActivity(Intent(this, DevelopmentTaskActivity::class.java)
+                    .putExtra(DevelopmentTaskActivity.EXTRA_CONTEXT_ID, contextId)
+                    .putExtra(DevelopmentTaskActivity.EXTRA_NODE_ID, node.id))
             }
             dialog.dismiss()
         }.setNegativeButton("取消", null).show()
