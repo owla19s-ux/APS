@@ -52,7 +52,7 @@ class ContextStoreTest {
         val prefs = appContext.getSharedPreferences("aps_contexts", android.content.Context.MODE_PRIVATE)
         val oldData = prefs.getString("data", null)
         try {
-            prefs.edit().putString("data", "[{\\"id\\":\\"ctx-legacy-capabilities\\",\\"name\\":\\"Legacy\\"}]").commit()
+            prefs.edit().putString("data", """[{"id":"ctx-legacy-capabilities","name":"Legacy"}]""").commit()
             assertEquals(ContextCapability.legacyDefault, ContextStore(appContext).get("ctx-legacy-capabilities")?.enabledCapabilities)
         } finally {
             if (oldData == null) prefs.edit().remove("data").commit() else prefs.edit().putString("data", oldData).commit()
