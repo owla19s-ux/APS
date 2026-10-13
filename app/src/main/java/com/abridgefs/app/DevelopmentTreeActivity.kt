@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.owla19s.aps.context.ContextStore
 import com.owla19s.aps.development.DevelopmentNode
+import com.owla19s.aps.development.DevelopmentRelation
 import com.owla19s.aps.development.DevelopmentTreeBranch
 import com.owla19s.aps.development.DevelopmentTreeStore
 import java.util.UUID
@@ -66,6 +67,10 @@ class DevelopmentTreeActivity : AppCompatActivity() {
         content.addView(Button(this).apply {
             text = "新增顶层节点"
             setOnClickListener { editNode(null, null) }
+        }, params())
+        content.addView(Button(this).apply {
+            text = "管理关系边"
+            setOnClickListener { showRelationsDialog() }
         }, params())
         val branches = treeStore.tree(contextId)
         if (branches.isEmpty()) {
@@ -127,6 +132,111 @@ class DevelopmentTreeActivity : AppCompatActivity() {
             dialog.dismiss()
         }.setNegativeButton("取消", null).show()
     }
+
+    private fun showRelationsDialog() {
+        val relations = treeStore.allRelations(contextId)
+        val labels = relations.map { relation ->
+            "${nodeLabel(relation.sourceId)} — ${relation.relationType} → ${nodeLabel(relation.targetId)}"
+        }.ifEmpty { listOf("暂无关系边；点击“新增关系边”创建") }
+        AlertDialog.Builder(this)
+            .setTitle("关系边管理")
+            .setItems(labels.toTypedArray()) { _, which ->
+                if (relations.isNotEmpty()) confirmDeleteRelation(relations[which])
+            }
+            .setPositiveButton("新增关系边") { _, _ -> chooseRelationSource() }
+            .setNegativeButton("关闭", null)
+            .show()
+    }
+
+    private fun chooseRelationSource() {
+        val nodes = treeStore.allNodes(contextId)
+        if (nodes.size < 2) {
+            toast("至少需要两个结构节点才能建立关系边")
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("选择关系源节点")
+            .setItems(nodes.map { "${it.name} · ${it.type}" }.toTypedArray()) { _, which ->
+                chooseRelationTarget(nodes[which])
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun chooseRelationTarget(source: DevelopmentNode) {
+        val targets = treeStore.allNodes(contextId).filter { it.id != source.id }
+        AlertDialog.Builder(this)
+            .setTitle("选择目标节点")
+            .setItems(targets.map { "${it.name} · ${it.type}" }.toTypedArray()) { _, which ->
+                editRelation(source, targets[which])
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun editRelation(source: DevelopmentNode, target: DevelopmentNode) {
+        val relationType = EditText(this).apply { hint = "关系类型（如 depends_on / implements）" }
+        val notes = EditText(this).apply { hint = "备注（可留空）"; minLines = 2 }
+        val form = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), dp(8), dp(20), 0)
+            addView(TextView(this@DevelopmentTreeActivity).apply {
+                text = "${source.name} → ${target.name}"
+                textSize = 14f
+                setTextColor(Color.rgb(69, 88, 108))
+            }, params())
+            addView(relationType, params())
+            addView(notes, params())
+        }
+        AlertDialog.Builder(this)
+            .setTitle("新增关系边")
+            .setView(form)
+            .setNegativeButton("取消", null)
+            .setPositiveButton("保存") { _, _ ->
+                val type = relationType.text.toString().trim()
+                if (type.isBlank()) {
+                    toast("关系类型不能为空")
+                    return@setPositiveButton
+                }
+                try {
+                    treeStore.saveRelation(
+                        DevelopmentRelation(
+                            id = UUID.randomUUID().toString(),
+                            contextId = contextId,
+                            sourceId = source.id,
+                            targetId = target.id,
+                            relationType = type,
+                            notes = notes.text.toString().trim()
+                        )
+                    )
+                    toast("关系边已保存")
+                    showRelationsDialog()
+                } catch (e: Exception) {
+                    toast("保存失败：${e.message ?: "未知错误"}")
+                }
+            }
+            .show()
+    }
+
+    private fun confirmDeleteRelation(relation: DevelopmentRelation) {
+        AlertDialog.Builder(this)
+            .setTitle("删除关系边")
+            .setMessage("${nodeLabel(relation.sourceId)} — ${relation.relationType} → ${nodeLabel(relation.targetId)}\n只删除这条关系，不删除结构节点或施工卡。")
+            .setNegativeButton("取消") { _, _ -> showRelationsDialog() }
+            .setPositiveButton("删除") { _, _ ->
+                try {
+                    treeStore.deleteRelation(contextId, relation.id)
+                    toast("关系边已删除")
+                    showRelationsDialog()
+                } catch (e: Exception) {
+                    toast("删除失败：${e.message ?: "未知错误"}")
+                }
+            }
+            .show()
+    }
+
+    private fun nodeLabel(nodeId: String): String =
+        treeStore.getNode(contextId, nodeId)?.name ?: "已删除节点"
 
     private fun editNode(existing: DevelopmentNode?, parentId: String?) {
         val name = EditText(this).apply { hint = "节点名称"; setText(existing?.name.orEmpty()) }
