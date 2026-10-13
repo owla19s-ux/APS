@@ -31,6 +31,7 @@ import com.owla19s.aps.local.LocalConnection
 import com.owla19s.aps.local.LocalConnectionStore
 import com.owla19s.aps.local.LocalEntry
 import com.owla19s.aps.local.LocalFileConnector
+import com.owla19s.aps.local.LocalErrorMessage
 import com.owla19s.aps.github.GitHubConversationReadConfigStore
 import com.owla19s.aps.github.GitHubConversationReader
 import com.owla19s.aps.github.GitHubWorkflowRunSummary
