@@ -48,7 +48,7 @@
 | UI-007 | UI-006 | Context 基本信息与管理 | 名称、备注；创建、查看、编辑、删除、移动、复制、归档 | FN-002 | 已确认 | 部分实现：Context 数据模型和 SharedPreferences Store 存在；统一 CRUD UI/完整动作未发现 |
 | UI-008 | UI-006 | Address / Resource 区域 | 管理多个地址；选择资源；区分位置与实际内容 | FN-004,FN-011 | 已确认 | 部分实现：Context 目前可关联 GitHub ResourceRef；通用 Address 与 Local/File Resource 尚未发现 |
 | UI-009 | UI-006 | 连接与权限区域 | 选择 Context 可用连接并管理资源操作授权 | FN-022,FN-011,FN-020 | 已确认 | 部分实现：GitHub Connection 装配/写权限边界有代码；通用授权与 UI 未发现 |
-| UI-010 | UI-006 | 软件开发结构 | 结构树、施工表、验证视图；用户确认 UI 方案 | FN-017,FN-018,FN-019 | 已确认 | 已接入独立结构页：节点新增/编辑/移动/删除与层级展开；施工卡页提供 Task 生命周期、Task—节点关联与已保存的 GitHub Verify 快照；本批已补齐逐条解除 Task—节点关联；合并后 Android Tests #679、Verify #298、Build and Release #850 均通过。本批新增结构节点直达关联施工卡入口：可从节点菜单打开按节点筛选的 Task 列表，并在此新建自动关联当前节点的 Task；当前批次待 CI 验证。本批新增关系边管理入口，PR #116 已合并（`c04b4e8c`），合并后 Android Tests #685、Verify #301、Build and Release #854 均成功；Dispatcher、用户确认交互及真机端到端验收仍待完成。TaskStore 跨实例并发写入互斥修复已合并（PR #117），三项主线工作流均成功；PR #119 已合并 Task 拆分 / 施工 / 审查职责字段，旧记录默认施工职责；当前批次新增 READY 队列选择器与队列入口，按 Context、READY 状态、创建时间筛选，不自动执行 AI 或 GitHub Workflow，待 CI |
+| UI-010 | UI-006 | 软件开发结构 | 结构树、施工表、验证视图；用户确认 UI 方案 | FN-017,FN-018,FN-019 | 已确认 | 已接入独立结构页：节点新增/编辑/移动/删除与层级展开；施工卡页提供 Task 生命周期、Task—节点关联与已保存的 GitHub Verify 快照；本批已补齐逐条解除 Task—节点关联；合并后 Android Tests #679、Verify #298、Build and Release #850 均通过。本批新增结构节点直达关联施工卡入口：可从节点菜单打开按节点筛选的 Task 列表，并在此新建自动关联当前节点的 Task；当前批次待 CI 验证。本批新增关系边管理入口，PR #116 已合并（`c04b4e8c`），合并后 Android Tests #685、Verify #301、Build and Release #854 均成功；Dispatcher、用户确认交互及真机端到端验收仍待完成。TaskStore 跨实例并发写入互斥修复已合并（PR #117），三项主线工作流均成功；PR #119 已合并 Task 拆分 / 施工 / 审查职责字段，旧记录默认施工职责；PR #120 已合并（`4e807ecc`），主线 Android Tests #38371902123、Verify #38371902199、Build and Release #38371902115 均成功。READY 队列按 Context、状态和创建时间筛选，不自动执行。当前分支新增显式 Task→AI 交接：施工卡详情可把 READY Task 发送给当前 Context 绑定的 AI Connection，结果保存为 REVIEW_REQUIRED，失败保存为 FAILED；不承诺代码写入、Commit 或 GitHub Verify，待 CI |
 | UI-011 | UI-001 | 普通对话页 | 独立对话，不强制关联 Context | FN-005,FN-006,FN-007,FN-008,FN-009,FN-013,FN-014,FN-016 | 已确认 | 部分实现：ConversationActivity 是 Launcher，真实 AI 对话、本地文件入口、GitHub 只读文件入口已接入；Actions 运行列表与单次运行详情已接入；合并后 Android Tests #38205186446、Verify #38205186448、Build and Release #38205186456 均通过，真实设备验收待完成 |
 | UI-012 | UI-011 | 对话分组 | 新建、重命名、删除分组；移动对话 | FN-006 | 已确认 | 已实现待验证：Activity 已接入分组筛选、新建/重命名/删除分组及移动对话入口；CI 已通过，仍需设备交互验收 |
 | UI-013 | UI-011 | 对话管理列表 | 新建、查看、切换、重命名、删除对话 | FN-005,FN-007 | 已确认 | 已实现待验证：Activity 已接入新建/切换/重命名/删除；保存失败边界与设备交互仍待验收 |
@@ -242,6 +242,13 @@
 本索引不会替代这些规范或源码。出现冲突时，按正式产品语义判断设计，再以当前源码与实际 Verify 证据更新实现状态。
 
 
+
+### 2026-10-13 实施状态补记：READY Task → AI 显式交接
+
+- 主线 PR #120（提交 `4e807ecc`）的 Android Tests #38371902123、Verify #38371902199、Build and Release #38371902115 均成功。
+- 当前施工分支新增 `DevelopmentTaskExecutionService`：只接受当前 Context 中处于 READY 的 Task；先通过生命周期迁移进入 RUNNING，向已解析的 AI Connector 发送施工卡职责、标题和说明；成功将 AI 文本结果保存到 `resultSummary` 并进入 REVIEW_REQUIRED，失败记录 FAILED 和脱敏错误类型，协程取消时尽力记录 CANCELLED。
+- 施工卡详情新增“交给 AI 执行”明确确认入口，要求 Context 已绑定可解析的 AI Profile。执行结果仍需人工审查；此交接不会自动修改 Local/GitHub 文件、创建 Commit 或触发/判定 GitHub Verify。
+- 新增 instrumentation tests 覆盖成功回写、失败状态和敏感错误信息不落入 Task 错误字段。该批仍待 PR CI；在 CI 成功前不合并，不宣称真机端到端完成。
 
 ### 2026-10-12 实施状态补记：结构树与施工卡
 
