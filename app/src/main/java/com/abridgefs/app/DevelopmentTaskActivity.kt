@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +17,7 @@ import com.owla19s.aps.context.ContextStore
 import com.owla19s.aps.development.DevelopmentNode
 import com.owla19s.aps.development.DevelopmentTask
 import com.owla19s.aps.development.DevelopmentTaskEvent
+import com.owla19s.aps.development.DevelopmentTaskDuty
 import com.owla19s.aps.development.DevelopmentTaskLink
 import com.owla19s.aps.development.DevelopmentTaskLinkStore
 import com.owla19s.aps.development.DevelopmentTaskStatus
@@ -114,7 +116,7 @@ class DevelopmentTaskActivity : AppCompatActivity() {
                 setTypeface(typeface, android.graphics.Typeface.BOLD)
             })
             card.addView(TextView(this).apply {
-                text = "${task.status.name} · 尝试次数 ${task.attempt}"
+                text = "职责：${task.duty.displayName} · 状态：${task.status.name} · 尝试次数 ${task.attempt}"
                 textSize = 13f
                 setTextColor(Color.rgb(69, 88, 108))
                 setPadding(0, dp(3), 0, dp(3))
@@ -141,10 +143,19 @@ class DevelopmentTaskActivity : AppCompatActivity() {
     private fun createTask() {
         val title = EditText(this).apply { hint = "施工卡名称（必填）" }
         val description = EditText(this).apply { hint = "任务说明（可留空）"; minLines = 3; gravity = Gravity.TOP }
+        val dutyOptions = DevelopmentTaskDuty.values()
+        val duty = Spinner(this).apply {
+            adapter = ArrayAdapter(
+                this@DevelopmentTaskActivity,
+                android.R.layout.simple_spinner_dropdown_item,
+                dutyOptions.map { it.displayName }
+            )
+            setSelection(dutyOptions.indexOf(DevelopmentTaskDuty.BUILD))
+        }
         val form = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(20), dp(8), dp(20), 0)
-            addView(title, params()); addView(description, params())
+            addView(title, params()); addView(duty, params()); addView(description, params())
         }
         AlertDialog.Builder(this).setTitle("新建施工卡").setView(form)
             .setNegativeButton("取消", null)
@@ -156,6 +167,7 @@ class DevelopmentTaskActivity : AppCompatActivity() {
                     val created = DevelopmentTask(
                         id = UUID.randomUUID().toString(), contextId = contextId,
                         title = name, description = description.text.toString().trim(),
+                        duty = dutyOptions[duty.selectedItemPosition],
                         status = DevelopmentTaskStatus.CREATED, createdAtMillis = now, updatedAtMillis = now
                     )
                     tasks.create(created)
@@ -184,6 +196,7 @@ class DevelopmentTaskActivity : AppCompatActivity() {
         val taskVerifications = verifications.forTask(contextId, taskId)
         val details = buildString {
             appendLine(task.title)
+            appendLine("职责：${task.duty.displayName}")
             appendLine("状态：${task.status.name} · 执行尝试：${task.attempt}")
             appendLine("创建：${formatTime(task.createdAtMillis)}")
             appendLine("更新：${formatTime(task.updatedAtMillis)}")
