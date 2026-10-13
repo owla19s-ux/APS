@@ -210,7 +210,7 @@ class DevelopmentTreeActivity : AppCompatActivity() {
                         )
                     )
                     toast("关系边已保存")
-                    showRelationsDialog()
+                    content.post { showRelationsDialog() }
                 } catch (e: Exception) {
                     toast("保存失败：${e.message ?: "未知错误"}")
                 }
@@ -222,12 +222,12 @@ class DevelopmentTreeActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("删除关系边")
             .setMessage("${nodeLabel(relation.sourceId)} — ${relation.relationType} → ${nodeLabel(relation.targetId)}\n只删除这条关系，不删除结构节点或施工卡。")
-            .setNegativeButton("取消") { _, _ -> showRelationsDialog() }
+            .setNegativeButton("取消") { _, _ -> content.post { showRelationsDialog() } }
             .setPositiveButton("删除") { _, _ ->
                 try {
                     treeStore.deleteRelation(contextId, relation.id)
                     toast("关系边已删除")
-                    showRelationsDialog()
+                    content.post { showRelationsDialog() }
                 } catch (e: Exception) {
                     toast("删除失败：${e.message ?: "未知错误"}")
                 }
