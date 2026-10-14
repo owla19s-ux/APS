@@ -1,8 +1,7 @@
 name: Android Build and Release
 
+# Official APK build and GitHub Release are intentionally manual; ordinary merges must not publish an APK.
 on:
-  push:
-    branches: ['main']
   workflow_dispatch:
 
 concurrency:
