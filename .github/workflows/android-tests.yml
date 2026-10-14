@@ -43,5 +43,5 @@ jobs:
         with:
           gradle-version: '8.10'
 
-      - name: Run unit tests
-        run: gradle :app:testDebugUnitTest --stacktrace
+      - name: Run unit tests and compile Android instrumentation tests
+        run: gradle :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin :app:compileDebugAndroidTestJavaWithJavac --stacktrace
