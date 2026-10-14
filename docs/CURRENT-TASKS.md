@@ -220,5 +220,12 @@ Context 对话
 - 失败 Task 选择“重新设为待执行”时，先显示上次失败原因与执行尝试次数，需用户确认后才转为 READY。
 - 确认后清理当前错误与旧结果摘要，并明确提示：只重新排队，不自动调用 AI。
 - 生命周期事件区分“首次进入待执行队列”与“失败后重新排队”，方便追查任务恢复过程。
-- 新增 Store 测试验证失败恢复事件摘要；PR Android Tests 通过前不合并。
+- 新增 Store 测试验证失败恢复事件摘要；PR #134 已合并，PR Android Tests #38519142777 成功。
 - 不自动重试 AI、不修改文件、不提交 GitHub、不触发 Verify。
+
+
+## 2026-10-14 批次施工：待调度队列按职责筛选
+
+- 待调度队列增加“全部职责 / 拆分 / 施工 / 审查”筛选入口，复用现有 DevelopmentTaskDispatcher.readyQueue 的 Context、READY 状态和创建时间规则。
+- 仅过滤并展示本地 READY Task；不自动启动 AI，不改变 Task 状态，不触发 GitHub Workflow 或 Verify。
+- 已有 Dispatcher 单元测试覆盖按职责筛选和状态不变；本批 UI 编译与 CI 待验证，设备交互待验收。
