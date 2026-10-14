@@ -90,6 +90,8 @@ Context 对话
 ### T6 — 云端测试与主链验证
 **状态：开发中**
 
+本批同步加强 Android Tests 工作流：除 `:app:testDebugUnitTest` 外，增加 `:app:compileDebugAndroidTestKotlin` 与 `:app:compileDebugAndroidTestJavaWithJavac`，避免仅凭单元测试通过就误认为 instrumentation tests 已被编译。该工作流仍不执行真机测试；本次变更等待 CI 实际结果。
+
 建立：
 - 模块测试；
 - 契约测试；
