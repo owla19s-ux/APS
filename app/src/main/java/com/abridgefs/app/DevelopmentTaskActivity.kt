@@ -383,6 +383,26 @@ class DevelopmentTaskActivity : AppCompatActivity() {
             "标记失败" -> DevelopmentTaskStatus.FAILED
             else -> DevelopmentTaskStatus.CANCELLED
         }
+        if (task.status == DevelopmentTaskStatus.FAILED && target == DevelopmentTaskStatus.READY) {
+            AlertDialog.Builder(this)
+                .setTitle("重新排队失败任务")
+                .setMessage(
+                    "上次失败原因：\n" + task.errorMessage.ifBlank { "未记录具体原因" } +
+                        "\n\n已执行尝试：" + task.attempt + " 次。确认后会清除当前失败信息并将任务放回 READY 队列；不会自动再次调用 AI。"
+                )
+                .setNegativeButton("暂不重试", null)
+                .setPositiveButton("确认重新排队") { _, _ ->
+                    try {
+                        tasks.transition(contextId, task.id, DevelopmentTaskStatus.READY, System.currentTimeMillis())
+                        render()
+                        toast("任务已重新排队，需手动启动 AI 执行")
+                    } catch (e: Exception) {
+                        toast("重新排队失败：" + (e.message ?: "未知错误"))
+                    }
+                }
+                .show()
+            return
+        }
         val result = EditText(this).apply {
             hint = when (target) {
                 DevelopmentTaskStatus.REVIEW_REQUIRED -> "执行结果 / 审查摘要（必填）"
