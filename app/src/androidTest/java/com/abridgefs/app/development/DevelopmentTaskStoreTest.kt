@@ -42,6 +42,8 @@ class DevelopmentTaskStoreTest {
             assertEquals(8, events.size)
             assertEquals(null, events.first().fromStatus)
             assertEquals(DevelopmentTaskStatus.CREATED, events.first().toStatus)
+            assertEquals(DevelopmentTaskStatus.READY, events[4].toStatus)
+            assertEquals("失败后重新排队", events[4].summary)
             assertEquals(DevelopmentTaskStatus.REVIEW_REQUIRED, events[6].toStatus)
             assertEquals("implementation ready", events[6].summary)
             assertEquals(DevelopmentTaskStatus.COMPLETED, events.last().toStatus)
