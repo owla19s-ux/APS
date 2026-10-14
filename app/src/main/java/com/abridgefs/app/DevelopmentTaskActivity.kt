@@ -274,7 +274,7 @@ class DevelopmentTaskActivity : AppCompatActivity() {
         val actions = mutableListOf<String>()
         // While this Activity owns an AI execution, only its Job may cancel it.
         // Do not let a manual status transition race the service's final state transition.
-        val allowed = if (task.status == DevelopmentTaskStatus.RUNNING && activeExecutionJobs[task.id]?.isActive == true) {
+        val allowed = if (task.status == DevelopmentTaskStatus.RUNNING && activeExecutionJobs.containsKey(task.id)) {
             listOf("取消 AI 执行")
         } else {
             allowedActions(task.status)
@@ -282,7 +282,7 @@ class DevelopmentTaskActivity : AppCompatActivity() {
         actions += allowed
         actions += "关联结构节点"
         if (taskLinks.isNotEmpty()) actions += "解除结构节点关联"
-        actions += "删除施工卡"
+        if (task.status != DevelopmentTaskStatus.RUNNING) actions += "删除施工卡"
         AlertDialog.Builder(this).setTitle("施工卡详情").setView(ScrollView(this).apply { addView(box) })
             .setNeutralButton("关闭", null)
             .setItems(actions.toTypedArray()) { _, which ->

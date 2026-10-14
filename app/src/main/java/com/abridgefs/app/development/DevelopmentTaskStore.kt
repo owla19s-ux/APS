@@ -98,8 +98,13 @@ class DevelopmentTaskStore(context: Context) {
     fun delete(contextId: String, taskId: String) {
         synchronized(PROCESS_LOCK) {
         val tasks = readAll()
-        if (tasks.none { it.contextId == contextId && it.id == taskId }) return
-        writeAll(tasks.filterNot { it.contextId == contextId && it.id == taskId })
+        val task = tasks.firstOrNull { it.contextId == contextId && it.id == taskId } ?: return
+        require(task.status != DevelopmentTaskStatus.RUNNING) {
+            "RUNNING Task 不能删除；请先取消执行或将遗留任务恢复到非运行状态"
+        }
+        val remainingTasks = tasks.filterNot { it.contextId == contextId && it.id == taskId }
+        val remainingEvents = readEvents().filterNot { it.contextId == contextId && it.taskId == taskId }
+        writeSnapshot(remainingTasks, remainingEvents)
         links.deleteForTask(contextId, taskId)
     
         }

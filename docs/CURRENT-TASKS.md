@@ -206,4 +206,11 @@ Context 对话
 - 改为对当前 Activity 管理的执行任务显示“取消 AI 执行”，由取消 Job 传递 CancellationException，交给执行服务记录 CANCELLED；结束后刷新本地 Task 快照。
 - 非当前 Activity 持有的遗留 RUNNING Task 仍保留手动恢复操作，避免进程中断后任务无法处理。
 - 不改变 AI 结果审查规则，不自动改文件、提交代码或触发 GitHub Verify。
-- 当前改动在分支 fix/task-execution-cancel-controls，待 CI 验证；真机取消与 Provider 实际取消行为仍待验收。
+- PR #131 已合并；PR Android Tests 已通过。主线后续验证见工作流记录；真机取消与 Provider 实际取消行为仍待验收。
+
+## 2026-10-14 批次施工：保护运行中的 Task
+
+- PR #131 的后续复核发现：活动执行期间虽然已把状态操作收敛到“取消 AI 执行”，详情菜单仍可删除 Task；取消 Job 刚发出但尚未清理映射时，若只检查 Job.isActive，也可能短暂重新显示普通状态操作。
+- 当前批次以活动 Job 映射是否存在判断执行控制权；RUNNING Task 不显示删除入口；Store 层拒绝删除 RUNNING Task，防止绕过 UI 或并发操作造成执行结果丢失。
+- 新增 Store instrumentation test：运行中删除被拒绝，转为 CANCELLED 后可删除。
+- 不改变任务状态机、审查规则或 GitHub Verify 边界；待 PR CI 验证。
