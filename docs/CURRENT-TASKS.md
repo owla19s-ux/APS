@@ -1,6 +1,6 @@
 # APS 当前任务总表
 
-更新时间：2026-10-13
+更新时间：2026-10-14
 
 > 本文件只维护当前仍需施工 / 验收 / 设计的任务。产品定义、架构原则、UI 正式设计和仓库操作规则分别由 PROJECT 与对应 docs 负责。
 
@@ -189,3 +189,12 @@ Context 对话
 3. 历史过程写入 STATUS 或专项历史文档。
 4. 未确定的能力标记“待设计”，不能写成“已设计”。
 5. 每次施工后只更新实际发生变化的任务状态。
+
+
+### 2026-10-14 批次施工：Task AI 执行生命周期
+
+- Context 功能选择 PR #129 已合并；合并提交 `09dc4434` 的 Android Tests、Verify、Android Build and Release 均成功。
+- 本批围绕已有 `DevelopmentTaskExecutionService` 做生命周期收口：施工卡页不再用裸 `Thread + runBlocking` 执行 AI 请求，改用 `lifecycleScope` 管理协程，在 IO dispatcher 执行；Activity 生命周期取消时将取消传播给执行服务，由服务尽力把 RUNNING 记录为 CANCELLED。
+- 新增 instrumentation 测试覆盖 AI 请求取消后的 CANCELLED 状态、事件记录及敏感异常文本不落入错误字段。
+- 边界保持不变：只接受 READY Task；成功结果进入 REVIEW_REQUIRED；失败记录 FAILED；不会自动修改本地文件、提交 GitHub 或触发/判定 Verify。
+- 本批代码待 CI 验证；Activity 销毁/旋转时的设备行为、真实 Provider 取消响应和重复点击体验仍需设备验收。

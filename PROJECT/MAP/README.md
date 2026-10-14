@@ -263,4 +263,12 @@
 - 新建 Context 支持勾选功能，默认勾选对话和本地文件操作；Context 详情页可调整组合，并只显示已启用模块的入口。
 - 关联 Context 的对话页根据功能配置显示 Local、GitHub、Actions 和验证入口；独立普通对话继续保留全局工具。
 - 旧记录缺少功能配置时读取为兼容默认值，保留既有入口；记录下次保存时会写入显式配置。关闭功能只隐藏入口，不删除任何历史数据或远端资源。
-- 功能启用状态不是连接认证或操作授权；施工卡与 Verify 仍保持事实边界。以上实现待 PR CI，未作真机端到端声明。
+- 功能启用状态不是连接认证或操作授权；施工卡与 Verify 仍保持事实边界。PR #129 已合并；合并后 Android Tests、Verify、Android Build and Release 均成功。真机端到端仍未验收。
+
+
+### 2026-10-14 批次补记：Task AI 执行生命周期
+
+- Context 功能组合已合并主线（PR #129，提交 `09dc4434`）；合并后的 Android Tests、Verify、Android Build and Release 均成功。
+- Task AI 执行入口由裸线程改为 lifecycle-aware coroutine；网络/AI suspend 调用在 IO dispatcher 中执行，UI 更新回到主线程；Activity 生命周期取消会传递到执行服务，服务记录 CANCELLED。
+- 增加取消路径 instrumentation 测试。此处验证仍以本批 PR 的 CI 为准，不能将测试源码编译视为真机验收。
+- Task 成功后仍进入 REVIEW_REQUIRED；人工审查完成与 GitHub Verify 成功是不同状态。此批没有加入自动 Dispatcher、文件写入、Commit 或 Workflow dispatch。

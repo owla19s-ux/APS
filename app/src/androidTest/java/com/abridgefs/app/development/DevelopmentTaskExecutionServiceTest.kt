@@ -5,6 +5,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.owla19s.aps.ai.AIConnector
 import com.owla19s.aps.ai.AIRequest
 import com.owla19s.aps.ai.AIResponse
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -71,6 +72,34 @@ class DevelopmentTaskExecutionServiceTest {
             assertEquals(DevelopmentTaskStatus.FAILED, saved?.status)
             assertTrue(saved?.errorMessage?.contains("sensitive provider detail") == false)
             assertEquals(4, store.events("ctx-exec", "exec-fail").size)
+        } finally {
+            clear()
+        }
+    }
+
+    @Test
+    fun cancelled_ai_handoff_records_cancelled_status() = runBlocking {
+        clear()
+        try {
+            val store = DevelopmentTaskStore(context)
+            store.create(DevelopmentTask("exec-cancel", "ctx-exec", "Cancel task"))
+            store.transition("ctx-exec", "exec-cancel", DevelopmentTaskStatus.READY, 10L)
+            val connector = object : AIConnector {
+                override suspend fun send(request: AIRequest): AIResponse {
+                    throw CancellationException("cancelled with sensitive provider detail")
+                }
+            }
+            var cancelled = false
+            try {
+                DevelopmentTaskExecutionService().execute("ctx-exec", "exec-cancel", store, connector) { 20L }
+            } catch (_: CancellationException) {
+                cancelled = true
+            }
+            assertTrue(cancelled)
+            val saved = store.get("ctx-exec", "exec-cancel")
+            assertEquals(DevelopmentTaskStatus.CANCELLED, saved?.status)
+            assertTrue(saved?.errorMessage?.contains("sensitive provider detail") == false)
+            assertEquals(4, store.events("ctx-exec", "exec-cancel").size)
         } finally {
             clear()
         }

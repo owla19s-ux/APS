@@ -14,6 +14,11 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.owla19s.aps.context.ContextStore
 import com.owla19s.aps.ai.AIConnectorRegistry
 import com.owla19s.aps.ai.AIProfileStore
@@ -318,10 +323,10 @@ class DevelopmentTaskActivity : AppCompatActivity() {
             .setMessage("将施工卡说明发送给当前 Context 绑定的 AI。返回内容会保存为“待审查”结果；此操作不会自动修改本地文件、提交代码或触发 GitHub Verify。")
             .setNegativeButton("取消", null)
             .setPositiveButton("开始执行") { _, _ ->
-                toast("AI 执行已开始")
-                Thread {
+                lifecycleScope.launch {
                     try {
-                        kotlinx.coroutines.runBlocking {
+                        toast("AI 执行已开始")
+                        withContext(Dispatchers.IO) {
                             DevelopmentTaskExecutionService().execute(
                                 contextId = contextId,
                                 taskId = taskId,
@@ -329,20 +334,19 @@ class DevelopmentTaskActivity : AppCompatActivity() {
                                 connector = connector
                             )
                         }
-                        runOnUiThread {
-                            render()
-                            showDetails(taskId)
-                            toast("AI 已返回结果，施工卡进入待审查")
-                        }
+                        render()
+                        showDetails(taskId)
+                        toast("AI 已返回结果，施工卡进入待审查")
+                    } catch (cancelled: CancellationException) {
+                        // The service records CANCELLED when the Activity lifecycle cancels this work.
+                        throw cancelled
                     } catch (error: Exception) {
-                        runOnUiThread {
-                            render()
-                            showDetails(taskId)
-                            // Provider exceptions may contain URLs or request details; keep the UI message sanitized.
-                            toast("AI 执行未完成：${error.javaClass.simpleName}")
-                        }
+                        render()
+                        showDetails(taskId)
+                        // Provider exceptions may contain URLs or request details; keep the UI message sanitized.
+                        toast("AI 执行未完成：${error.javaClass.simpleName}")
                     }
-                }.start()
+                }
             }.show()
     }
 
