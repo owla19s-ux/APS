@@ -227,6 +227,7 @@ class DevelopmentTaskStoreTest {
             store.transition("ctx-running-delete", "task-running-delete", DevelopmentTaskStatus.CANCELLED, 3L)
             store.delete("ctx-running-delete", "task-running-delete")
             assertNull(store.get("ctx-running-delete", "task-running-delete"))
+            assertEquals(emptyList<DevelopmentTaskEvent>(), store.events("ctx-running-delete", "task-running-delete"))
         } finally {
             prefs.edit().remove("tasks").remove("tasks.corrupt_backup").remove("events").remove("events.corrupt_backup").commit()
         }
