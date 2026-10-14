@@ -44,7 +44,7 @@
 | UI-003 | UI-002 | Space 选择与管理 | 查看、创建、重命名、删除或切换 Space | FN-001 | 需细化 | 未发现页面/完整模型实现 |
 | UI-004 | UI-002 | 目录与 Context 列表 | 分组展示 Context，进入指定 Context | FN-001,FN-002 | 已确认 | 未发现 UI；Context 模型/Store 有初步实现 |
 | UI-005 | UI-004 | 新建 Context / 模板 | 自定义创建、从模板创建、编辑/复制/保存模板 | FN-002,FN-003 | 已确认 | 未发现模板模型与 UI 实现 |
-| UI-006 | UI-004 | Context 工作面 | 显示 Context 信息及按需启用的能力 | FN-002,FN-004,FN-011,FN-017,FN-018,FN-019 | 已确认 | 已接入 Context 详情页与可组合入口；本批新增 Context 功能选择、持久化及按配置呈现入口，待 PR CI 验证 |
+| UI-006 | UI-004 | Context 工作面 | 显示 Context 信息及按需启用的能力 | FN-002,FN-004,FN-011,FN-017,FN-018,FN-019 | 已确认 | 已接入 Context 详情页与可组合入口；本批新增 Context 功能选择、持久化及按配置呈现入口；对话切换时同步刷新功能入口；Android Tests 工作流已扩展为同时执行单元测试与 Android instrumentation 测试源码编译，等待该提交 CI 结果，真机行为仍待验收 |
 | UI-007 | UI-006 | Context 基本信息与管理 | 名称、备注；创建、查看、编辑、删除、移动、复制、归档 | FN-002 | 已确认 | 部分实现：Context 数据模型、SharedPreferences Store、详情页编辑和地址管理存在；本批新增功能组合配置入口，模板/复制/归档等仍未实现 |
 | UI-008 | UI-006 | Address / Resource 区域 | 管理多个地址；选择资源；区分位置与实际内容 | FN-004,FN-011 | 已确认 | 部分实现：Context 目前可关联 GitHub ResourceRef；通用 Address 与 Local/File Resource 尚未发现 |
 | UI-009 | UI-006 | 连接与权限区域 | 选择 Context 可用连接并管理资源操作授权 | FN-022,FN-011,FN-020 | 已确认 | 部分实现：Context 功能组合选择已接入，但它只控制功能入口，不等同连接绑定、认证或操作授权；通用授权仍待实现 |
