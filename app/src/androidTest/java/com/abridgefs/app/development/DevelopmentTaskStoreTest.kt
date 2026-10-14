@@ -202,4 +202,34 @@ class DevelopmentTaskStoreTest {
         }
     }
 
+    @Test
+    fun running_task_cannot_be_deleted_until_execution_is_resolved() {
+        val prefs = context.getSharedPreferences("aps_development_tasks", Context.MODE_PRIVATE)
+        prefs.edit().remove("tasks").remove("tasks.corrupt_backup").remove("events").remove("events.corrupt_backup").commit()
+        try {
+            val store = DevelopmentTaskStore(context)
+            store.create(DevelopmentTask("task-running-delete", "ctx-running-delete", "Running task"))
+            store.transition("ctx-running-delete", "task-running-delete", DevelopmentTaskStatus.READY, 1L)
+            store.transition("ctx-running-delete", "task-running-delete", DevelopmentTaskStatus.RUNNING, 2L)
+
+            var rejected = false
+            try {
+                store.delete("ctx-running-delete", "task-running-delete")
+            } catch (_: IllegalArgumentException) {
+                rejected = true
+            }
+
+            assertEquals(true, rejected)
+            assertEquals(
+                DevelopmentTaskStatus.RUNNING,
+                store.get("ctx-running-delete", "task-running-delete")?.status
+            )
+            store.transition("ctx-running-delete", "task-running-delete", DevelopmentTaskStatus.CANCELLED, 3L)
+            store.delete("ctx-running-delete", "task-running-delete")
+            assertNull(store.get("ctx-running-delete", "task-running-delete"))
+        } finally {
+            prefs.edit().remove("tasks").remove("tasks.corrupt_backup").remove("events").remove("events.corrupt_backup").commit()
+        }
+    }
+
 }
