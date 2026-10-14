@@ -395,6 +395,7 @@ class ConversationActivity : AppCompatActivity() {
                 configureAI()
                 renderConversationList(store.allConversations())
                 renderCurrent()
+                applyContextCapabilities()
             }
             setOnLongClickListener {
                 showConversationActions(conversation)
