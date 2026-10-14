@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
@@ -17,6 +18,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.owla19s.aps.context.Context as APSContext
 import com.owla19s.aps.context.ContextStore
+import com.owla19s.aps.context.ContextCapability
 import com.owla19s.aps.context.SpaceDirectory
 import com.owla19s.aps.context.SpaceDirectoryStore
 import java.util.UUID
@@ -362,16 +364,42 @@ class SpaceActivity : AppCompatActivity() {
 
     private fun promptCreateContext() {
         val field = EditText(this).apply { hint = "Context 名称" }
+        val selected = ContextCapability.defaultForNewContext.toMutableSet()
+        val form = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), dp(4), dp(20), 0)
+            addView(field, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ))
+            addView(TextView(this@SpaceActivity).apply {
+                text = "选择此 Context 需要的功能；之后可在 Context 详情中调整。"
+                textSize = 13f
+                setPadding(0, dp(8), 0, dp(4))
+            })
+            ContextCapability.all.forEach { capability ->
+                addView(CheckBox(this@SpaceActivity).apply {
+                    text = ContextCapability.label(capability)
+                    isChecked = capability in selected
+                    setOnCheckedChangeListener { _, checked ->
+                        if (checked) selected += capability else selected -= capability
+                    }
+                })
+            }
+        }
         AlertDialog.Builder(this)
             .setTitle("新建 Context")
-            .setView(field)
+            .setView(form)
             .setNegativeButton("取消", null)
             .setPositiveButton("创建") { _, _ ->
                 val name = field.text.toString().trim()
                 if (name.isBlank()) {
                     toast("Context 名称不能为空")
                 } else {
-                    val context = APSContext(id = UUID.randomUUID().toString(), name = name)
+                    val context = APSContext(
+                        id = UUID.randomUUID().toString(),
+                        name = name,
+                        enabledCapabilities = selected.toSet()
+                    )
                     store.save(context)
                     val targetDirectory = selectedDirectoryFilter.takeIf {
                         it != ALL_DIRECTORIES && it != UNGROUPED

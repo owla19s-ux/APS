@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.owla19s.aps.context.Context as APSContext
 import com.owla19s.aps.context.ContextAddress
 import com.owla19s.aps.context.ContextStore
+import com.owla19s.aps.context.ContextCapability
 import java.util.UUID
 
 /** Context detail and address management. Address records locate resources; they do not sync them. */
@@ -28,6 +29,7 @@ class ContextDetailActivity : AppCompatActivity() {
     private lateinit var notesView: TextView
     private lateinit var aiConnectionView: TextView
     private lateinit var addressesList: LinearLayout
+    private lateinit var capabilityActions: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -108,35 +110,19 @@ class ContextDetailActivity : AppCompatActivity() {
         })
         addressesList = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         root.addView(addressesList)
+        root.addView(TextView(this).apply {
+            text = "已启用功能"
+            textSize = 20f
+            setTextColor(Color.rgb(28, 43, 61))
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setPadding(0, dp(18), 0, dp(6))
+        })
         root.addView(Button(this).apply {
-            text = "施工卡 / Task"
-            setOnClickListener {
-                startActivity(Intent(this@ContextDetailActivity, DevelopmentTaskActivity::class.java)
-                    .putExtra(DevelopmentTaskActivity.EXTRA_CONTEXT_ID, contextId))
-            }
+            text = "选择 / 管理功能"
+            setOnClickListener { editCapabilities() }
         }, params())
-        root.addView(Button(this).apply {
-            text = "软件开发结构"
-            setOnClickListener {
-                startActivity(Intent(this@ContextDetailActivity, DevelopmentTreeActivity::class.java)
-                    .putExtra(DevelopmentTreeActivity.EXTRA_CONTEXT_ID, contextId))
-            }
-        }, params())
-        root.addView(Button(this).apply {
-            text = "从此 Context 开始对话"
-            setOnClickListener {
-                startActivity(Intent(this@ContextDetailActivity, ConversationActivity::class.java)
-                    .putExtra("aps.context.id", contextId))
-            }
-        }, params())
-        root.addView(Button(this).apply {
-            text = "打开本地文件"
-            setOnClickListener {
-                startActivity(Intent(this@ContextDetailActivity, ConversationActivity::class.java)
-                    .putExtra("aps.open.local.files", true)
-                    .putExtra("aps.context.id", contextId))
-            }
-        }, params())
+        capabilityActions = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        root.addView(capabilityActions, params())
         root.addView(Button(this).apply {
             text = "连接与服务"
             setOnClickListener { startActivity(Intent(this@ContextDetailActivity, SettingsActivity::class.java)) }
@@ -162,6 +148,7 @@ class ContextDetailActivity : AppCompatActivity() {
             "${selectedProfile.name} · ${selectedProfile.model}"
         }
         addressesList.removeAllViews()
+        renderCapabilityActions(context)
         if (context.addresses.isEmpty()) {
             addressesList.addView(TextView(this).apply {
                 text = "尚未添加项目地址。可添加 GitHub 仓库、本地目录或其他资源位置。"
@@ -205,6 +192,68 @@ class ContextDetailActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply { bottomMargin = dp(10) })
         }
+    }
+
+    private fun renderCapabilityActions(context: APSContext) {
+        capabilityActions.removeAllViews()
+        fun addCapability(capability: String, label: String, action: () -> Unit) {
+            if (capability in context.enabledCapabilities) {
+                capabilityActions.addView(Button(this).apply {
+                    text = label
+                    setOnClickListener { action() }
+                }, params())
+            }
+        }
+        addCapability(ContextCapability.CONVERSATION, "从此 Context 开始对话") {
+            startActivity(Intent(this, ConversationActivity::class.java)
+                .putExtra("aps.context.id", contextId))
+        }
+        addCapability(ContextCapability.LOCAL_FILES, "打开本地文件") {
+            startActivity(Intent(this, ConversationActivity::class.java)
+                .putExtra("aps.open.local.files", true)
+                .putExtra("aps.context.id", contextId))
+        }
+        addCapability(ContextCapability.GITHUB, "GitHub / Actions") {
+            startActivity(Intent(this, ConversationActivity::class.java)
+                .putExtra("aps.context.id", contextId)
+                .putExtra("aps.open.github", true))
+        }
+        addCapability(ContextCapability.DEVELOPMENT_TREE, "软件开发结构") {
+            startActivity(Intent(this, DevelopmentTreeActivity::class.java)
+                .putExtra(DevelopmentTreeActivity.EXTRA_CONTEXT_ID, contextId))
+        }
+        addCapability(ContextCapability.TASKS, "施工卡 / Task 与 Verify") {
+            startActivity(Intent(this, DevelopmentTaskActivity::class.java)
+                .putExtra(DevelopmentTaskActivity.EXTRA_CONTEXT_ID, contextId))
+        }
+        if (context.enabledCapabilities.isEmpty()) {
+            capabilityActions.addView(TextView(this).apply {
+                text = "当前没有启用功能。点击“选择 / 管理功能”添加需要的模块。"
+                textSize = 14f
+                setPadding(dp(12), dp(10), dp(12), dp(10))
+            })
+        }
+    }
+
+    private fun editCapabilities() {
+        val current = store.get(contextId) ?: return
+        val selected = current.enabledCapabilities.toMutableSet()
+        val options = ContextCapability.all.map(ContextCapability::label).toTypedArray()
+        val checked = ContextCapability.all.map { it in selected }.toBooleanArray()
+        AlertDialog.Builder(this)
+            .setTitle("选择 Context 功能")
+            .setMultiChoiceItems(options, checked) { _, which, isChecked ->
+                val capability = ContextCapability.all[which]
+                if (isChecked) selected += capability else selected -= capability
+            }
+            .setNegativeButton("取消", null)
+            .setPositiveButton("保存") { _, _ ->
+                val latest = store.get(contextId) ?: return@setPositiveButton
+                store.save(latest.copy(enabledCapabilities = selected.toSet()))
+                refresh()
+                toast("功能组合已保存")
+            }
+            .show()
     }
 
     private fun chooseAIConnection() {

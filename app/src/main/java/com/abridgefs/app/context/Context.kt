@@ -14,7 +14,8 @@ data class Context(
     val resources: List<ResourceRef> = emptyList(),
     val aiConnectionId: String? = null,
     val notes: String = "",
-    val addresses: List<ContextAddress> = emptyList()
+    val addresses: List<ContextAddress> = emptyList(),
+    val enabledCapabilities: Set<String> = ContextCapability.defaultForNewContext
 ) {
     init {
         require(id.isNotBlank()) { "Context ID 不能为空" }
@@ -27,6 +28,33 @@ data class Context(
 
     fun withAIConnection(connectionId: String): Context =
         copy(aiConnectionId = connectionId)
+
+    fun withCapability(capability: String, enabled: Boolean): Context = copy(
+        enabledCapabilities = if (enabled) enabledCapabilities + capability else enabledCapabilities - capability
+    )
+}
+
+/** Stable identifiers for independently selectable Context modules. */
+object ContextCapability {
+    const val CONVERSATION = "conversation"
+    const val LOCAL_FILES = "local_files"
+    const val GITHUB = "github"
+    const val DEVELOPMENT_TREE = "development_tree"
+    const val TASKS = "tasks"
+
+    val all: List<String> = listOf(CONVERSATION, LOCAL_FILES, GITHUB, DEVELOPMENT_TREE, TASKS)
+    val defaultForNewContext: Set<String> = setOf(CONVERSATION, LOCAL_FILES)
+    // Context records saved before capability selection existed keep their previous entry points.
+    val legacyDefault: Set<String> = all.toSet()
+
+    fun label(capability: String): String = when (capability) {
+        CONVERSATION -> "对话"
+        LOCAL_FILES -> "本地文件操作"
+        GITHUB -> "GitHub / Actions"
+        DEVELOPMENT_TREE -> "软件开发结构"
+        TASKS -> "施工卡 / Task 与 Verify"
+        else -> capability
+    }
 }
 
 sealed interface ResourceRef {

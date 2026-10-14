@@ -52,6 +52,15 @@ class ContextTest {
         assertFalse(context.aiConnectionId != null)
     }
 
+    @Test
+    fun capabilities_can_be_changed_independently() {
+        val context = Context("ctx-capabilities", "Test")
+            .withCapability(ContextCapability.GITHUB, true)
+            .withCapability(ContextCapability.LOCAL_FILES, false)
+        assertEquals(true, ContextCapability.GITHUB in context.enabledCapabilities)
+        assertEquals(false, ContextCapability.LOCAL_FILES in context.enabledCapabilities)
+    }
+
     @Test(expected = IllegalArgumentException::class)
     fun empty_id_is_rejected() {
         Context("", "APS")

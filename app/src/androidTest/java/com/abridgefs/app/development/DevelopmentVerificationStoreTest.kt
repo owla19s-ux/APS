@@ -83,6 +83,6 @@ class DevelopmentVerificationStoreTest {
         branch = "main",
         headSha = "a".repeat(40),
         createdAtMillis = createdAt,
-        updatedAtMillis = updated
+        updatedAtMillis = updatedAt
     )
 }

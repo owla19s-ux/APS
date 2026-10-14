@@ -90,6 +90,8 @@ Context 对话
 ### T6 — 云端测试与主链验证
 **状态：开发中**
 
+本批同步加强 Android Tests 工作流：除 `:app:testDebugUnitTest` 外，增加 `:app:compileDebugAndroidTestKotlin` 与 `:app:compileDebugAndroidTestJavaWithJavac`。首次运行暴露出 instrumentation 测试遗留包名错误，以及 Verify 测试夹具中的时间戳参数拼写错误；已修正两处，等待最新提交 CI 复验。该工作流只编译 instrumentation 测试源码，不执行真机测试。
+
 建立：
 - 模块测试；
 - 契约测试；

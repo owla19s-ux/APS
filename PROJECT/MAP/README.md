@@ -44,10 +44,10 @@
 | UI-003 | UI-002 | Space 选择与管理 | 查看、创建、重命名、删除或切换 Space | FN-001 | 需细化 | 未发现页面/完整模型实现 |
 | UI-004 | UI-002 | 目录与 Context 列表 | 分组展示 Context，进入指定 Context | FN-001,FN-002 | 已确认 | 未发现 UI；Context 模型/Store 有初步实现 |
 | UI-005 | UI-004 | 新建 Context / 模板 | 自定义创建、从模板创建、编辑/复制/保存模板 | FN-002,FN-003 | 已确认 | 未发现模板模型与 UI 实现 |
-| UI-006 | UI-004 | Context 工作面 | 显示 Context 信息及按需启用的能力 | FN-002,FN-004,FN-011,FN-017,FN-018,FN-019 | 已确认 | 未发现页面实现 |
-| UI-007 | UI-006 | Context 基本信息与管理 | 名称、备注；创建、查看、编辑、删除、移动、复制、归档 | FN-002 | 已确认 | 部分实现：Context 数据模型和 SharedPreferences Store 存在；统一 CRUD UI/完整动作未发现 |
+| UI-006 | UI-004 | Context 工作面 | 显示 Context 信息及按需启用的能力 | FN-002,FN-004,FN-011,FN-017,FN-018,FN-019 | 已确认 | 已接入 Context 详情页与可组合入口；本批新增 Context 功能选择、持久化及按配置呈现入口；对话切换时同步刷新功能入口；Android Tests 工作流已扩展为同时执行单元测试与 Android instrumentation 测试源码编译，等待该提交 CI 结果，真机行为仍待验收 |
+| UI-007 | UI-006 | Context 基本信息与管理 | 名称、备注；创建、查看、编辑、删除、移动、复制、归档 | FN-002 | 已确认 | 部分实现：Context 数据模型、SharedPreferences Store、详情页编辑和地址管理存在；本批新增功能组合配置入口，模板/复制/归档等仍未实现 |
 | UI-008 | UI-006 | Address / Resource 区域 | 管理多个地址；选择资源；区分位置与实际内容 | FN-004,FN-011 | 已确认 | 部分实现：Context 目前可关联 GitHub ResourceRef；通用 Address 与 Local/File Resource 尚未发现 |
-| UI-009 | UI-006 | 连接与权限区域 | 选择 Context 可用连接并管理资源操作授权 | FN-022,FN-011,FN-020 | 已确认 | 部分实现：GitHub Connection 装配/写权限边界有代码；通用授权与 UI 未发现 |
+| UI-009 | UI-006 | 连接与权限区域 | 选择 Context 可用连接并管理资源操作授权 | FN-022,FN-011,FN-020 | 已确认 | 部分实现：Context 功能组合选择已接入，但它只控制功能入口，不等同连接绑定、认证或操作授权；通用授权仍待实现 |
 | UI-010 | UI-006 | 软件开发结构 | 结构树、施工表、验证视图；用户确认 UI 方案 | FN-017,FN-018,FN-019 | 已确认 | 已接入独立结构页：节点新增/编辑/移动/删除与层级展开；施工卡页提供 Task 生命周期、Task—节点关联与已保存的 GitHub Verify 快照；本批已补齐逐条解除 Task—节点关联；合并后 Android Tests #679、Verify #298、Build and Release #850 均通过。本批新增结构节点直达关联施工卡入口：可从节点菜单打开按节点筛选的 Task 列表，并在此新建自动关联当前节点的 Task；当前批次待 CI 验证。本批新增关系边管理入口，PR #116 已合并（`c04b4e8c`），合并后 Android Tests #685、Verify #301、Build and Release #854 均成功；Dispatcher、用户确认交互及真机端到端验收仍待完成。TaskStore 跨实例并发写入互斥修复已合并（PR #117），三项主线工作流均成功；PR #119 已合并 Task 拆分 / 施工 / 审查职责字段，旧记录默认施工职责；PR #120 已合并（`4e807ecc`），主线 Android Tests #38371902123、Verify #38371902199、Build and Release #38371902115 均成功。READY 队列按 Context、状态和创建时间筛选，不自动执行。当前分支新增显式 Task→AI 交接：施工卡详情可把 READY Task 发送给当前 Context 绑定的 AI Connection，结果保存为 REVIEW_REQUIRED，失败保存为 FAILED；不承诺代码写入、Commit 或 GitHub Verify，待 CI |
 | UI-011 | UI-001 | 普通对话页 | 独立对话，不强制关联 Context | FN-005,FN-006,FN-007,FN-008,FN-009,FN-013,FN-014,FN-016 | 已确认 | 部分实现：ConversationActivity 是 Launcher，真实 AI 对话、本地文件入口、GitHub 只读文件入口已接入；Actions 运行列表与单次运行详情已接入；合并后 Android Tests #38205186446、Verify #38205186448、Build and Release #38205186456 均通过，真实设备验收待完成 |
 | UI-012 | UI-011 | 对话分组 | 新建、重命名、删除分组；移动对话 | FN-006 | 已确认 | 已实现待验证：Activity 已接入分组筛选、新建/重命名/删除分组及移动对话入口；CI 已通过，仍需设备交互验收 |
@@ -74,7 +74,7 @@
 | 功能 ID | 功能名称 | 功能边界 / 完成条件摘要 | 设计状态 | 当前实现状态 | 已知证据 / 待补内容 |
 |---|---|---|---|---|---|
 | FN-001 | Space 与目录管理 | 管理 Space，按目录组织 Context；有稳定身份与顺序 | 已确认 | 未实现 | 未发现对应 Space/目录模型及 UI |
-| FN-002 | Context 管理 | Context 新建、读取、修改、删除、移动/复制/归档；稳定 ID | 已确认 | 部分实现 | `context/Context.kt`、`ContextStore.kt`；多项管理动作和 UI 未发现 |
+| FN-002 | Context 管理 | Context 新建、读取、修改、删除、移动/复制/归档；稳定 ID；保存每个 Context 独立的功能组合 | 已确认 | 部分实现 | `context/Context.kt`、`ContextStore.kt`；本批新增 `enabledCapabilities` 持久化、创建时多选和详情页调整入口，待 CI 验证；模板、复制、归档仍未实现 |
 | FN-003 | Context 模板管理 | 内置/自定义模板、从已有 Context 保存模板、复制/编辑/删除模板 | 已确认 | 未实现 | 未发现模板实现 |
 | FN-004 | Address / Resource 关联 | 多个 Address 定位资源；操作前解析实际 Resource；不把地址等同内容 | 已确认 | 部分实现 | 当前 ResourceRef 仅覆盖 GitHub Resource；通用 Address 模型待建 |
 | FN-005 | 对话管理 | 创建、查看、切换、重命名、删除普通对话；支持独立/可关联 Context | 已确认 | 部分实现 | ConversationManager/Store 与对应 UI 动作已接入；需补足失败保存边界并做设备交互验收 |
@@ -106,7 +106,7 @@
 | 机制 ID | 机制名称 | 责任边界 | 当前实现状态 | 源码 / 规范证据与缺口 |
 |---|---|---|---|---|
 | ME-001 | 稳定 ID、父子关系与关系边 | 分离对象身份、树形归属、跨对象映射；关系不能从 ID 字符串推导 | 部分实现 | `DevelopmentNode`、`DevelopmentRelation`、`DevelopmentTreeStore` 与 `DevelopmentTaskLinkStore` 已分别承载节点、节点边及 Task—节点关联；关联生命周期与原子事务仍待完善 |
-| ME-002 | Context Store | 保存/加载/删除 Context；唯一维护 Context 本身状态 | 部分实现 | `context/Context.kt`、`context/ContextStore.kt`；目前 Context Resource 类型覆盖不足，且 Store 测试/错误恢复需补核 |
+| ME-002 | Context Store | 保存/加载/删除 Context；维护 Context 自身资料、资源及可组合功能配置 | 部分实现 | `context/Context.kt`、`context/ContextStore.kt`；本批新增 `enabledCapabilities` JSON 持久化，并为缺少该字段的旧记录保留原有功能入口；资源类型覆盖不足，待 PR CI 验证 |
 | ME-003 | Conversation Store | 对话/消息/分组持久化；分组与对话记录分离；移动和删除边界清晰 | 部分实现 | `conversation/ConversationStore.kt` 使用 SharedPreferences + JSON；大数据量、迁移、写入失败保障需后续评估 |
 | ME-004 | Conversation Service | 把用户消息、AI 调用、响应消息和保存组合起来 | 部分实现 | `ConversationService.kt`、相关测试；用户消息先保存；可把显式选择的 GitHub 文件作为一次性 AI 请求上下文传入，但不写入对话消息；错误/取消边界仍需设备验收 |
 | ME-005 | AI Connector 抽象与 Registry | 将连接 ID 解析为可调用 Connector；不把抽象层误认为具体 Provider | 部分实现 | `ai/AIConnector.kt`、`AIConnectorRegistry.kt` 与 `OpenAICompatibleConnector.kt`；抽象、Registry 和一种兼容 Provider 已存在，其他 Provider 与多连接注册仍待扩展 |
@@ -256,3 +256,11 @@
 - **施工卡 / Task**：当前批次接入 Context-scoped 基础列表和详情，复用 DevelopmentTaskStore 生命周期；支持新建、状态迁移、节点多关联、查看生命周期事件及已保存的 GitHub 验证记录。
 - **边界**：Task 标记 COMPLETED 仅表示当前本地 Task 状态，不代表 GitHub Verify 成功。验证页面显示的是已保存快照，不自动拉取远端结果。自动调度、执行记录/产物、子 Task、Verify gate、真实设备验收仍未完成。
 - **验证纪律**：以上代码进入主线前以 PR Android Tests 为门槛；不得将 PR 测试通过等同于真实设备端到端验收。
+
+### 2026-10-13 Context 功能组合实施状态
+
+- 新增稳定功能标识：`conversation`、`local_files`、`github`、`development_tree`、`tasks`，由 `Context.enabledCapabilities` 保存并由 `ContextStore` 持久化。
+- 新建 Context 支持勾选功能，默认勾选对话和本地文件操作；Context 详情页可调整组合，并只显示已启用模块的入口。
+- 关联 Context 的对话页根据功能配置显示 Local、GitHub、Actions 和验证入口；独立普通对话继续保留全局工具。
+- 旧记录缺少功能配置时读取为兼容默认值，保留既有入口；记录下次保存时会写入显式配置。关闭功能只隐藏入口，不删除任何历史数据或远端资源。
+- 功能启用状态不是连接认证或操作授权；施工卡与 Verify 仍保持事实边界。以上实现待 PR CI，未作真机端到端声明。
