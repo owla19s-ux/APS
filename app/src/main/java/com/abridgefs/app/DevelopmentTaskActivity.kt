@@ -16,7 +16,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.owla19s.aps.context.ContextStore
@@ -47,6 +49,7 @@ class DevelopmentTaskActivity : AppCompatActivity() {
     private lateinit var links: DevelopmentTaskLinkStore
     private lateinit var verifications: DevelopmentVerificationStore
     private lateinit var content: LinearLayout
+    private val activeExecutionJobs = mutableMapOf<String, Job>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -269,7 +272,13 @@ class DevelopmentTaskActivity : AppCompatActivity() {
             setTextIsSelectable(true)
         }
         val actions = mutableListOf<String>()
-        val allowed = allowedActions(task.status)
+        // While this Activity owns an AI execution, only its Job may cancel it.
+        // Do not let a manual status transition race the service's final state transition.
+        val allowed = if (task.status == DevelopmentTaskStatus.RUNNING && activeExecutionJobs[task.id]?.isActive == true) {
+            listOf("取消 AI 执行")
+        } else {
+            allowedActions(task.status)
+        }
         actions += allowed
         actions += "关联结构节点"
         if (taskLinks.isNotEmpty()) actions += "解除结构节点关联"
@@ -279,8 +288,14 @@ class DevelopmentTaskActivity : AppCompatActivity() {
             .setItems(actions.toTypedArray()) { _, which ->
                 when {
                     which < allowed.size -> {
-                        if (allowed[which] == "交给 AI 执行") executeTask(task.id)
-                        else changeStatus(task, allowed[which])
+                        when (allowed[which]) {
+                            "交给 AI 执行" -> executeTask(task.id)
+                            "取消 AI 执行" -> {
+                                activeExecutionJobs[task.id]?.cancel()
+                                toast("已请求取消 AI 执行")
+                            }
+                            else -> changeStatus(task, allowed[which])
+                        }
                     }
                     which == allowed.size -> chooseNode(task.id)
                     taskLinks.isNotEmpty() && which == allowed.size + 1 -> chooseLinkToRemove(task.id)
@@ -323,7 +338,8 @@ class DevelopmentTaskActivity : AppCompatActivity() {
             .setMessage("将施工卡说明发送给当前 Context 绑定的 AI。返回内容会保存为“待审查”结果；此操作不会自动修改本地文件、提交代码或触发 GitHub Verify。")
             .setNegativeButton("取消", null)
             .setPositiveButton("开始执行") { _, _ ->
-                lifecycleScope.launch {
+                lateinit var executionJob: Job
+                executionJob = lifecycleScope.launch(start = CoroutineStart.LAZY) {
                     try {
                         toast("AI 执行已开始")
                         withContext(Dispatchers.IO) {
@@ -345,8 +361,16 @@ class DevelopmentTaskActivity : AppCompatActivity() {
                         showDetails(taskId)
                         // Provider exceptions may contain URLs or request details; keep the UI message sanitized.
                         toast("AI 执行未完成：${error.javaClass.simpleName}")
+                    } finally {
+                        if (activeExecutionJobs[taskId] === executionJob) {
+                            activeExecutionJobs.remove(taskId)
+                        }
+                        // Cancellation also refreshes the visible status from the persisted Task snapshot.
+                        render()
                     }
                 }
+                activeExecutionJobs[taskId] = executionJob
+                executionJob.start()
             }.show()
     }
 

@@ -272,3 +272,7 @@
 - Task AI 执行入口由裸线程改为 lifecycle-aware coroutine；网络/AI suspend 调用在 IO dispatcher 中执行，UI 更新回到主线程；Activity 生命周期取消会传递到执行服务，服务记录 CANCELLED。
 - 增加取消路径 instrumentation 测试。此处验证仍以本批 PR 的 CI 为准，不能将测试源码编译视为真机验收。
 - Task 成功后仍进入 REVIEW_REQUIRED；人工审查完成与 GitHub Verify 成功是不同状态。此批没有加入自动 Dispatcher、文件写入、Commit 或 Workflow dispatch。
+
+## 2026-10-14 批次补记：Task 执行取消控制
+
+发现 RUNNING Task 在 AI 请求进行中仍可由详情页手动提交审查、标记失败或直接改成取消状态，可能与执行服务完成/失败/取消时的状态迁移竞争。后续改动让当前 Activity 持有的活动执行只显示“取消 AI 执行”，由 Job 取消请求并由执行服务负责持久化取消状态；任务完成或取消后刷新本地快照。进程中断后没有活动 Job 的 RUNNING Task 仍可使用现有手动恢复操作。本批待 CI 验证，尚未宣称真机验收通过。

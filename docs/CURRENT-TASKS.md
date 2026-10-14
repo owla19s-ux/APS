@@ -198,3 +198,12 @@ Context 对话
 - 新增 instrumentation 测试覆盖 AI 请求取消后的 CANCELLED 状态、事件记录及敏感异常文本不落入错误字段。
 - 边界保持不变：只接受 READY Task；成功结果进入 REVIEW_REQUIRED；失败记录 FAILED；不会自动修改本地文件、提交 GitHub 或触发/判定 Verify。
 - 本批代码待 CI 验证；Activity 销毁/旋转时的设备行为、真实 Provider 取消响应和重复点击体验仍需设备验收。
+
+## 2026-10-14 批次施工：Task 执行取消控制与状态竞态
+
+- 前置：PR #130 已合并；PR Android Tests 通过。主线 Android Tests 与 Verify 已通过，Android Build and Release 尚待终态确认。
+- 本批针对真实状态竞态：AI 执行处于 RUNNING 时，原界面仍允许手动“提交审查 / 标记失败 / 取消任务”，可能与执行服务的最终状态迁移冲突。
+- 改为对当前 Activity 管理的执行任务显示“取消 AI 执行”，由取消 Job 传递 CancellationException，交给执行服务记录 CANCELLED；结束后刷新本地 Task 快照。
+- 非当前 Activity 持有的遗留 RUNNING Task 仍保留手动恢复操作，避免进程中断后任务无法处理。
+- 不改变 AI 结果审查规则，不自动改文件、提交代码或触发 GitHub Verify。
+- 当前改动在分支 fix/task-execution-cancel-controls，待 CI 验证；真机取消与 Provider 实际取消行为仍待验收。
