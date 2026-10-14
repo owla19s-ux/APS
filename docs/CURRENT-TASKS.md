@@ -214,3 +214,11 @@ Context 对话
 - 当前批次以活动 Job 映射是否存在判断执行控制权；RUNNING Task 不显示删除入口；Store 层拒绝删除 RUNNING Task，防止绕过 UI 或并发操作造成执行结果丢失。
 - 新增 Store instrumentation test：运行中删除被拒绝，转为 CANCELLED 后可删除。
 - 不改变任务状态机、审查规则或 GitHub Verify 边界；待 PR CI 验证。
+
+## 2026-10-14 批次施工：Task 失败恢复确认
+
+- 失败 Task 选择“重新设为待执行”时，先显示上次失败原因与执行尝试次数，需用户确认后才转为 READY。
+- 确认后清理当前错误与旧结果摘要，并明确提示：只重新排队，不自动调用 AI。
+- 生命周期事件区分“首次进入待执行队列”与“失败后重新排队”，方便追查任务恢复过程。
+- 新增 Store 测试验证失败恢复事件摘要；PR Android Tests 通过前不合并。
+- 不自动重试 AI、不修改文件、不提交 GitHub、不触发 Verify。

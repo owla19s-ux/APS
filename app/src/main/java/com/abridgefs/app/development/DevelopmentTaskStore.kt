@@ -83,6 +83,11 @@ class DevelopmentTaskStore(context: Context) {
             when (target) {
                 DevelopmentTaskStatus.REVIEW_REQUIRED, DevelopmentTaskStatus.COMPLETED -> resultSummary
                 DevelopmentTaskStatus.FAILED -> errorMessage
+                DevelopmentTaskStatus.READY -> when (current.status) {
+                    DevelopmentTaskStatus.FAILED -> "失败后重新排队"
+                    DevelopmentTaskStatus.CREATED -> "首次进入待执行队列"
+                    else -> ""
+                }
                 else -> ""
             }
         )
