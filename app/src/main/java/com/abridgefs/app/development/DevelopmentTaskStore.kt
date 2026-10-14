@@ -102,7 +102,9 @@ class DevelopmentTaskStore(context: Context) {
         require(task.status != DevelopmentTaskStatus.RUNNING) {
             "RUNNING Task 不能删除；请先取消执行或将遗留任务恢复到非运行状态"
         }
-        writeAll(tasks.filterNot { it.contextId == contextId && it.id == taskId })
+        val remainingTasks = tasks.filterNot { it.contextId == contextId && it.id == taskId }
+        val remainingEvents = readEvents().filterNot { it.contextId == contextId && it.taskId == taskId }
+        writeSnapshot(remainingTasks, remainingEvents)
         links.deleteForTask(contextId, taskId)
     
         }
