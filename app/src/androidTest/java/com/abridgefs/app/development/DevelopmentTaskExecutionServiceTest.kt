@@ -1,10 +1,10 @@
-package com.abridgefs.aps.development
+package com.owla19s.aps.development
 
 import android.content.Context
 import androidx.test.platform.app.InstrumentationRegistry
-import com.abridgefs.aps.ai.AIConnector
-import com.abridgefs.aps.ai.AIRequest
-import com.abridgefs.aps.ai.AIResponse
+import com.owla19s.aps.ai.AIConnector
+import com.owla19s.aps.ai.AIRequest
+import com.owla19s.aps.ai.AIResponse
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
