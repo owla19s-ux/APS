@@ -145,3 +145,12 @@ Actions 构建完成后必须记录：
    - 检查失败提示与诊断日志，不得出现令牌、Authorization 头或敏感文件正文。
 
 每项记录：设备 / Android 版本、APK 对应 Commit SHA、操作步骤、预期结果、实际结果、失败现象。任何未执行项标为“未验证”；CI 通过不能替代上述设备结果。发现问题时先记录可复现步骤，再按单一问题开分支修复。
+
+## 2026-10-15 新增：Android 包名统一检查
+
+构建前检查：
+- `applicationId`、`namespace` 均为 `com.aps`。
+- 活跃 Kotlin/Java 源码、单元测试、instrumentation tests 的 package 与 import 使用 `com.aps`。
+- Manifest 中 Application / Activity 的全限定类名均使用 `com.aps`。
+- 应用显示名称为 `APS`，版本为 `0.1.1`。
+- CI 通过后仍需检查实际 APK Manifest；真机安装启动与旧版数据处理单独记录，不以源码修改代替验收。
