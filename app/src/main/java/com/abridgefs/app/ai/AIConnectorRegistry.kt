@@ -1,4 +1,4 @@
-package com.owla19s.aps.ai
+package com.aps.ai
 
 /**
  * Resolves runtime connectors by stable AI connection ID.
