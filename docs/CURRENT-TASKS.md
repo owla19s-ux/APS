@@ -243,3 +243,10 @@ Context 对话
 
 - PR #135（待调度队列按职责筛选）已合并，合并提交 `7a3ba417`；Android Tests #38585124993 的 unit-test Job 成功。
 - 本次查询未取得合并提交对应的 Verify / Build and Release 运行记录，因此不标记这两项主线验证成功。
+
+
+## 2026-10-15 批次施工：API 连接测试结果接入运行诊断
+
+- AI/API 设置页的“测试聊天请求”和“获取模型列表”记录 started、success/empty、failed 及耗时，复用 RuntimeDiagnostics。
+- 失败事件仅记录受控事件名、耗时、HTTP 状态、异常类型与固定失败类别；不记录请求/响应正文、API Key 或任意错误消息。
+- 页面继续显示已有的可操作错误提示；日志用于事后排查，不替代真实服务商端到端验收。
