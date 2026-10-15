@@ -1,8 +1,8 @@
 # APS 当前状态与工作记录
 
-更新时间：2026-10-08
+更新时间：2026-10-15
 
-> 当前事实以代码、Commit、Actions / Verify、APK / 真机结果为准。本文件用于记录当前阶段状态，不作为历史架构的复原依据。
+> 当前事实以代码、Commit、Actions / Verify、APK / 真机结果为准。本文件用于记录当前阶段状态，不作为历史架构的复原依据。详细近期施工状态以 `docs/CURRENT-TASKS.md` 为准。
 
 ## 一、第一阶段产品定位
 
@@ -113,3 +113,10 @@ Address 属于 Context，回答“在哪里”；Resource 表示 Address 所定�
 - 复杂 Workflow Engine；
 - Secretary / Orchestrator；
 - BridgeFS 作为产品模块。
+
+
+## 2026-10-15 状态校准补记
+
+- 诊断日志已有启动 / 崩溃、API 连接和 Task 执行记录路径，并有本地日志读取 / 导出入口；文件滚动、读取效率与真机行为仍需分别验证，不能把入口存在等同于设备验收完成。
+- Android 当前配置为 `applicationId=com.aps`、应用显示名称 `APS`、`versionName=0.1.1`。`namespace` 和源码 package 仍保留 `com.owla19s.aps`，整体包迁移未完成。
+- 本文件中的早期功能状态有历史性内容；执行施工时优先核对 `docs/CURRENT-TASKS.md`、当前源码和真实工作流记录。
