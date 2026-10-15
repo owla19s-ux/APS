@@ -1,5 +1,6 @@
 package com.owla19s.aps
 
+import java.io.File
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -14,6 +15,21 @@ class RuntimeDiagnosticsTest {
         assertEquals(false, RuntimeDiagnostics.shouldRotateLog(1_048_575L))
         assertEquals(true, RuntimeDiagnostics.shouldRotateLog(1_048_576L))
         assertEquals(true, RuntimeDiagnostics.shouldRotateLog(1_048_577L))
+    }
+
+    @Test
+    fun rotatedLogFileUsesUniqueNameWhenTimestampCollides() {
+        val directory = createTempDir(prefix = "aps-log-rotation-")
+        try {
+            File(directory, "aps-2026-10-15-12345.log").writeText("previous segment")
+            File(directory, "aps-2026-10-15-12345-1.log").writeText("another segment")
+
+            val candidate = RuntimeDiagnostics.nextRotatedLogFile(directory, "2026-10-15", 12345L)
+
+            assertEquals("aps-2026-10-15-12345-2.log", candidate.name)
+        } finally {
+            directory.deleteRecursively()
+        }
     }
 
     @Test
