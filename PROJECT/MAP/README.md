@@ -294,11 +294,11 @@
 - 现有 Dispatcher 单元测试覆盖职责过滤；PR #135 已合并，Android Tests #38585124993 的 unit-test Job 成功；设备交互待验收。
 
 
-## 2026-10-15 批次补记：Task 失败诊断摘要
+## 2026-10-15 批次补记：Task 执行结果接入运行诊断
 
-- AI 执行失败时，在保留异常类型基础上记录经过规整、常见敏感字段模式脱敏并限制长度的错误消息片段，帮助定位连接失败原因。
-- 不保存请求正文或凭据；Task 状态、取消路径、GitHub Commit / Verify 边界不变。
-- 此摘要仅属于 Task 生命周期记录，不替代全局运行/崩溃/API 连接日志；待 CI 与真机验收。
+- Task→AI 执行服务记录 started / success / failed / cancelled 事件与耗时，复用 RuntimeDiagnostics 本地日志。
+- Task 失败摘要只记录异常类型和固定失败类别；不把任意异常消息写入 Task 记录。运行日志仅保留受控事件、耗时、HTTP 状态、异常类型和失败类别，不记录请求正文、响应正文或凭据。
+- 不改变 Task 状态迁移，不自动改文件、提交 GitHub 或触发 Verify；待 Android Tests / Verify 与真机验收。
 
 
 ## 2026-10-15 验证状态补记
