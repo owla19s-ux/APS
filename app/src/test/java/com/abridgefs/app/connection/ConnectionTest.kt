@@ -1,7 +1,7 @@
-package com.owla19s.aps.connection
+package com.aps.connection
 
-import com.owla19s.aps.github.GitHubAddress
-import com.owla19s.aps.github.GitHubConnection
+import com.aps.github.GitHubAddress
+import com.aps.github.GitHubConnection
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
