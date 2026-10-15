@@ -1,8 +1,8 @@
-package com.owla19s.aps.development
+package com.aps.development
 
-import com.owla19s.aps.RuntimeDiagnostics
-import com.owla19s.aps.ai.AIConnector
-import com.owla19s.aps.ai.AIRequest
+import com.aps.RuntimeDiagnostics
+import com.aps.ai.AIConnector
+import com.aps.ai.AIRequest
 import kotlinx.coroutines.CancellationException
 
 /**
