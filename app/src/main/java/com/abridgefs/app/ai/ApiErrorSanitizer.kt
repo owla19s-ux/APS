@@ -1,4 +1,4 @@
-package com.owla19s.aps.ai
+package com.aps.ai
 
 /**
  * Sanitizes provider-supplied error bodies before they are shown to users or wrapped in exceptions.
