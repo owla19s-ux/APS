@@ -188,7 +188,7 @@ object RuntimeDiagnostics {
         }
     }
 
-    private fun readFileTail(file: File, maxBytes: Int): String {
+    internal fun readFileTail(file: File, maxBytes: Int): String {
         if (maxBytes <= 0 || !file.isFile) return ""
         RandomAccessFile(file, "r").use { input ->
             val length = input.length()
