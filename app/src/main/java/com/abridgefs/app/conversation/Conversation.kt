@@ -1,4 +1,4 @@
-package com.owla19s.aps.conversation
+package com.aps.conversation
 
 data class Conversation(
     val id: String,
