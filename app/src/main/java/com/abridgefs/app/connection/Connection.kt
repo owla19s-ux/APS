@@ -1,4 +1,4 @@
-package com.owla19s.aps.connection
+package com.aps.connection
 
 interface Connection {
     val id: String
