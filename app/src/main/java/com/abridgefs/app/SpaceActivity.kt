@@ -1,4 +1,4 @@
-package com.owla19s.aps
+package com.aps
 
 import android.app.AlertDialog
 import android.content.Intent
@@ -16,11 +16,11 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.owla19s.aps.context.Context as APSContext
-import com.owla19s.aps.context.ContextStore
-import com.owla19s.aps.context.ContextCapability
-import com.owla19s.aps.context.SpaceDirectory
-import com.owla19s.aps.context.SpaceDirectoryStore
+import com.aps.context.Context as APSContext
+import com.aps.context.ContextStore
+import com.aps.context.ContextCapability
+import com.aps.context.SpaceDirectory
+import com.aps.context.SpaceDirectoryStore
 import java.util.UUID
 
 /** Space entry point for Context CRUD and directory grouping. */
