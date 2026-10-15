@@ -1,4 +1,4 @@
-package com.owla19s.aps.github
+package com.aps.github
 
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
