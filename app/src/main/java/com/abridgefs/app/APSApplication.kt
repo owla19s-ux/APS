@@ -1,4 +1,4 @@
-package com.owla19s.aps
+package com.aps
 
 import android.app.Application
 
