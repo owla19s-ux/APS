@@ -231,11 +231,12 @@ Context 对话
 - 已有 Dispatcher 单元测试覆盖按职责筛选和状态不变；PR #135 已合并（提交 `7a3ba417`）；Android Tests #38585124993 的 unit-test Job 成功。设备交互仍待验收。
 
 
-## 2026-10-15 批次施工：保留 Task 失败诊断摘要
+## 2026-10-15 批次施工：Task 执行结果接入运行诊断
 
-- AI 执行失败时，Task 的本地错误摘要继续保留异常类型，并增加经过换行规整、敏感字段模式脱敏和长度限制的异常消息片段，减少只看到异常类名、无法定位连接问题的情况。
-- 不保存请求正文、不记录 API 凭据、不改变 FAILED 状态迁移；取消仍单独记录为 CANCELLED。
-- 本批待 Android Tests / Verify 结果确认；不替代独立的应用运行、崩溃与 API 连接日志系统，也不视为真机验收。
+- Task→AI 执行服务统一记录 started / success / failed / cancelled 事件和耗时，复用现有 RuntimeDiagnostics 本地日志。
+- FAILED 的 Task 摘要只保留异常类型和固定失败类别，不写入任意异常消息；详细 API 日志仅记录受控事件、HTTP 状态、异常类型、失败类别和耗时，不记录请求正文、响应正文或凭据。
+- 不改变 READY→RUNNING→REVIEW_REQUIRED / FAILED / CANCELLED 状态边界；不自动改文件、提交 GitHub 或触发 Verify。
+- Android Tests / Verify 结果待确认；日志文件与崩溃记录、API 连接记录的真机验证仍待验收。
 
 
 ## 2026-10-15 验证状态补记
