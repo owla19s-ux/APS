@@ -229,3 +229,10 @@ Context 对话
 - 待调度队列增加“全部职责 / 拆分 / 施工 / 审查”筛选入口，复用现有 DevelopmentTaskDispatcher.readyQueue 的 Context、READY 状态和创建时间规则。
 - 仅过滤并展示本地 READY Task；不自动启动 AI，不改变 Task 状态，不触发 GitHub Workflow 或 Verify。
 - 已有 Dispatcher 单元测试覆盖按职责筛选和状态不变；本批 UI 编译与 CI 待验证，设备交互待验收。
+
+
+## 2026-10-15 批次施工：保留 Task 失败诊断摘要
+
+- AI 执行失败时，Task 的本地错误摘要继续保留异常类型，并增加经过换行规整、敏感字段模式脱敏和长度限制的异常消息片段，减少只看到异常类名、无法定位连接问题的情况。
+- 不保存请求正文、不记录 API 凭据、不改变 FAILED 状态迁移；取消仍单独记录为 CANCELLED。
+- 本批待 Android Tests / Verify 结果确认；不替代独立的应用运行、崩溃与 API 连接日志系统，也不视为真机验收。
