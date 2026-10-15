@@ -1,5 +1,6 @@
 package com.owla19s.aps.development
 
+import com.owla19s.aps.RuntimeDiagnostics
 import com.owla19s.aps.ai.AIConnector
 import com.owla19s.aps.ai.AIRequest
 import kotlinx.coroutines.CancellationException
@@ -10,15 +11,8 @@ import kotlinx.coroutines.CancellationException
  */
 class DevelopmentTaskExecutionService {
     private fun failureSummary(error: Exception): String {
-        val detail = error.message.orEmpty()
-            .replace(Regex("[\\r\\n\\t]+"), " ")
-            .replace(Regex("(?i)(authorization|api[-_ ]?key|access[-_ ]?token|secret)\\s*[:=]\\s*[^,;]+"), "$1=[redacted]")
-            .trim()
-            .take(240)
-        return buildString {
-            append("AI 执行失败：${error.javaClass.simpleName}")
-            if (detail.isNotBlank()) append(" · ").append(detail)
-        }
+        val category = RuntimeDiagnostics.classifyApiFailure(error) ?: "unknown"
+        return "AI 执行失败：${error.javaClass.simpleName} · ${category}"
     }
     suspend fun execute(
         contextId: String,
@@ -32,6 +26,8 @@ class DevelopmentTaskExecutionService {
 
         // Claim first. A concurrent attempt will fail the state transition instead of duplicating work.
         store.transition(contextId, taskId, DevelopmentTaskStatus.RUNNING, nowMillis())
+        val startedAt = System.nanoTime()
+        RuntimeDiagnostics.record("task.ai.execute", "started")
         try {
             val prompt = buildString {
                 appendLine("你正在 APS 中执行一张施工卡。请只处理本任务，并明确说明结果、未完成事项和风险。")
@@ -45,10 +41,14 @@ class DevelopmentTaskExecutionService {
             }
             val response = connector.send(AIRequest(contextId = contextId, userText = prompt))
             require(response.text.isNotBlank()) { "AI 返回了空结果" }
-            return store.transition(
+            val completed = store.transition(
                 contextId, taskId, DevelopmentTaskStatus.REVIEW_REQUIRED, nowMillis(),
                 resultSummary = response.text.trim()
             )
+            RuntimeDiagnostics.record(
+                "task.ai.execute", "success", (System.nanoTime() - startedAt) / 1_000_000
+            )
+            return completed
         } catch (cancelled: CancellationException) {
             runCatching {
                 val current = store.get(contextId, taskId)
@@ -56,6 +56,9 @@ class DevelopmentTaskExecutionService {
                     store.transition(contextId, taskId, DevelopmentTaskStatus.CANCELLED, nowMillis())
                 }
             }
+            RuntimeDiagnostics.record(
+                "task.ai.execute", "cancelled", (System.nanoTime() - startedAt) / 1_000_000
+            )
             throw cancelled
         } catch (error: Exception) {
             runCatching {
@@ -67,6 +70,9 @@ class DevelopmentTaskExecutionService {
                     )
                 }
             }
+            RuntimeDiagnostics.recordApiEvent(
+                "task.ai.execute", "failed", (System.nanoTime() - startedAt) / 1_000_000, error
+            )
             throw error
         }
     }
