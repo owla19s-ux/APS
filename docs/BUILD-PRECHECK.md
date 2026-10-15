@@ -1,6 +1,6 @@
 # APS 构建前检查清单
 
-更新时间：2026-10-02
+更新时间：2026-10-15
 
 ## 目的
 
@@ -40,6 +40,9 @@
 
 重点检查：
 - Launcher 与实际页面入口。
+- Android 应用标识与展示信息：`applicationId=com.aps`、应用标签 `APS`、当前 `versionName=0.1.1`；同时明确 `namespace` / Kotlin package 是否已完成迁移，不得把内部源码包名当成安装包标识。
+- APK 构建后检查实际二进制 Manifest 中的 package、label、versionName / versionCode；源码配置正确不能代替产物检查。
+- 若安装包标识从旧 `com.owla19s.aps` 改为 `com.aps`，先备份旧应用需要保留的数据，并记录新包不能直接覆盖旧包的风险。
 - Context / Conversation 数据模型及所有调用方。
 - 旧 Project / BridgeProject 兼容字段是否仍被业务代码使用；不得把历史 Project 模型重新作为当前 Space / Context 语义。
 - API Profile 与权限代码是否存在错误耦合。
