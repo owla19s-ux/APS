@@ -33,6 +33,7 @@
 
 ## API 多协议版本记录
 
-- `0.3.0`：API Profile 增加稳定协议 ID；内置 OpenAI 兼容、Anthropic Messages、Google Gemini 适配器；设置页按协议调用模型列表和真实聊天测试；协议适配器可按 ID 扩展。
-- Android `versionCode=4`、`versionName=0.3.0`；新的安装包标识为 `com.owla19s.aps`。
-- 版本号与包标识只说明版本目标；实际交付仍以单元测试、构建工作流和安装启动验证为准。
+- 当前 Android 配置：`versionCode=4`、`versionName=0.1.1`、`applicationId=com.aps`、`namespace=com.aps`。
+- API Profile 支持稳定协议 ID，以及 OpenAI 兼容、Anthropic Messages、Google Gemini 适配器；此能力不代表当前版本号为 `0.3.0`。
+- Kotlin/Java 源码 package 与 Manifest 组件全限定名已纳入 `com.aps` 统一迁移批次；需以该批次 CI 结果确认编译。
+- 版本号与包标识只说明源码配置；实际交付仍以工作流、APK Manifest 检查和真机安装启动验证为准。
