@@ -1,7 +1,7 @@
-package com.owla19s.aps.github
+package com.aps.github
 
-import com.owla19s.aps.context.Context
-import com.owla19s.aps.context.ResourceRef
+import com.aps.context.Context
+import com.aps.context.ResourceRef
 
 /**
  * 从工作 Context 装配运行时 GitHub Connection。
