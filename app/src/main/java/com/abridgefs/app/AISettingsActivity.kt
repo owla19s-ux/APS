@@ -194,15 +194,25 @@ class AISettingsActivity : AppCompatActivity() {
     private fun testChatConnection() {
         val profile = buildProfileOrNull() ?: return
         status.text = "状态：正在发送实际聊天测试请求……"
+        val startedAt = System.nanoTime()
+        RuntimeDiagnostics.record("api.connection.test_chat", "started")
         executor.execute {
             try {
                 val connector = AIConnectorFactory().create(profile) as? AIModelCatalogConnector
                     ?: error("当前协议不支持聊天测试")
                 val reply = runBlocking { connector.testChatCompletion() }
+                RuntimeDiagnostics.record(
+                    "api.connection.test_chat", "success",
+                    (System.nanoTime() - startedAt) / 1_000_000
+                )
                 runOnUiThread {
                     status.text = "聊天测试成功：模型已返回响应（${reply.take(80)}）"
                 }
             } catch (error: Exception) {
+                RuntimeDiagnostics.recordApiEvent(
+                    "api.connection.test_chat", "failed",
+                    (System.nanoTime() - startedAt) / 1_000_000, error
+                )
                 runOnUiThread {
                     status.text = formatApiError("聊天测试", error)
                 }
@@ -212,11 +222,18 @@ class AISettingsActivity : AppCompatActivity() {
     private fun fetchModels() {
         val profile = buildProfileOrNull(requireModel = false) ?: return
         status.text = "状态：正在请求模型列表……"
+        val startedAt = System.nanoTime()
+        RuntimeDiagnostics.record("api.connection.list_models", "started")
         executor.execute {
             try {
                 val connector = AIConnectorFactory().create(profile) as? AIModelCatalogConnector
                     ?: error("当前协议不支持模型列表")
                 val models = runBlocking { connector.listModels() }
+                RuntimeDiagnostics.record(
+                    "api.connection.list_models",
+                    if (models.isEmpty()) "empty" else "success",
+                    (System.nanoTime() - startedAt) / 1_000_000
+                )
                 runOnUiThread {
                     if (models.isEmpty()) {
                         status.text = "连接成功，但服务没有返回模型目录；可以手动填写模型 ID。"
@@ -231,6 +248,10 @@ class AISettingsActivity : AppCompatActivity() {
                     }
                 }
             } catch (error: Exception) {
+                RuntimeDiagnostics.recordApiEvent(
+                    "api.connection.list_models", "failed",
+                    (System.nanoTime() - startedAt) / 1_000_000, error
+                )
                 runOnUiThread {
                     status.text = formatApiError("获取模型列表", error)
                 }
