@@ -250,3 +250,10 @@ Context 对话
 - AI/API 设置页的“测试聊天请求”和“获取模型列表”记录 started、success/empty、failed 及耗时，复用 RuntimeDiagnostics。
 - 失败事件仅记录受控事件名、耗时、HTTP 状态、异常类型与固定失败类别；不记录请求/响应正文、API Key 或任意错误消息。
 - 页面继续显示已有的可操作错误提示；日志用于事后排查，不替代真实服务商端到端验收。
+
+
+## 2026-10-15 批次施工：诊断日志本地持久化测试
+
+- 源码复核确认：APSApplication 启动时初始化 RuntimeDiagnostics 并安装未捕获异常处理器；日志写入应用私有目录 `filesDir/aps-diagnostics`，按日分文件，单文件约 1 MiB 上限，保留最近 7 天。
+- 设置页已有“查看运行日志”和“导出运行日志”入口；因此本批不重复建设日志页面，重点补充 instrumentation 测试，验证事件确实写入并可从本地日志读回。
+- 新测试 `RuntimeDiagnosticsPersistenceInstrumentedTest` 已提交到本分支；CI 终态、设备实际崩溃记录和真实 API 端到端仍待验证。
