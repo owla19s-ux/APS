@@ -172,4 +172,4 @@ README 只保留产品定位、核心模型和当前边界；详细设计与施�
 
 ## API 协议支持（0.1.1）
 
-API 连接已扩展为按 Profile 选择协议：OpenAI 兼容协议、Anthropic Messages、Google Gemini。各协议通过独立 Connector 适配到 APS 的统一对话、流式输出、取消请求、模型列表和诊断边界。Profile 旧数据默认按 OpenAI 兼容协议读取。新安装包标识为 `com.owla19s.aps`，版本为 `0.1.1`。
+API 连接已扩展为按 Profile 选择协议：OpenAI 兼容协议、Anthropic Messages、Google Gemini。各协议通过独立 Connector 适配到 APS 的统一对话、流式输出、取消请求、模型列表和诊断边界。Profile 旧数据默认按 OpenAI 兼容协议读取。包标识与源码包名统一为 `com.aps`，应用显示名称为 `APS`，版本为 `0.1.1`。
