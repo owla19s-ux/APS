@@ -60,6 +60,17 @@ object RuntimeDiagnostics {
 
     internal fun shouldRotateLog(fileLength: Long): Boolean = fileLength >= MAX_LOG_FILE_BYTES
 
+    internal fun nextRotatedLogFile(directory: File, date: String, timestampMillis: Long): File {
+        val baseName = "aps-$date-$timestampMillis"
+        var candidate = File(directory, "$baseName.log")
+        var suffix = 1
+        while (candidate.exists()) {
+            candidate = File(directory, "$baseName-$suffix.log")
+            suffix++
+        }
+        return candidate
+    }
+
     internal fun classifyApiFailure(error: Throwable?, httpStatus: String? = null): String? {
         return when {
             error == null -> null
@@ -183,7 +194,7 @@ object RuntimeDiagnostics {
                 val file = File(directory, "aps-" + fileDate() + ".log")
                 if (file.exists() && shouldRotateLog(file.length())) {
                     // Preserve the full segment instead of erasing earlier diagnostic evidence.
-                    val rotated = File(directory, "aps-" + fileDate() + "-" + System.currentTimeMillis() + ".log")
+                    val rotated = nextRotatedLogFile(directory, fileDate(), System.currentTimeMillis())
                     if (!file.renameTo(rotated)) return
                 }
                 FileWriter(file, true).buffered().use { writer ->
