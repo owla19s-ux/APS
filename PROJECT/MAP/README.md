@@ -292,3 +292,10 @@
 - 过滤逻辑复用 DevelopmentTaskDispatcher.readyQueue；仍限定当前 Context 的 READY Task，并按创建时间排序。
 - 该入口只筛选本地任务，不自动执行 AI、不写本地文件、不提交 GitHub、不触发 Verify。
 - 现有 Dispatcher 单元测试覆盖职责过滤；本批待 CI 与设备交互验收。
+
+
+## 2026-10-15 批次补记：Task 失败诊断摘要
+
+- AI 执行失败时，在保留异常类型基础上记录经过规整、常见敏感字段模式脱敏并限制长度的错误消息片段，帮助定位连接失败原因。
+- 不保存请求正文或凭据；Task 状态、取消路径、GitHub Commit / Verify 边界不变。
+- 此摘要仅属于 Task 生命周期记录，不替代全局运行/崩溃/API 连接日志；待 CI 与真机验收。
