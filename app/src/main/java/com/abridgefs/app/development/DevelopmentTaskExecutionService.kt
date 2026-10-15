@@ -9,6 +9,17 @@ import kotlinx.coroutines.CancellationException
  * This does not commit code or dispatch/verify a GitHub workflow.
  */
 class DevelopmentTaskExecutionService {
+    private fun failureSummary(error: Exception): String {
+        val detail = error.message.orEmpty()
+            .replace(Regex("[\\r\\n\\t]+"), " ")
+            .replace(Regex("(?i)(authorization|api[-_ ]?key|access[-_ ]?token|secret)\\s*[:=]\\s*[^ ,;]+"), "$1=[redacted]")
+            .trim()
+            .take(240)
+        return buildString {
+            append("AI 执行失败：${error.javaClass.simpleName}")
+            if (detail.isNotBlank()) append(" · ").append(detail)
+        }
+    }
     suspend fun execute(
         contextId: String,
         taskId: String,
@@ -52,7 +63,7 @@ class DevelopmentTaskExecutionService {
                 if (current?.status == DevelopmentTaskStatus.RUNNING) {
                     store.transition(
                         contextId, taskId, DevelopmentTaskStatus.FAILED, nowMillis(),
-                        errorMessage = "AI 执行失败：${error.javaClass.simpleName}"
+                        errorMessage = failureSummary(error)
                     )
                 }
             }
