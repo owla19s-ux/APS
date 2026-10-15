@@ -10,6 +10,18 @@ import org.junit.Test
 
 class RuntimeDiagnosticsTest {
     @Test
+    fun readFileTailReturnsOnlyTheRequestedRecentBytes() {
+        val directory = createTempDir(prefix = "aps-log-tail-")
+        try {
+            val file = File(directory, "aps-test.log")
+            file.writeText("old-line\nnewest-line\n")
+            val tail = RuntimeDiagnostics.readFileTail(file, 12)
+            assertEquals("newest-line\n", tail)
+        } finally {
+            directory.deleteRecursively()
+        }
+    }
+    @Test
     fun logRotationThresholdPreservesFilesUntilTheConfiguredLimit() {
         assertEquals(false, RuntimeDiagnostics.shouldRotateLog(0L))
         assertEquals(false, RuntimeDiagnostics.shouldRotateLog(1_048_575L))
