@@ -1,4 +1,4 @@
-package com.owla19s.aps
+package com.aps
 
 import android.app.AlertDialog
 import android.content.ClipData
@@ -17,12 +17,12 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.owla19s.aps.ai.AIProfile
-import com.owla19s.aps.ai.AIProfileStore
-import com.owla19s.aps.ai.ApiErrorSanitizer
-import com.owla19s.aps.ai.AIProtocol
-import com.owla19s.aps.ai.AIConnectorFactory
-import com.owla19s.aps.ai.AIModelCatalogConnector
+import com.aps.ai.AIProfile
+import com.aps.ai.AIProfileStore
+import com.aps.ai.ApiErrorSanitizer
+import com.aps.ai.AIProtocol
+import com.aps.ai.AIConnectorFactory
+import com.aps.ai.AIModelCatalogConnector
 import kotlinx.coroutines.runBlocking
 import java.util.UUID
 import java.net.SocketTimeoutException
