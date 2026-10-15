@@ -1,4 +1,4 @@
-package com.owla19s.aps
+package com.aps
 
 import android.app.AlertDialog
 import android.content.Intent
@@ -17,34 +17,34 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.owla19s.aps.ai.AIConnection
-import com.owla19s.aps.ai.AIConnector
-import com.owla19s.aps.ai.AIRequest
-import com.owla19s.aps.ai.AIResponse
-import com.owla19s.aps.conversation.Conversation
-import com.owla19s.aps.conversation.ConversationGroup
-import com.owla19s.aps.conversation.ConversationManager
-import com.owla19s.aps.conversation.ConversationService
-import com.owla19s.aps.conversation.ConversationStore
-import com.owla19s.aps.local.AndroidLocalDocumentGateway
-import com.owla19s.aps.local.LocalConnection
-import com.owla19s.aps.local.LocalConnectionStore
-import com.owla19s.aps.local.LocalEntry
-import com.owla19s.aps.local.LocalFileConnector
-import com.owla19s.aps.local.LocalErrorMessage
-import com.owla19s.aps.github.GitHubConversationReadConfigStore
-import com.owla19s.aps.github.GitHubConversationReader
-import com.owla19s.aps.github.GitHubWorkflowRunSummary
-import com.owla19s.aps.development.DevelopmentTaskStore
-import com.owla19s.aps.development.DevelopmentVerification
-import com.owla19s.aps.development.DevelopmentVerificationStore
-import com.owla19s.aps.github.GitHubWorkflowRunDetails
-import com.owla19s.aps.github.GitHubCredential
-import com.owla19s.aps.github.GitHubCredentialStore
-import com.owla19s.aps.github.GitHubCredentialVerifier
-import com.owla19s.aps.github.GitHubReadTarget
-import com.owla19s.aps.context.ContextCapability
-import com.owla19s.aps.github.api.GitHubApiFactory
+import com.aps.ai.AIConnection
+import com.aps.ai.AIConnector
+import com.aps.ai.AIRequest
+import com.aps.ai.AIResponse
+import com.aps.conversation.Conversation
+import com.aps.conversation.ConversationGroup
+import com.aps.conversation.ConversationManager
+import com.aps.conversation.ConversationService
+import com.aps.conversation.ConversationStore
+import com.aps.local.AndroidLocalDocumentGateway
+import com.aps.local.LocalConnection
+import com.aps.local.LocalConnectionStore
+import com.aps.local.LocalEntry
+import com.aps.local.LocalFileConnector
+import com.aps.local.LocalErrorMessage
+import com.aps.github.GitHubConversationReadConfigStore
+import com.aps.github.GitHubConversationReader
+import com.aps.github.GitHubWorkflowRunSummary
+import com.aps.development.DevelopmentTaskStore
+import com.aps.development.DevelopmentVerification
+import com.aps.development.DevelopmentVerificationStore
+import com.aps.github.GitHubWorkflowRunDetails
+import com.aps.github.GitHubCredential
+import com.aps.github.GitHubCredentialStore
+import com.aps.github.GitHubCredentialVerifier
+import com.aps.github.GitHubReadTarget
+import com.aps.context.ContextCapability
+import com.aps.github.api.GitHubApiFactory
 import java.util.UUID
 import java.time.Instant
 
@@ -75,7 +75,7 @@ class ConversationActivity : AppCompatActivity() {
 
     private lateinit var aiConnection: AIConnection
     private lateinit var connector: AIConnector
-    private lateinit var profileStore: com.owla19s.aps.ai.AIProfileStore
+    private lateinit var profileStore: com.aps.ai.AIProfileStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,7 +89,7 @@ class ConversationActivity : AppCompatActivity() {
         val requestedContextId = intent.getStringExtra(EXTRA_CONTEXT_ID)
         if (!requestedContextId.isNullOrBlank()) {
             intent.removeExtra(EXTRA_CONTEXT_ID)
-            val linkedContext = com.owla19s.aps.context.ContextStore(this).get(requestedContextId)
+            val linkedContext = com.aps.context.ContextStore(this).get(requestedContextId)
             if (linkedContext != null) {
                 val contextConnectionId = linkedContext.aiConnectionId
                     ?.takeIf { profileStore.load(it) != null }
@@ -121,16 +121,16 @@ class ConversationActivity : AppCompatActivity() {
     }
 
     private fun configureAI() {
-        profileStore = com.owla19s.aps.ai.AIProfileStore(this)
+        profileStore = com.aps.ai.AIProfileStore(this)
         val selectedId = current?.aiConnectionId
         val profile = selectedId?.let(profileStore::load) ?: profileStore.load()
-        val registry = com.owla19s.aps.ai.AIConnectorRegistry(
+        val registry = com.aps.ai.AIConnectorRegistry(
             profileProvider = profileStore::load
         )
         aiConnection = if (profile != null) {
             registry.connection(profile)
         } else {
-            AIConnection(com.owla19s.aps.ai.AIProfile.DEFAULT_ID, "AI")
+            AIConnection(com.aps.ai.AIProfile.DEFAULT_ID, "AI")
         }
         connector = if (profile != null) {
             registry.resolve(aiConnection)
@@ -304,7 +304,7 @@ class ConversationActivity : AppCompatActivity() {
 
     private fun applyContextCapabilities() {
         val contextId = current?.contextId
-        val context = contextId?.let { com.owla19s.aps.context.ContextStore(this).get(it) }
+        val context = contextId?.let { com.aps.context.ContextStore(this).get(it) }
         // Independent conversations retain global tools; Context-linked conversations obey their module selection.
         val enabled = context?.enabledCapabilities
         localFilesButton.visibility = if (enabled == null || ContextCapability.LOCAL_FILES in enabled) View.VISIBLE else View.GONE
@@ -508,8 +508,8 @@ class ConversationActivity : AppCompatActivity() {
                     Thread {
                         val result = runCatching {
                             kotlinx.coroutines.runBlocking {
-                                val catalog = com.owla19s.aps.ai.AIConnectorFactory().create(profile)
-                                    as? com.owla19s.aps.ai.AIModelCatalogConnector
+                                val catalog = com.aps.ai.AIConnectorFactory().create(profile)
+                                    as? com.aps.ai.AIModelCatalogConnector
                                     ?: error("当前协议不支持模型列表")
                                 catalog.listModels()
                             }
@@ -958,7 +958,7 @@ class ConversationActivity : AppCompatActivity() {
     }
 
     private fun loadGitHubDirectory(
-        api: com.owla19s.aps.github.api.GitHubApi,
+        api: com.aps.github.api.GitHubApi,
         target: GitHubReadTarget,
         path: String,
         pathField: EditText
@@ -985,10 +985,10 @@ class ConversationActivity : AppCompatActivity() {
     }
 
     private fun showGitHubDirectory(
-        api: com.owla19s.aps.github.api.GitHubApi,
+        api: com.aps.github.api.GitHubApi,
         target: GitHubReadTarget,
         directoryPath: String,
-        entries: List<com.owla19s.aps.github.GitHubReadEntry>,
+        entries: List<com.aps.github.GitHubReadEntry>,
         pathField: EditText
     ) {
         val labels = entries.map {
