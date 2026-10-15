@@ -1,9 +1,9 @@
-package com.owla19s.aps.github
+package com.aps.github
 
-import com.owla19s.aps.connection.Connection
-import com.owla19s.aps.github.api.FileWriteRequest
-import com.owla19s.aps.github.api.GitHubApi
-import com.owla19s.aps.github.api.WorkflowDispatchRequest
+import com.aps.connection.Connection
+import com.aps.github.api.FileWriteRequest
+import com.aps.github.api.GitHubApi
+import com.aps.github.api.WorkflowDispatchRequest
 import com.google.gson.JsonObject
 import retrofit2.Response
 
