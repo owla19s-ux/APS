@@ -1,4 +1,4 @@
-package com.owla19s.aps.development
+package com.aps.development
 
 /** Append-only record of a persisted Task state transition. */
 data class DevelopmentTaskEvent(
