@@ -58,6 +58,8 @@ object RuntimeDiagnostics {
         )
     }
 
+    internal fun shouldRotateLog(fileLength: Long): Boolean = fileLength >= MAX_LOG_FILE_BYTES
+
     internal fun classifyApiFailure(error: Throwable?, httpStatus: String? = null): String? {
         return when {
             error == null -> null
@@ -179,9 +181,10 @@ object RuntimeDiagnostics {
                 if (!directory.exists() && !directory.mkdirs()) return
                 pruneOldLogs(directory)
                 val file = File(directory, "aps-" + fileDate() + ".log")
-                if (file.exists() && file.length() >= MAX_LOG_FILE_BYTES) {
-                    file.writeText(timestamp() + " event=log.truncated outcome=size_limit")
-                    file.appendText(System.lineSeparator())
+                if (file.exists() && shouldRotateLog(file.length())) {
+                    // Preserve the full segment instead of erasing earlier diagnostic evidence.
+                    val rotated = File(directory, "aps-" + fileDate() + "-" + System.currentTimeMillis() + ".log")
+                    if (!file.renameTo(rotated)) return
                 }
                 FileWriter(file, true).buffered().use { writer ->
                     writer.append(line)

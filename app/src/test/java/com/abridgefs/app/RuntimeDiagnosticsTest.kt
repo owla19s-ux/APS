@@ -9,6 +9,14 @@ import org.junit.Test
 
 class RuntimeDiagnosticsTest {
     @Test
+    fun logRotationThresholdPreservesFilesUntilTheConfiguredLimit() {
+        assertEquals(false, RuntimeDiagnostics.shouldRotateLog(0L))
+        assertEquals(false, RuntimeDiagnostics.shouldRotateLog(1_048_575L))
+        assertEquals(true, RuntimeDiagnostics.shouldRotateLog(1_048_576L))
+        assertEquals(true, RuntimeDiagnostics.shouldRotateLog(1_048_577L))
+    }
+
+    @Test
     fun apiFailureCategoriesDistinguishConfigurationFromNetworkErrors() {
         assertEquals("invalid_configuration", RuntimeDiagnostics.classifyApiFailure(IllegalArgumentException("bad URL")))
         assertEquals("authentication", RuntimeDiagnostics.classifyApiFailure(IOException("HTTP 401"), "401"))
