@@ -298,7 +298,7 @@
 
 - Task→AI 执行服务记录 started / success / failed / cancelled 事件与耗时，复用 RuntimeDiagnostics 本地日志。
 - Task 失败摘要只记录异常类型和固定失败类别；不把任意异常消息写入 Task 记录。运行日志仅保留受控事件、耗时、HTTP 状态、异常类型和失败类别，不记录请求正文、响应正文或凭据。
-- 不改变 Task 状态迁移，不自动改文件、提交 GitHub 或触发 Verify；待 Android Tests / Verify 与真机验收。
+- 不改变 Task 状态迁移，不自动改文件、提交 GitHub 或触发 Verify；PR #136 已合并（提交 `42686bf`），Android Tests #747 成功。合并后 Verify / Build and Release 与真机验收仍待确认。
 
 
 ## 2026-10-15 验证状态补记
