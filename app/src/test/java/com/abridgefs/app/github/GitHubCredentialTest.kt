@@ -1,4 +1,4 @@
-package com.owla19s.aps.github
+package com.aps.github
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
