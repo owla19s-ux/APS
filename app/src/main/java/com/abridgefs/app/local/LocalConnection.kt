@@ -1,6 +1,6 @@
-package com.owla19s.aps.local
+package com.aps.local
 
-import com.owla19s.aps.connection.Connection
+import com.aps.connection.Connection
 
 /** User-granted Android document tree; URI access remains bounded by the OS-granted tree permission. */
 data class LocalConnection(
