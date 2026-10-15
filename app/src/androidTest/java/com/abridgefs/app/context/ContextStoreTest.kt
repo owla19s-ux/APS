@@ -1,7 +1,7 @@
-package com.owla19s.aps.context
+package com.aps.context
 
 import androidx.test.platform.app.InstrumentationRegistry
-import com.owla19s.aps.github.GitHubResource
+import com.aps.github.GitHubResource
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
