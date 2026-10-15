@@ -6,6 +6,8 @@ import android.content.Context
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
+import java.io.ByteArrayOutputStream
+import java.io.RandomAccessFile
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.io.InterruptedIOException
@@ -98,17 +100,19 @@ object RuntimeDiagnostics {
                 .orEmpty()
             if (files.isEmpty()) return "暂无诊断日志。"
 
-            val output = StringBuilder()
-            files.forEach { file ->
-                val text = runCatching { file.readText(Charsets.UTF_8) }.getOrNull().orEmpty()
-                if (text.isNotEmpty()) {
-                    output.append(text).append('\n')
-                    if (output.length > maxChars * 2) {
-                        output.delete(0, output.length - maxChars)
-                    }
-                }
+            // Walk newest files first and enforce a total byte budget before decoding.
+            // This avoids loading every rotated file into memory just to display/export the tail.
+            var remainingBytes = maxChars.coerceAtLeast(0).toLong()
+            val newestFirst = mutableListOf<String>()
+            for (file in files.asReversed()) {
+                if (remainingBytes <= 0L) break
+                val budget = minOf(remainingBytes, Int.MAX_VALUE.toLong()).toInt()
+                val text = runCatching { readFileTail(file, budget) }.getOrNull().orEmpty()
+                if (text.isNotEmpty()) newestFirst.add(text)
+                remainingBytes -= minOf(file.length(), budget.toLong())
             }
-            output.toString().takeLast(maxChars).ifBlank { "暂无诊断日志。" }
+            newestFirst.asReversed().joinToString("\n").takeLast(maxChars)
+                .ifBlank { "暂无诊断日志。" }
         } catch (_: Exception) {
             "读取诊断日志失败。"
         }
@@ -181,6 +185,35 @@ object RuntimeDiagnostics {
             }
             cause = cause.cause
             depth++
+        }
+    }
+
+    internal fun readFileTail(file: File, maxBytes: Int): String {
+        if (maxBytes <= 0 || !file.isFile) return ""
+        RandomAccessFile(file, "r").use { input ->
+            val length = input.length()
+            val start = (length - maxBytes).coerceAtLeast(0L)
+            input.seek(start)
+            if (start > 0L) {
+                input.seek(start - 1L)
+                val previousByte = input.readByte()
+                input.seek(start)
+                // Skip only when the offset begins in the middle of a line.
+                if (previousByte != '\n'.code.toByte()) {
+                    while (input.filePointer < length && input.readByte().toInt() != '\n'.code) Unit
+                }
+            }
+            val output = ByteArrayOutputStream(minOf(maxBytes, 8192))
+            val buffer = ByteArray(8192)
+            var remaining = (maxBytes.toLong() - (input.filePointer - start))
+                .coerceAtLeast(0L).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+            while (remaining > 0) {
+                val count = input.read(buffer, 0, minOf(buffer.size, remaining))
+                if (count <= 0) break
+                output.write(buffer, 0, count)
+                remaining -= count
+            }
+            return output.toString(Charsets.UTF_8.name())
         }
     }
 
