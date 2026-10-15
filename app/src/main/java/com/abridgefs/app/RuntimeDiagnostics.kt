@@ -195,8 +195,13 @@ object RuntimeDiagnostics {
             val start = (length - maxBytes).coerceAtLeast(0L)
             input.seek(start)
             if (start > 0L) {
-                // Skip a possibly partial first line so the displayed tail starts cleanly.
-                while (input.filePointer < length && input.readByte().toInt() != '\n'.code) Unit
+                input.seek(start - 1L)
+                val previousByte = input.readByte()
+                input.seek(start)
+                // Skip only when the offset begins in the middle of a line.
+                if (previousByte != '\n'.code.toByte()) {
+                    while (input.filePointer < length && input.readByte().toInt() != '\n'.code) Unit
+                }
             }
             val output = ByteArrayOutputStream(minOf(maxBytes, 8192))
             val buffer = ByteArray(8192)
