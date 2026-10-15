@@ -1,6 +1,6 @@
-package com.owla19s.aps.ai
+package com.aps.ai
 
-import com.owla19s.aps.connection.Connection
+import com.aps.connection.Connection
 
 data class AIConnection(
     override val id: String,
