@@ -1,6 +1,6 @@
 # APS 当前任务总表
 
-更新时间：2026-10-14
+更新时间：2026-10-15
 
 > 本文件只维护当前仍需施工 / 验收 / 设计的任务。产品定义、架构原则、UI 正式设计和仓库操作规则分别由 PROJECT 与对应 docs 负责。
 
@@ -257,3 +257,12 @@ Context 对话
 - 复核发现，单日日志达到 1 MiB 后旧实现会直接覆盖原文件，只保留截断标记和新记录，可能丢失此前排查崩溃所需的关键上下文。
 - 本批改为超限时将当前日志段改名保留，再创建新的当日日志；若无法完成改名则不覆盖原日志。每个日志段仍有 1 MiB 上限，旧文件继续按 7 天保留策略清理。
 - 增加日志滚动阈值单元测试；等待 PR CI 验证。真实设备文件操作仍待验收。
+
+
+## 2026-10-15 文档与 Android 标识复核
+
+- `app/build.gradle` 当前配置为 `applicationId 'com.aps'`、`namespace 'com.owla19s.aps'`、`versionName '0.1.1'`；`app_name` 为 `APS`。
+- 已确认 README 曾错误地把 `com.owla19s.aps` 写成新安装包标识；`PROJECT/SPEC/README.md` 曾把当前版本写为 `0.3.0`。本批更正这些文档。
+- 外部安装包标识已去掉 `owla19s`，但 Android namespace 与源码 package 尚未统一迁移；本批不直接批量改动源码 package，避免遗漏 R / Manifest / 测试引用。后续如要求彻底移除内部旧命名空间，必须作为独立迁移批次并跑完整 Android Tests。
+- 下次 APK 构建前必须检查实际 APK 的 Manifest：`applicationId=com.aps`、应用标签 `APS`、版本 `0.1.1`；不可仅凭 Gradle 文件推断产物正确。
+- 安装包标识变更会使 Android 将 `com.aps` 视为与旧 `com.owla19s.aps` 不同的应用；真机安装前应备份需要保留的数据并确认旧包处理方式。
