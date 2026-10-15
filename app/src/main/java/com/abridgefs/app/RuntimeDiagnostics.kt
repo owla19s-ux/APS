@@ -200,7 +200,8 @@ object RuntimeDiagnostics {
             }
             val output = ByteArrayOutputStream(minOf(maxBytes, 8192))
             val buffer = ByteArray(8192)
-            var remaining = maxBytes
+            var remaining = (maxBytes.toLong() - (input.filePointer - start))
+                .coerceAtLeast(0L).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
             while (remaining > 0) {
                 val count = input.read(buffer, 0, minOf(buffer.size, remaining))
                 if (count <= 0) break
