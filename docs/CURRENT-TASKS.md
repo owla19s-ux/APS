@@ -236,7 +236,7 @@ Context 对话
 - Task→AI 执行服务统一记录 started / success / failed / cancelled 事件和耗时，复用现有 RuntimeDiagnostics 本地日志。
 - FAILED 的 Task 摘要只保留异常类型和固定失败类别，不写入任意异常消息；详细 API 日志仅记录受控事件、HTTP 状态、异常类型、失败类别和耗时，不记录请求正文、响应正文或凭据。
 - 不改变 READY→RUNNING→REVIEW_REQUIRED / FAILED / CANCELLED 状态边界；不自动改文件、提交 GitHub 或触发 Verify。
-- Android Tests / Verify 结果待确认；日志文件与崩溃记录、API 连接记录的真机验证仍待验收。
+- PR #136 已合并（提交 `42686bf`），Android Tests #747 成功；当前未取得合并后 Verify / Build and Release 的终态证据，不标记为通过。日志文件、崩溃记录和 API 连接记录仍待真机验收。
 
 
 ## 2026-10-15 验证状态补记
