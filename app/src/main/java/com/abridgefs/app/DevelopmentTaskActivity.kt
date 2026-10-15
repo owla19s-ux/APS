@@ -104,7 +104,7 @@ class DevelopmentTaskActivity : AppCompatActivity() {
         }, params())
         content.addView(Button(this).apply {
             text = "待调度队列"
-            setOnClickListener { showReadyQueue() }
+            setOnClickListener { chooseReadyQueueDuty() }
         }, params())
         if (filterNodeId != null) content.addView(Button(this).apply {
             text = "查看全部施工卡"
@@ -157,12 +157,25 @@ class DevelopmentTaskActivity : AppCompatActivity() {
     }
 
 
-    private fun showReadyQueue() {
-        val queue = com.owla19s.aps.development.DevelopmentTaskDispatcher.readyQueue(tasks.all(contextId), contextId)
+    private fun chooseReadyQueueDuty() {
+        val duties = listOf<DevelopmentTaskDuty?>(null) + DevelopmentTaskDuty.values().toList()
+        val labels = listOf("全部职责") + DevelopmentTaskDuty.values().map { it.displayName }
+        AlertDialog.Builder(this)
+            .setTitle("按职责筛选待调度队列")
+            .setItems(labels.toTypedArray()) { _, index -> showReadyQueue(duties[index]) }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun showReadyQueue(duty: DevelopmentTaskDuty?) {
+        val queue = com.owla19s.aps.development.DevelopmentTaskDispatcher.readyQueue(
+            tasks.all(contextId), contextId, duty
+        )
+        val dutyLabel = duty?.displayName ?: "全部职责"
         if (queue.isEmpty()) {
             AlertDialog.Builder(this)
-                .setTitle("待调度队列")
-                .setMessage("当前 Context 没有待执行的 READY 施工卡。此队列只筛选本地任务，不会自动启动 AI 或 GitHub Workflow。")
+                .setTitle("待调度队列 · $dutyLabel")
+                .setMessage("当前筛选下没有 READY 施工卡。此队列只筛选本地任务，不会自动启动 AI 或 GitHub Workflow。")
                 .setPositiveButton("确定", null)
                 .show()
             return
@@ -171,7 +184,7 @@ class DevelopmentTaskActivity : AppCompatActivity() {
             "${task.duty.displayName} · ${task.title} · ${formatTime(task.createdAtMillis)}"
         }
         AlertDialog.Builder(this)
-            .setTitle("待调度队列（${queue.size}）")
+            .setTitle("待调度队列 · $dutyLabel（${queue.size}）")
             .setItems(labels.toTypedArray()) { _, index -> showDetails(queue[index].id) }
             .setNegativeButton("关闭", null)
             .show()
