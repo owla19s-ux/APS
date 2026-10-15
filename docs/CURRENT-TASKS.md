@@ -135,13 +135,12 @@ Context 对话
 
 **当前只保留“请求 AI 协助”的入口和边界，不提前确定具体协作协议。**
 
-### APK 应用标识状态（2026-10-13 更新）
+### APK 应用标识状态（2026-10-15 复核）
 
-- 主线 `applicationId` 已调整为 `com.aps`；本次 Build and Release 产物 `APS.apk` 已从实际 APK 的二进制 Manifest 字符串中确认包含 `com.aps`，不再使用 `com.owla19s.aps` 作为安装包标识。
-- Android `namespace` 与 Kotlin/Java 源码 package 仍为 `com.owla19s.aps`，这是本次有意保留的内部命名空间，不应误报为已完成整体包名迁移。
-- 本次主线构建产物来自提交 `044b298c349b4d6a9252fecf13e23678095d9ba0`，Build and Release run #850 成功；应用标签与版本号尚未通过解包检查，本次只确认 application ID。
-- 因 `applicationId` 改变，Android 会将新包识别为不同应用，通常不能作为旧 `com.owla19s.aps` 的直接覆盖升级；真机安装前需考虑旧应用数据备份/迁移。
-- 后续若决定彻底移除内部 `owla19s` 命名空间，应单独施工并检查 Kotlin/Java package、Manifest、测试包名、BuildConfig 引用及 Gradle 配置。
+- 当前 `app/build.gradle`：`applicationId 'com.aps'`、`namespace 'com.owla19s.aps'`、`versionName '0.1.1'`；`strings.xml` 中应用显示名称为 `APS`。
+- 之前 Build and Release run #850 对提交 `044b298c349b4d6a9252fecf13e23678095d9ba0` 的 APK 检查确认安装包标识为 `com.aps`；该证据不能证明当前 HEAD 的 APK 标签、版本号或内部 package 迁移已通过验证。
+- 结论：应用显示名称和安装包标识已调整；Gradle namespace 与 Kotlin/Java 源码 package 尚未统一，仍需独立迁移，不能标记为全部完成。
+- `applicationId` 从旧值改为 `com.aps` 后，Android 通常会把它识别为不同应用，不能假设可直接覆盖安装旧 `com.owla19s.aps`；设备测试前需考虑旧数据备份。
 ### T10 — 正式 APK / 真机验收
 **状态：待主链收口后验收**
 
