@@ -291,7 +291,7 @@
 - 待调度队列新增职责筛选入口：全部职责、拆分、施工、审查。
 - 过滤逻辑复用 DevelopmentTaskDispatcher.readyQueue；仍限定当前 Context 的 READY Task，并按创建时间排序。
 - 该入口只筛选本地任务，不自动执行 AI、不写本地文件、不提交 GitHub、不触发 Verify。
-- 现有 Dispatcher 单元测试覆盖职责过滤；本批待 CI 与设备交互验收。
+- 现有 Dispatcher 单元测试覆盖职责过滤；PR #135 已合并，Android Tests #38585124993 的 unit-test Job 成功；设备交互待验收。
 
 
 ## 2026-10-15 批次补记：Task 失败诊断摘要
@@ -299,3 +299,8 @@
 - AI 执行失败时，在保留异常类型基础上记录经过规整、常见敏感字段模式脱敏并限制长度的错误消息片段，帮助定位连接失败原因。
 - 不保存请求正文或凭据；Task 状态、取消路径、GitHub Commit / Verify 边界不变。
 - 此摘要仅属于 Task 生命周期记录，不替代全局运行/崩溃/API 连接日志；待 CI 与真机验收。
+
+
+## 2026-10-15 验证状态补记
+
+PR #135（待调度队列按职责筛选）已合并，提交 `7a3ba417`；Android Tests #38585124993 的 unit-test Job 成功。当前查询未取得该合并提交对应的 Verify / Build and Release 运行记录，因此不将其标记为通过。
