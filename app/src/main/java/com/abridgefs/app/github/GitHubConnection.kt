@@ -1,6 +1,6 @@
-package com.owla19s.aps.github
+package com.aps.github
 
-import com.owla19s.aps.connection.Connection
+import com.aps.connection.Connection
 
 data class GitHubConnection(
     override val id: String,

@@ -1,4 +1,4 @@
-package com.owla19s.aps
+package com.aps
 
 import android.app.AlertDialog
 import android.content.Intent
@@ -14,10 +14,10 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.owla19s.aps.context.Context as APSContext
-import com.owla19s.aps.context.ContextAddress
-import com.owla19s.aps.context.ContextStore
-import com.owla19s.aps.context.ContextCapability
+import com.aps.context.Context as APSContext
+import com.aps.context.ContextAddress
+import com.aps.context.ContextStore
+import com.aps.context.ContextCapability
 import java.util.UUID
 
 /** Context detail and address management. Address records locate resources; they do not sync them. */
@@ -138,7 +138,7 @@ class ContextDetailActivity : AppCompatActivity() {
         val context = store.get(contextId) ?: run { finish(); return }
         heading.text = context.name
         notesView.text = context.notes.ifBlank { "暂无备注" }
-        val profiles = com.owla19s.aps.ai.AIProfileStore(this)
+        val profiles = com.aps.ai.AIProfileStore(this)
         val selectedProfile = context.aiConnectionId?.let(profiles::load)
         aiConnectionView.text = if (selectedProfile == null) {
             val defaultProfile = profiles.load()
@@ -257,7 +257,7 @@ class ContextDetailActivity : AppCompatActivity() {
     }
 
     private fun chooseAIConnection() {
-        val profiles = com.owla19s.aps.ai.AIProfileStore(this)
+        val profiles = com.aps.ai.AIProfileStore(this)
         val available = profiles.loadAll()
         val current = store.get(contextId) ?: return
         val options = mutableListOf("跟随全局默认连接")

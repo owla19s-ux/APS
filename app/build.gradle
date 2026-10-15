@@ -2,7 +2,7 @@ plugins { id 'com.android.application'; id 'org.jetbrains.kotlin.android' }
 
 android {
     buildFeatures { buildConfig true }
-    namespace 'com.owla19s.aps'
+    namespace 'com.aps'
     compileSdk 35
 
     defaultConfig {

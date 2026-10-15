@@ -1,4 +1,4 @@
-package com.owla19s.aps.local
+package com.aps.local
 
 import android.content.Context
 import androidx.test.platform.app.InstrumentationRegistry

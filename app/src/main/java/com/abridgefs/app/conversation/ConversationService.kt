@@ -1,10 +1,10 @@
-package com.owla19s.aps.conversation
+package com.aps.conversation
 
-import com.owla19s.aps.RuntimeDiagnostics
-import com.owla19s.aps.ai.AIConnector
-import com.owla19s.aps.ai.AIMessage
-import com.owla19s.aps.ai.AIRequest
-import com.owla19s.aps.ai.AIResponse
+import com.aps.RuntimeDiagnostics
+import com.aps.ai.AIConnector
+import com.aps.ai.AIMessage
+import com.aps.ai.AIRequest
+import com.aps.ai.AIResponse
 
 /**
  * Conversation 的运行边界。

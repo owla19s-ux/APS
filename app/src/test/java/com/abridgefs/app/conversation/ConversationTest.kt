@@ -1,4 +1,4 @@
-package com.owla19s.aps.conversation
+package com.aps.conversation
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

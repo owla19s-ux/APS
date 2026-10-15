@@ -1,6 +1,6 @@
-package com.owla19s.aps.github
+package com.aps.github
 
-import com.owla19s.aps.github.api.GitHubApi
+import com.aps.github.api.GitHubApi
 import com.google.gson.JsonObject
 import java.lang.reflect.Proxy
 import java.nio.charset.StandardCharsets

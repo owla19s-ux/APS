@@ -1,7 +1,7 @@
-package com.owla19s.aps.context
+package com.aps.context
 
 import android.content.Context as AndroidContext
-import com.owla19s.aps.RuntimeDiagnostics
+import com.aps.RuntimeDiagnostics
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID

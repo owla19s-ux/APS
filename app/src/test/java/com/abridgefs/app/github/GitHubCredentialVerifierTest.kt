@@ -1,6 +1,6 @@
-package com.owla19s.aps.github
+package com.aps.github
 
-import com.owla19s.aps.github.api.GitHubApi
+import com.aps.github.api.GitHubApi
 import com.google.gson.JsonObject
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -27,8 +27,8 @@ class GitHubCredentialVerifierTest {
             override suspend fun workflowRuns(owner: String, repo: String, branch: String?, headSha: String?, perPage: Int) = error("unused")
             override suspend fun workflowRun(owner: String, repo: String, runId: Long) = error("unused")
             override suspend fun workflowArtifacts(owner: String, repo: String, runId: Long) = error("unused")
-            override suspend fun dispatchWorkflow(owner: String, repo: String, workflowId: String, request: com.owla19s.aps.github.api.WorkflowDispatchRequest) = error("unused")
-            override suspend fun updateFile(owner: String, repo: String, path: String, request: com.owla19s.aps.github.api.FileWriteRequest) = error("unused")
+            override suspend fun dispatchWorkflow(owner: String, repo: String, workflowId: String, request: com.aps.github.api.WorkflowDispatchRequest) = error("unused")
+            override suspend fun updateFile(owner: String, repo: String, path: String, request: com.aps.github.api.FileWriteRequest) = error("unused")
         }
 
         val result = GitHubCredentialVerifier(api).verify()

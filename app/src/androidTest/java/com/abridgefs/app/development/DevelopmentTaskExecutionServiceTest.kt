@@ -1,10 +1,10 @@
-package com.owla19s.aps.development
+package com.aps.development
 
 import android.content.Context
 import androidx.test.platform.app.InstrumentationRegistry
-import com.owla19s.aps.ai.AIConnector
-import com.owla19s.aps.ai.AIRequest
-import com.owla19s.aps.ai.AIResponse
+import com.aps.ai.AIConnector
+import com.aps.ai.AIRequest
+import com.aps.ai.AIResponse
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals

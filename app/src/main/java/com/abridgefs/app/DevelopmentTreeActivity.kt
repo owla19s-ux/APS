@@ -1,4 +1,4 @@
-package com.owla19s.aps
+package com.aps
 
 import android.app.AlertDialog
 import android.content.Intent
@@ -13,11 +13,11 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.owla19s.aps.context.ContextStore
-import com.owla19s.aps.development.DevelopmentNode
-import com.owla19s.aps.development.DevelopmentRelation
-import com.owla19s.aps.development.DevelopmentTreeBranch
-import com.owla19s.aps.development.DevelopmentTreeStore
+import com.aps.context.ContextStore
+import com.aps.development.DevelopmentNode
+import com.aps.development.DevelopmentRelation
+import com.aps.development.DevelopmentTreeBranch
+import com.aps.development.DevelopmentTreeStore
 import java.util.UUID
 
 /** Context-scoped structure browser and node CRUD, guarded by DevelopmentTreeStore invariants. */

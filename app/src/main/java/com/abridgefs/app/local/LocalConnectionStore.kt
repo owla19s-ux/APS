@@ -1,7 +1,7 @@
-package com.owla19s.aps.local
+package com.aps.local
 
 import android.content.Context
-import com.owla19s.aps.RuntimeDiagnostics
+import com.aps.RuntimeDiagnostics
 import org.json.JSONArray
 import org.json.JSONObject
 

@@ -1,10 +1,10 @@
-package com.owla19s.aps.github
+package com.aps.github
 
-import com.owla19s.aps.context.Context
-import com.owla19s.aps.context.ResourceRef
-import com.owla19s.aps.github.api.FileWriteRequest
-import com.owla19s.aps.github.api.GitHubApi
-import com.owla19s.aps.github.api.WorkflowDispatchRequest
+import com.aps.context.Context
+import com.aps.context.ResourceRef
+import com.aps.github.api.FileWriteRequest
+import com.aps.github.api.GitHubApi
+import com.aps.github.api.WorkflowDispatchRequest
 import com.google.gson.JsonObject
 import java.lang.reflect.Proxy
 import org.junit.Assert.assertEquals

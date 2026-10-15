@@ -1,4 +1,4 @@
-package com.owla19s.aps.development
+package com.aps.development
 
 /** Explicit cross-node relation, independent from tree parentage. */
 data class DevelopmentRelation(

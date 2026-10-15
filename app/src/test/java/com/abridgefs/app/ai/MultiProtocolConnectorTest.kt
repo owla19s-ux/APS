@@ -1,4 +1,4 @@
-package com.owla19s.aps.ai
+package com.aps.ai
 
 import kotlinx.coroutines.runBlocking
 import okhttp3.MediaType.Companion.toMediaType

@@ -1,6 +1,6 @@
-package com.owla19s.aps.ai
+package com.aps.ai
 
-import com.owla19s.aps.RuntimeDiagnostics
+import com.aps.RuntimeDiagnostics
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser

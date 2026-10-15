@@ -1,4 +1,4 @@
-package com.owla19s.aps.development
+package com.aps.development
 
 /** Context-scoped structure node. Identity is stable across renames and moves. */
 data class DevelopmentNode(

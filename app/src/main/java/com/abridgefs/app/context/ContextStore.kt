@@ -1,8 +1,8 @@
-package com.owla19s.aps.context
+package com.aps.context
 
 import android.content.Context as AndroidContext
-import com.owla19s.aps.RuntimeDiagnostics
-import com.owla19s.aps.github.GitHubResource
+import com.aps.RuntimeDiagnostics
+import com.aps.github.GitHubResource
 import org.json.JSONArray
 import org.json.JSONObject
 

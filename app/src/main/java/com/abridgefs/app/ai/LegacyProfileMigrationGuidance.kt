@@ -1,4 +1,4 @@
-package com.owla19s.aps.ai
+package com.aps.ai
 
 /**
  * Produces a safe, actionable explanation when a legacy API profile cannot be migrated.

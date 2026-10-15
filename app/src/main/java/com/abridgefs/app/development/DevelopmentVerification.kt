@@ -1,4 +1,4 @@
-package com.owla19s.aps.development
+package com.aps.development
 
 /** Snapshot of an actual GitHub Actions run associated with one APS Task. */
 data class DevelopmentVerification(

@@ -1,6 +1,6 @@
-package com.owla19s.aps
+package com.aps
 
-import com.owla19s.aps.ai.ApiErrorSanitizer
+import com.aps.ai.ApiErrorSanitizer
 
 import android.content.Context
 import java.io.File

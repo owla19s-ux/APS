@@ -1,4 +1,4 @@
-package com.owla19s.aps.github
+package com.aps.github
 
 data class GitHubAddress(
     val repository: String,

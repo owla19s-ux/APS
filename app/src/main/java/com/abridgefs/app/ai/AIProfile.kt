@@ -1,4 +1,4 @@
-package com.owla19s.aps.ai
+package com.aps.ai
 
 /**
  * User-configured AI API profile. Provider identity and wire protocol are separate.

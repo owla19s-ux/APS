@@ -1,4 +1,4 @@
-package com.owla19s.aps.local
+package com.aps.local
 
 import java.io.IOException
 import org.junit.Assert.assertArrayEquals

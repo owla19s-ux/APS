@@ -1,4 +1,4 @@
-package com.owla19s.aps.ai
+package com.aps.ai
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

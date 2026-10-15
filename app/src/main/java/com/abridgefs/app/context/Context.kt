@@ -1,6 +1,6 @@
-package com.owla19s.aps.context
+package com.aps.context
 
-import com.owla19s.aps.github.GitHubResource
+import com.aps.github.GitHubResource
 
 /**
  * APS 的具体工作上下文。

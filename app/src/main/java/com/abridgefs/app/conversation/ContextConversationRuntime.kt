@@ -1,8 +1,8 @@
-package com.owla19s.aps.conversation
+package com.aps.conversation
 
-import com.owla19s.aps.ai.AIConnection
-import com.owla19s.aps.ai.AIConnectorRegistry
-import com.owla19s.aps.context.Context
+import com.aps.ai.AIConnection
+import com.aps.ai.AIConnectorRegistry
+import com.aps.context.Context
 
 /**
  * Context Conversation 的最小运行时组装边界。

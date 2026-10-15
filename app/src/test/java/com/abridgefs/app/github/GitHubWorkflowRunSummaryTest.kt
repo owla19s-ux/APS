@@ -1,4 +1,4 @@
-package com.owla19s.aps.github
+package com.aps.github
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject

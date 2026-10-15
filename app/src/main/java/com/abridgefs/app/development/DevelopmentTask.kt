@@ -1,4 +1,4 @@
-package com.owla19s.aps.development
+package com.aps.development
 
 /** Minimal task hand-off record; this is not a Dispatcher or AI-agent runtime. */
 data class DevelopmentTask(

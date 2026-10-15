@@ -1,4 +1,4 @@
-package com.owla19s.aps.development
+package com.aps.development
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

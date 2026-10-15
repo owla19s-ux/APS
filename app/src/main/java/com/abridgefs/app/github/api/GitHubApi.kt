@@ -1,4 +1,4 @@
-package com.owla19s.aps.github.api
+package com.aps.github.api
 
 import com.google.gson.JsonObject
 import retrofit2.Response

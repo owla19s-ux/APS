@@ -113,3 +113,11 @@ Address 属于 Context，回答“在哪里”；Resource 表示 Address 所定�
 - 复杂 Workflow Engine；
 - Secretary / Orchestrator；
 - BridgeFS 作为产品模块。
+
+
+## 2026-10-15 Android 包名统一批次
+
+- 目标配置统一为 `applicationId=com.aps`、`namespace=com.aps`、Kotlin/Java package `com.aps`、Manifest 组件类名 `com.aps.*`；显示名称保持 `APS`，版本保持 `0.1.1`。
+- 该源码迁移当前在独立分支施工，尚未通过 CI 前不得视为已交付。
+- 旧安装包 `com.owla19s.aps` 与新包 `com.aps` 是不同 Android 应用身份；旧应用数据不会因源码命名空间迁移自动转移。
+- 实际 APK Manifest、安装启动与数据迁移仍需构建后验收。
