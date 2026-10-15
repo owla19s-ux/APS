@@ -236,10 +236,17 @@ Context 对话
 - Task→AI 执行服务统一记录 started / success / failed / cancelled 事件和耗时，复用现有 RuntimeDiagnostics 本地日志。
 - FAILED 的 Task 摘要只保留异常类型和固定失败类别，不写入任意异常消息；详细 API 日志仅记录受控事件、HTTP 状态、异常类型、失败类别和耗时，不记录请求正文、响应正文或凭据。
 - 不改变 READY→RUNNING→REVIEW_REQUIRED / FAILED / CANCELLED 状态边界；不自动改文件、提交 GitHub 或触发 Verify。
-- Android Tests / Verify 结果待确认；日志文件与崩溃记录、API 连接记录的真机验证仍待验收。
+- PR #136 已合并（提交 `42686bf`），Android Tests #747 成功；当前未取得合并后 Verify / Build and Release 的终态证据，不标记为通过。日志文件、崩溃记录和 API 连接记录仍待真机验收。
 
 
 ## 2026-10-15 验证状态补记
 
 - PR #135（待调度队列按职责筛选）已合并，合并提交 `7a3ba417`；Android Tests #38585124993 的 unit-test Job 成功。
 - 本次查询未取得合并提交对应的 Verify / Build and Release 运行记录，因此不标记这两项主线验证成功。
+
+
+## 2026-10-15 批次施工：API 连接测试结果接入运行诊断
+
+- AI/API 设置页的“测试聊天请求”和“获取模型列表”记录 started、success/empty、failed 及耗时，复用 RuntimeDiagnostics。
+- 失败事件仅记录受控事件名、耗时、HTTP 状态、异常类型与固定失败类别；不记录请求/响应正文、API Key 或任意错误消息。
+- 页面继续显示已有的可操作错误提示；日志用于事后排查，不替代真实服务商端到端验收。
