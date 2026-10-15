@@ -1,4 +1,4 @@
-package com.owla19s.aps
+package com.aps
 
 import android.app.AlertDialog
 import android.graphics.Color
@@ -21,21 +21,21 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.owla19s.aps.context.ContextStore
-import com.owla19s.aps.ai.AIConnectorRegistry
-import com.owla19s.aps.ai.AIProfileStore
-import com.owla19s.aps.development.DevelopmentTaskExecutionService
-import com.owla19s.aps.development.DevelopmentNode
-import com.owla19s.aps.development.DevelopmentTask
-import com.owla19s.aps.development.DevelopmentTaskEvent
-import com.owla19s.aps.development.DevelopmentTaskDuty
-import com.owla19s.aps.development.DevelopmentTaskLink
-import com.owla19s.aps.development.DevelopmentTaskLinkStore
-import com.owla19s.aps.development.DevelopmentTaskStatus
-import com.owla19s.aps.development.DevelopmentTaskStore
-import com.owla19s.aps.development.DevelopmentTreeStore
-import com.owla19s.aps.development.DevelopmentVerification
-import com.owla19s.aps.development.DevelopmentVerificationStore
+import com.aps.context.ContextStore
+import com.aps.ai.AIConnectorRegistry
+import com.aps.ai.AIProfileStore
+import com.aps.development.DevelopmentTaskExecutionService
+import com.aps.development.DevelopmentNode
+import com.aps.development.DevelopmentTask
+import com.aps.development.DevelopmentTaskEvent
+import com.aps.development.DevelopmentTaskDuty
+import com.aps.development.DevelopmentTaskLink
+import com.aps.development.DevelopmentTaskLinkStore
+import com.aps.development.DevelopmentTaskStatus
+import com.aps.development.DevelopmentTaskStore
+import com.aps.development.DevelopmentTreeStore
+import com.aps.development.DevelopmentVerification
+import com.aps.development.DevelopmentVerificationStore
 import java.text.DateFormat
 import java.util.Date
 import java.util.UUID
@@ -168,7 +168,7 @@ class DevelopmentTaskActivity : AppCompatActivity() {
     }
 
     private fun showReadyQueue(duty: DevelopmentTaskDuty?) {
-        val queue = com.owla19s.aps.development.DevelopmentTaskDispatcher.readyQueue(
+        val queue = com.aps.development.DevelopmentTaskDispatcher.readyQueue(
             tasks.all(contextId), contextId, duty
         )
         val dutyLabel = duty?.displayName ?: "全部职责"
