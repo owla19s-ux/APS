@@ -1,4 +1,4 @@
-package com.owla19s.aps.ai
+package com.aps.ai
 
 /**
  * Builds runtime connectors from persisted profiles.
