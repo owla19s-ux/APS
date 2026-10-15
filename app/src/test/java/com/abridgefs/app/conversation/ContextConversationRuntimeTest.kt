@@ -1,11 +1,11 @@
-package com.owla19s.aps.conversation
+package com.aps.conversation
 
-import com.owla19s.aps.ai.AIConnection
-import com.owla19s.aps.ai.AIConnector
-import com.owla19s.aps.ai.AIConnectorRegistry
-import com.owla19s.aps.ai.AIRequest
-import com.owla19s.aps.ai.AIResponse
-import com.owla19s.aps.context.Context
+import com.aps.ai.AIConnection
+import com.aps.ai.AIConnector
+import com.aps.ai.AIConnectorRegistry
+import com.aps.ai.AIRequest
+import com.aps.ai.AIResponse
+import com.aps.context.Context
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
