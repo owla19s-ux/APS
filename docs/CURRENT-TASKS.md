@@ -228,4 +228,18 @@ Context 对话
 
 - 待调度队列增加“全部职责 / 拆分 / 施工 / 审查”筛选入口，复用现有 DevelopmentTaskDispatcher.readyQueue 的 Context、READY 状态和创建时间规则。
 - 仅过滤并展示本地 READY Task；不自动启动 AI，不改变 Task 状态，不触发 GitHub Workflow 或 Verify。
-- 已有 Dispatcher 单元测试覆盖按职责筛选和状态不变；本批 UI 编译与 CI 待验证，设备交互待验收。
+- 已有 Dispatcher 单元测试覆盖按职责筛选和状态不变；PR #135 已合并（提交 `7a3ba417`）；Android Tests #38585124993 的 unit-test Job 成功。设备交互仍待验收。
+
+
+## 2026-10-15 批次施工：Task 执行结果接入运行诊断
+
+- Task→AI 执行服务统一记录 started / success / failed / cancelled 事件和耗时，复用现有 RuntimeDiagnostics 本地日志。
+- FAILED 的 Task 摘要只保留异常类型和固定失败类别，不写入任意异常消息；详细 API 日志仅记录受控事件、HTTP 状态、异常类型、失败类别和耗时，不记录请求正文、响应正文或凭据。
+- 不改变 READY→RUNNING→REVIEW_REQUIRED / FAILED / CANCELLED 状态边界；不自动改文件、提交 GitHub 或触发 Verify。
+- Android Tests / Verify 结果待确认；日志文件与崩溃记录、API 连接记录的真机验证仍待验收。
+
+
+## 2026-10-15 验证状态补记
+
+- PR #135（待调度队列按职责筛选）已合并，合并提交 `7a3ba417`；Android Tests #38585124993 的 unit-test Job 成功。
+- 本次查询未取得合并提交对应的 Verify / Build and Release 运行记录，因此不标记这两项主线验证成功。
