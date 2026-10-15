@@ -31,8 +31,9 @@
 当前产品定位：**APS（AI + Context + Service）**。
 
 
-## API 多协议版本记录
+## API 多协议能力记录
 
-- `0.3.0`：API Profile 增加稳定协议 ID；内置 OpenAI 兼容、Anthropic Messages、Google Gemini 适配器；设置页按协议调用模型列表和真实聊天测试；协议适配器可按 ID 扩展。
-- Android `versionCode=4`、`versionName=0.3.0`；新的安装包标识为 `com.owla19s.aps`。
-- 版本号与包标识只说明版本目标；实际交付仍以单元测试、构建工作流和安装启动验证为准。
+- 当前代码已包含按 Profile 选择协议的能力：OpenAI 兼容协议、Anthropic Messages、Google Gemini；各适配器接入统一 Connector 边界。
+- 当前交付版本以 app/build.gradle 为准：`versionCode=4`、`versionName=0.1.1`；当前 Android 安装包标识（applicationId）为 `com.aps`，应用显示名称为 `APS`。
+- Android namespace 与 Kotlin/Java 源码 package 仍为 `com.owla19s.aps`，因此内部命名空间尚未完成统一迁移。此项应作为独立代码批次处理，并通过 Android Tests 与 Build and Release 验证。
+- 版本号与包标识只说明代码配置；实际交付仍以对应提交的工作流结果和安装启动验证为准。
