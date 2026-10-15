@@ -12,7 +12,7 @@ class DevelopmentTaskExecutionService {
     private fun failureSummary(error: Exception): String {
         val detail = error.message.orEmpty()
             .replace(Regex("[\\r\\n\\t]+"), " ")
-            .replace(Regex("(?i)(authorization|api[-_ ]?key|access[-_ ]?token|secret)\\s*[:=]\\s*[^ ,;]+"), "$1=[redacted]")
+            .replace(Regex("(?i)(authorization|api[-_ ]?key|access[-_ ]?token|secret)\\s*[:=]\\s*[^,;]+"), "$1=[redacted]")
             .trim()
             .take(240)
         return buildString {
