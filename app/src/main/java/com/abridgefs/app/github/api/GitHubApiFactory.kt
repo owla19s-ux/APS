@@ -1,6 +1,6 @@
-package com.owla19s.aps.github.api
+package com.aps.github.api
 
-import com.owla19s.aps.github.GitHubCredential
+import com.aps.github.GitHubCredential
 
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
