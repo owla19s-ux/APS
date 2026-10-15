@@ -1,8 +1,8 @@
-package com.owla19s.aps.conversation
+package com.aps.conversation
 
-import com.owla19s.aps.ai.AIConnector
-import com.owla19s.aps.ai.AIRequest
-import com.owla19s.aps.ai.AIResponse
+import com.aps.ai.AIConnector
+import com.aps.ai.AIRequest
+import com.aps.ai.AIResponse
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
