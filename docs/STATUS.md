@@ -1,6 +1,6 @@
 # APS 当前状态与工作记录
 
-更新时间：2026-10-08
+更新时间：2026-10-15
 
 > 当前事实以代码、Commit、Actions / Verify、APK / 真机结果为准。本文件用于记录当前阶段状态，不作为历史架构的复原依据。
 
@@ -113,3 +113,22 @@ Address 属于 Context，回答“在哪里”；Resource 表示 Address 所定�
 - 复杂 Workflow Engine；
 - Secretary / Orchestrator；
 - BridgeFS 作为产品模块。
+
+## 七、2026-10-15 状态校准补记
+
+### 应用标识与版本
+
+- app/build.gradle 当前配置：applicationId=com.aps、namespace=com.owla19s.aps、versionName=0.1.1；应用显示名称由 strings.xml 设置为 APS。
+- 因此安装包标识与应用显示名称已调整，但 namespace 和 Kotlin/Java 源码 package 仍保留 com.owla19s.aps，不能声称“所有包名已统一”。
+- 下一批应把内部 namespace / package 迁移作为独立代码变更，完整检查源码声明、跨包 import、Manifest 组件引用、测试代码、R / BuildConfig 引用；迁移后必须以 Android Tests 和 Build and Release 结果验收。由于 applicationId 已是 com.aps，安装旧 com.owla19s.aps 的版本通常不能直接覆盖升级，真机验收前需考虑旧数据备份。
+
+### 诊断日志功能链
+
+- Task AI 执行与 API 连接测试已接入本地 RuntimeDiagnostics 事件记录。
+- 日志文件具备单段大小限制、滚动保留与 7 天清理；日志查看 / 导出读取范围优化正在 PR #141 中等待 CI，未合并前不计入主线已完成能力。
+- 真机文件写入、崩溃捕获、日志查看和系统文件选择器导出仍未完成设备验收。
+
+### 验证边界
+
+- PR Android Tests 成功不等于合并后的 Verify / Build and Release 成功。
+- 未取得具体提交对应的工作流终态时，状态保持“未确认”，不写成“通过”。
