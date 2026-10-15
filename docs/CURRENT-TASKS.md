@@ -141,7 +141,7 @@ Context 对话
 - 后续包名统一批次已将 Android `namespace`、Kotlin/Java 源码 package、Manifest 组件全限定名统一为 `com.aps`；需以该批次 PR 的 CI 结果确认编译有效。
 - 本次主线构建产物来自提交 `044b298c349b4d6a9252fecf13e23678095d9ba0`，Build and Release run #850 成功；应用标签与版本号尚未通过解包检查，本次只确认 application ID。
 - 因 `applicationId` 改变，Android 会将新包识别为不同应用，通常不能作为旧 `com.owla19s.aps` 的直接覆盖升级；真机安装前需考虑旧应用数据备份/迁移。
-- 后续若决定彻底移除内部 `owla19s` 命名空间，应单独施工并检查 Kotlin/Java package、Manifest、测试包名、BuildConfig 引用及 Gradle 配置。
+- 本批正在统一内部 `com.owla19s.aps` 命名空间；合并前以 Android Tests 检查源码、Manifest、测试与 Gradle 配置，构建后再检查实际 APK。
 ### T10 — 正式 APK / 真机验收
 **状态：待主链收口后验收**
 
