@@ -39,24 +39,24 @@
 
 | UI ID | parent_id | 页面 / 区域 | 主要可见功能 | 关联功能 ID | 设计状态 | 当前实现状态 |
 |---|---|---|---|---|---|---|
-| UI-001 | — | APS 主入口 | 进入空间、普通对话、设置 | FN-001,FN-005,FN-021,FN-022 | 已确认 | 部分实现：当前 Manifest 的 Launcher 指向 ConversationActivity；空间/设置入口未发现 |
-| UI-002 | UI-001 | 空间页 | 选择与管理 Space，进入目录和 Context | FN-001,FN-002 | 已确认 | 未发现页面实现 |
-| UI-003 | UI-002 | Space 选择与管理 | 查看、创建、重命名、删除或切换 Space | FN-001 | 需细化 | 未发现页面/完整模型实现 |
-| UI-004 | UI-002 | 目录与 Context 列表 | 分组展示 Context，进入指定 Context | FN-001,FN-002 | 已确认 | 未发现 UI；Context 模型/Store 有初步实现 |
+| UI-001 | — | APS 主入口 | 进入空间、普通对话、设置 | FN-001,FN-005,FN-021,FN-022 | 已确认 | 部分实现：Manifest Launcher 已指向 SpaceActivity；空间页提供普通对话与设置入口，但三页统一导航/返回体验仍需核验 |
+| UI-002 | UI-001 | 空间页 | 选择与管理 Space，进入目录和 Context | FN-001,FN-002 | 已确认 | 部分实现：SpaceActivity 已实现空间名称显示/改名、目录分组、Context 列表及创建入口；多 Space 切换/管理仍待实现 |
+| UI-003 | UI-002 | Space 选择与管理 | 查看、创建、重命名、删除或切换 Space | FN-001 | 需细化 | 部分实现：可见 SpaceDirectoryStore 提供空间名称相关能力；多 Space 的创建、切换、删除尚无证据 |
+| UI-004 | UI-002 | 目录与 Context 列表 | 分组展示 Context，进入指定 Context | FN-001,FN-002 | 已确认 | 部分实现：SpaceActivity 已有目录筛选/管理和 Context 列表；目录与 Context 归属交互仍需验收 |
 | UI-005 | UI-004 | 新建 Context / 模板 | 自定义创建、从模板创建、编辑/复制/保存模板 | FN-002,FN-003 | 已确认 | 部分实现：本批新增 ContextTemplateStore 与空间页模板管理入口，支持新建、编辑、复制、删除、从现有 Context 保存模板、使用模板创建 Context；待 CI 与设备交互验证。模板只保存备注与功能组合，不复制地址、资源或连接凭证 |
 | UI-006 | UI-004 | Context 工作面 | 显示 Context 信息及按需启用的能力 | FN-002,FN-004,FN-011,FN-017,FN-018,FN-019 | 已确认 | 已接入 Context 详情页与可组合入口；本批新增 Context 功能选择、持久化及按配置呈现入口；对话切换时同步刷新功能入口；Android Tests 工作流已扩展为同时执行单元测试与 Android instrumentation 测试源码编译，等待该提交 CI 结果，真机行为仍待验收 |
-| UI-007 | UI-006 | Context 基本信息与管理 | 名称、备注；创建、查看、编辑、删除、移动、复制、归档 | FN-002 | 已确认 | 部分实现：Context 数据模型、SharedPreferences Store、详情页编辑和地址管理存在；本批新增功能组合配置入口，模板/复制/归档等仍未实现 |
+| UI-007 | UI-006 | Context 基本信息与管理 | 名称、备注；创建、查看、编辑、删除、移动、复制、归档 | FN-002 | 已确认 | 部分实现：Context 数据模型、SharedPreferences Store、详情页编辑和地址管理存在；模板初始配置已在本批实现；Context 本体复制、归档仍未实现 |
 | UI-008 | UI-006 | Address / Resource 区域 | 管理多个地址；选择资源；区分位置与实际内容 | FN-004,FN-011 | 已确认 | 部分实现：Context 目前可关联 GitHub ResourceRef；通用 Address 与 Local/File Resource 尚未发现 |
 | UI-009 | UI-006 | 连接与权限区域 | 选择 Context 可用连接并管理资源操作授权 | FN-022,FN-011,FN-020 | 已确认 | 部分实现：Context 功能组合选择已接入，但它只控制功能入口，不等同连接绑定、认证或操作授权；通用授权仍待实现 |
 | UI-010 | UI-006 | 软件开发结构 | 结构树、施工表、验证视图；用户确认 UI 方案 | FN-017,FN-018,FN-019 | 已确认 | 已接入独立结构页：节点新增/编辑/移动/删除与层级展开；施工卡页提供 Task 生命周期、Task—节点关联与已保存的 GitHub Verify 快照；本批已补齐逐条解除 Task—节点关联；合并后 Android Tests #679、Verify #298、Build and Release #850 均通过。本批新增结构节点直达关联施工卡入口：可从节点菜单打开按节点筛选的 Task 列表，并在此新建自动关联当前节点的 Task；当前批次待 CI 验证。本批新增关系边管理入口，PR #116 已合并（`c04b4e8c`），合并后 Android Tests #685、Verify #301、Build and Release #854 均成功；Dispatcher、用户确认交互及真机端到端验收仍待完成。TaskStore 跨实例并发写入互斥修复已合并（PR #117），三项主线工作流均成功；PR #119 已合并 Task 拆分 / 施工 / 审查职责字段，旧记录默认施工职责；PR #120 已合并（`4e807ecc`），主线 Android Tests #38371902123、Verify #38371902199、Build and Release #38371902115 均成功。READY 队列按 Context、状态和创建时间筛选，不自动执行。当前分支新增显式 Task→AI 交接：施工卡详情可把 READY Task 发送给当前 Context 绑定的 AI Connection，结果保存为 REVIEW_REQUIRED，失败保存为 FAILED；不承诺代码写入、Commit 或 GitHub Verify，待 CI |
-| UI-011 | UI-001 | 普通对话页 | 独立对话，不强制关联 Context | FN-005,FN-006,FN-007,FN-008,FN-009,FN-013,FN-014,FN-016 | 已确认 | 部分实现：ConversationActivity 是 Launcher，真实 AI 对话、本地文件入口、GitHub 只读文件入口已接入；Actions 运行列表与单次运行详情已接入；合并后 Android Tests #38205186446、Verify #38205186448、Build and Release #38205186456 均通过，真实设备验收待完成 |
+| UI-011 | UI-001 | 普通对话页 | 独立对话，不强制关联 Context | FN-005,FN-006,FN-007,FN-008,FN-009,FN-013,FN-014,FN-016 | 已确认 | 部分实现：ConversationActivity 已支持独立/关联对话、分组、AI 请求、Local/GitHub/Actions 与已保存验证记录；头像显示和完整真机交互验收仍待完成 |
 | UI-012 | UI-011 | 对话分组 | 新建、重命名、删除分组；移动对话 | FN-006 | 已确认 | 已实现待验证：Activity 已接入分组筛选、新建/重命名/删除分组及移动对话入口；CI 已通过，仍需设备交互验收 |
 | UI-013 | UI-011 | 对话管理列表 | 新建、查看、切换、重命名、删除对话 | FN-005,FN-007 | 已确认 | 已实现待验证：Activity 已接入新建/切换/重命名/删除；保存失败边界与设备交互仍待验收 |
 | UI-014 | UI-011 | 消息与输入区 | 展示消息、输入、发送、显示调用状态 | FN-007,FN-009 | 已确认 | 部分实现：基础消息与发送 UI 存在；错误/取消/流式状态处理未发现完整实现 |
 | UI-015 | UI-011 | AI 连接、模型与头像 | 选择 AI 连接及具体模型，显示头像 | FN-008,FN-010 | 已确认 | 部分实现：已可配置默认 API Profile 并获取模型目录，ConversationActivity 使用已保存模型；对话内连接/模型切换已接入首版（连接选择、当前对话模型 ID 覆盖并持久化）；当前对话可拉取模型目录并选择模型，头像显示仍未实现 |
 | UI-016 | UI-011 | 连接 / 资料选择入口 | 通过“＋”选择 Local、File、GitHub 等已授权资源 | FN-011,FN-012,FN-014 | 已确认 | 未发现入口实现 |
 | UI-017 | UI-011 | AI Code 三级策略按钮 | 当前普通对话切换“自动 / 询问 / 拦截” | FN-020 | 已确认 | 未发现实现 |
-| UI-018 | UI-001 | 设置页 | 连接与服务、权限、验证、系统 | FN-021,FN-022,FN-023 | 已确认 | 未发现页面实现 |
+| UI-018 | UI-001 | 设置页 | 连接与服务、权限、验证、系统 | FN-021,FN-022,FN-023 | 已确认 | 部分实现：SettingsActivity 已有连接与服务、权限、验证、系统折叠区及日志查看/复制；GitHub 与 Local 入口仍转发到对话页，统一连接/权限/Verify 工作台未完成 |
 | UI-019 | UI-018 | 连接与服务 | 添加、编辑、测试、启停各类连接 | FN-022 | 已确认 | 未发现统一设置 UI |
 | UI-020 | UI-019 | AI / API 配置 | 配置服务地址、认证、模型列表与默认模型 | FN-008 | 已确认 | 部分实现：AISettingsActivity 支持多 Profile 的保存/删除、默认连接、模型目录与真实聊天测试；HTTPS 校验和专门错误提示已接入。统一设置入口、连接状态持久展示、旧 HTTP 配置迁移失败的显式恢复引导及真实供应商端到端验证仍待补齐 |
 | UI-021 | UI-019 | GitHub 配置 | 凭证管理、验证、仓库/分支选择与测试 | FN-013,FN-014,FN-015,FN-016 | 已确认 | 部分实现：普通对话页可验证凭证、加密保存令牌并选择仓库/分支/文件执行只读；全局连接设置、写入与 Actions 管理 UI 仍未接入 |
@@ -73,7 +73,7 @@
 
 | 功能 ID | 功能名称 | 功能边界 / 完成条件摘要 | 设计状态 | 当前实现状态 | 已知证据 / 待补内容 |
 |---|---|---|---|---|---|
-| FN-001 | Space 与目录管理 | 管理 Space，按目录组织 Context；有稳定身份与顺序 | 已确认 | 未实现 | 未发现对应 Space/目录模型及 UI |
+| FN-001 | Space 与目录管理 | 管理 Space，按目录组织 Context；有稳定身份与顺序 | 已确认 | 部分实现 | SpaceDirectoryStore 与 SpaceActivity 已提供单个当前空间名称、目录 CRUD/筛选及 Context 分组；多 Space 独立身份、切换和删除尚未实现 |
 | FN-002 | Context 管理 | Context 新建、读取、修改、删除、移动/复制/归档；稳定 ID；保存每个 Context 独立的功能组合 | 已确认 | 部分实现 | `context/Context.kt`、`ContextStore.kt`；本批新增 `enabledCapabilities` 持久化、创建时多选和详情页调整入口，待 CI 验证；模板、复制、归档仍未实现 |
 | FN-003 | Context 模板管理 | 内置/自定义模板、从已有 Context 保存模板、复制/编辑/删除模板 | 已确认 | 部分实现 | ContextTemplateStore 持久化模板名称、备注和 enabledCapabilities；SpaceActivity 已接入模板新建/编辑/复制/删除、从现有 Context 保存及应用模板创建新 Context；新增 ContextTemplateTest 覆盖新身份、能力组合和未知能力拒绝。CI 与真机交互待验收；内置模板预置项、模板导入/导出未实现 |
 | FN-004 | Address / Resource 关联 | 多个 Address 定位资源；操作前解析实际 Resource；不把地址等同内容 | 已确认 | 部分实现 | 当前 ResourceRef 仅覆盖 GitHub Resource；通用 Address 模型待建 |
@@ -317,3 +317,20 @@ AI/API 设置页的实际聊天测试与模型目录请求记录开始、成功/
 - 空间页新增“模板管理”，支持新建、编辑、复制、删除、从现有 Context 保存模板，以及从模板创建新的 Context。
 - 应用模板时生成新的 Context ID；仅复制备注和功能组合，不复制 Address、Resource 或任何连接凭证。模板后续编辑不会回写已创建的 Context。
 - 新增单元测试覆盖模板应用后的身份独立、能力组合与未知能力拒绝。此批尚未获得 CI 结果，不代表设备端交互已验收。
+
+
+
+## 9. UI 正式文档对照审查基线（2026-10-16）
+
+审查以 `PROJECT/UI/README.md` 为设计依据，以当前 `main` 源码为实现依据。页面或模块由独立 Activity 实现不自动构成偏差；重点是入口是否按 Context 配置显示、数据归属是否正确、页面导航是否连贯。
+
+| 检查项 | 当前结论 | 后续动作 |
+|---|---|---|
+| Launcher 与三页入口 | Launcher 已是 SpaceActivity；普通对话、设置入口存在 | 核验返回栈与重复页面行为 |
+| Space / 目录 / Context 组织 | 单个空间名称、目录与 Context 列表已接入；多 Space 生命周期不完整 | 明确多 Space 是否属于当前阶段，再补独立身份与切换 |
+| Context 模板 | 本批首版已接入，待 CI | CI 通过后做设备交互验收；后续再评估内置模板预置 |
+| Context 功能组合 | 配置持久化及按配置显示入口已有实现 | 逐项核验五种能力开关、重启恢复与数据保留 |
+| 设置与连接 | 设置分区存在，GitHub/Local 实际入口仍转发对话页 | 继续补统一连接入口与各连接的真实管理行为 |
+| 对话体验 | 对话管理与多种连接工具已接入 | 补头像显示、保存失败提示与设备验收 |
+| 开发结构 / Task / Verify | 已有独立页面和本地数据模型 | 保持 Task 完成与 Verify 成功分离，继续核验实际证据链 |
+
