@@ -34,25 +34,27 @@ data class ContextTemplate(
 class ContextTemplateStore(context: AndroidContext) {
     private val prefs = context.getSharedPreferences(PREFERENCES, AndroidContext.MODE_PRIVATE)
 
-    fun all(): List<ContextTemplate> = try {
+    fun all(): List<ContextTemplate> {
         val raw = prefs.getString(KEY_DATA, null) ?: return emptyList()
-        val array = JSONArray(raw)
-        buildList {
-            for (i in 0 until array.length()) {
-                val item = array.getJSONObject(i)
-                val capabilities = item.optJSONArray("enabledCapabilities")
-                add(ContextTemplate(
-                    id = item.getString("id"),
-                    name = item.getString("name"),
-                    notes = item.optString("notes"),
-                    enabledCapabilities = capabilities?.let { values ->
-                        buildSet { for (j in 0 until values.length()) add(values.getString(j)) }
-                    } ?: ContextCapability.defaultForNewContext
-                ))
-            }
-        }.sortedBy { it.name.lowercase() }
-    } catch (_: Exception) {
-        emptyList()
+        return try {
+            val array = JSONArray(raw)
+            buildList {
+                for (i in 0 until array.length()) {
+                    val item = array.getJSONObject(i)
+                    val capabilities = item.optJSONArray("enabledCapabilities")
+                    add(ContextTemplate(
+                        id = item.getString("id"),
+                        name = item.getString("name"),
+                        notes = item.optString("notes"),
+                        enabledCapabilities = capabilities?.let { values ->
+                            buildSet { for (j in 0 until values.length()) add(values.getString(j)) }
+                        } ?: ContextCapability.defaultForNewContext
+                    ))
+                }
+            }.sortedBy { it.name.lowercase() }
+        } catch (_: Exception) {
+            emptyList()
+        }
     }
 
     fun get(id: String): ContextTemplate? = all().firstOrNull { it.id == id }
