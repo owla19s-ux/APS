@@ -43,7 +43,7 @@
 | UI-002 | UI-001 | 空间页 | 选择与管理 Space，进入目录和 Context | FN-001,FN-002 | 已确认 | 未发现页面实现 |
 | UI-003 | UI-002 | Space 选择与管理 | 查看、创建、重命名、删除或切换 Space | FN-001 | 需细化 | 未发现页面/完整模型实现 |
 | UI-004 | UI-002 | 目录与 Context 列表 | 分组展示 Context，进入指定 Context | FN-001,FN-002 | 已确认 | 未发现 UI；Context 模型/Store 有初步实现 |
-| UI-005 | UI-004 | 新建 Context / 模板 | 自定义创建、从模板创建、编辑/复制/保存模板 | FN-002,FN-003 | 已确认 | 未发现模板模型与 UI 实现 |
+| UI-005 | UI-004 | 新建 Context / 模板 | 自定义创建、从模板创建、编辑/复制/保存模板 | FN-002,FN-003 | 已确认 | 部分实现：本批新增 ContextTemplateStore 与空间页模板管理入口，支持新建、编辑、复制、删除、从现有 Context 保存模板、使用模板创建 Context；待 CI 与设备交互验证。模板只保存备注与功能组合，不复制地址、资源或连接凭证 |
 | UI-006 | UI-004 | Context 工作面 | 显示 Context 信息及按需启用的能力 | FN-002,FN-004,FN-011,FN-017,FN-018,FN-019 | 已确认 | 已接入 Context 详情页与可组合入口；本批新增 Context 功能选择、持久化及按配置呈现入口；对话切换时同步刷新功能入口；Android Tests 工作流已扩展为同时执行单元测试与 Android instrumentation 测试源码编译，等待该提交 CI 结果，真机行为仍待验收 |
 | UI-007 | UI-006 | Context 基本信息与管理 | 名称、备注；创建、查看、编辑、删除、移动、复制、归档 | FN-002 | 已确认 | 部分实现：Context 数据模型、SharedPreferences Store、详情页编辑和地址管理存在；本批新增功能组合配置入口，模板/复制/归档等仍未实现 |
 | UI-008 | UI-006 | Address / Resource 区域 | 管理多个地址；选择资源；区分位置与实际内容 | FN-004,FN-011 | 已确认 | 部分实现：Context 目前可关联 GitHub ResourceRef；通用 Address 与 Local/File Resource 尚未发现 |
@@ -75,7 +75,7 @@
 |---|---|---|---|---|---|
 | FN-001 | Space 与目录管理 | 管理 Space，按目录组织 Context；有稳定身份与顺序 | 已确认 | 未实现 | 未发现对应 Space/目录模型及 UI |
 | FN-002 | Context 管理 | Context 新建、读取、修改、删除、移动/复制/归档；稳定 ID；保存每个 Context 独立的功能组合 | 已确认 | 部分实现 | `context/Context.kt`、`ContextStore.kt`；本批新增 `enabledCapabilities` 持久化、创建时多选和详情页调整入口，待 CI 验证；模板、复制、归档仍未实现 |
-| FN-003 | Context 模板管理 | 内置/自定义模板、从已有 Context 保存模板、复制/编辑/删除模板 | 已确认 | 未实现 | 未发现模板实现 |
+| FN-003 | Context 模板管理 | 内置/自定义模板、从已有 Context 保存模板、复制/编辑/删除模板 | 已确认 | 部分实现 | ContextTemplateStore 持久化模板名称、备注和 enabledCapabilities；SpaceActivity 已接入模板新建/编辑/复制/删除、从现有 Context 保存及应用模板创建新 Context；新增 ContextTemplateTest 覆盖新身份、能力组合和未知能力拒绝。CI 与真机交互待验收；内置模板预置项、模板导入/导出未实现 |
 | FN-004 | Address / Resource 关联 | 多个 Address 定位资源；操作前解析实际 Resource；不把地址等同内容 | 已确认 | 部分实现 | 当前 ResourceRef 仅覆盖 GitHub Resource；通用 Address 模型待建 |
 | FN-005 | 对话管理 | 创建、查看、切换、重命名、删除普通对话；支持独立/可关联 Context | 已确认 | 部分实现 | ConversationManager/Store 与对应 UI 动作已接入；需补足失败保存边界并做设备交互验收 |
 | FN-006 | 对话分组管理 | 分组 CRUD、将对话移动到分组；删组不删对话 | 已确认 | 已实现待验证 | ConversationGroup/Store 与 Activity 分组管理 UI 已接入；CI 通过，设备交互待验收 |
@@ -309,3 +309,11 @@ PR #135（待调度队列按职责筛选）已合并，提交 `7a3ba417`；Andro
 ## 2026-10-15 批次补记：API 连接结果诊断
 
 AI/API 设置页的实际聊天测试与模型目录请求记录开始、成功/空目录、失败和耗时，复用 RuntimeDiagnostics。失败诊断只保存受控事件、耗时、HTTP 状态、异常类型和固定失败类别，不记录请求/响应正文、密钥或任意服务端错误文本。真实服务商和真机端到端链路仍待验收。
+
+
+## 2026-10-16 批次补记：Context 模板管理首版（待 CI）
+
+- 新增独立 `ContextTemplateStore`，保存模板 ID、名称、备注和 Context 功能组合；模板配置不混入 Context 数据。
+- 空间页新增“模板管理”，支持新建、编辑、复制、删除、从现有 Context 保存模板，以及从模板创建新的 Context。
+- 应用模板时生成新的 Context ID；仅复制备注和功能组合，不复制 Address、Resource 或任何连接凭证。模板后续编辑不会回写已创建的 Context。
+- 新增单元测试覆盖模板应用后的身份独立、能力组合与未知能力拒绝。此批尚未获得 CI 结果，不代表设备端交互已验收。
