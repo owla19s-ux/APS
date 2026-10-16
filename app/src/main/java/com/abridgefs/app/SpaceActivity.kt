@@ -19,6 +19,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.aps.context.Context as APSContext
 import com.aps.context.ContextStore
 import com.aps.context.ContextCapability
+import com.aps.context.ContextTemplate
+import com.aps.context.ContextTemplateStore
 import com.aps.context.SpaceDirectory
 import com.aps.context.SpaceDirectoryStore
 import java.util.UUID
@@ -27,6 +29,7 @@ import java.util.UUID
 class SpaceActivity : AppCompatActivity() {
     private lateinit var store: ContextStore
     private lateinit var directoryStore: SpaceDirectoryStore
+    private lateinit var templateStore: ContextTemplateStore
     private lateinit var list: LinearLayout
     private lateinit var emptyState: TextView
     private lateinit var directoryList: LinearLayout
@@ -41,6 +44,7 @@ class SpaceActivity : AppCompatActivity() {
         RuntimeDiagnostics.record("startup.space.context_store", "success")
         RuntimeDiagnostics.record("startup.space_directory_store", "begin")
         directoryStore = SpaceDirectoryStore(this)
+        templateStore = ContextTemplateStore(this)
         RuntimeDiagnostics.record("startup.space_directory_store", "success")
         RuntimeDiagnostics.record("startup.space.build_ui", "begin")
         val content = buildUi()
@@ -100,6 +104,7 @@ class SpaceActivity : AppCompatActivity() {
         }, LinearLayout.LayoutParams(0, dp(48), 1f))
         actions.addView(secondaryActions, buttonParams())
         root.addView(actions)
+        root.addView(actionButton("模板管理") { showTemplateManagement() }, buttonParams())
         val directoryHeading = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
         directoryHeading.addView(TextView(this).apply {
             text = "目录分组"
@@ -362,9 +367,125 @@ class SpaceActivity : AppCompatActivity() {
             }.show()
     }
 
-    private fun promptCreateContext() {
-        val field = EditText(this).apply { hint = "Context 名称" }
-        val selected = ContextCapability.defaultForNewContext.toMutableSet()
+
+    private fun showTemplateManagement() {
+        val templates = templateStore.all()
+        val labels = templates.map { it.name }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("Context 模板")
+            .setItems(labels) { _, index -> showTemplateActions(templates[index]) }
+            .setNeutralButton("从现有 Context 保存") { _, _ -> chooseContextForTemplate() }
+            .setPositiveButton("新建模板") { _, _ -> editTemplate(null) }
+            .setNegativeButton("关闭", null)
+            .show()
+    }
+
+    private fun showTemplateActions(template: ContextTemplate) {
+        AlertDialog.Builder(this)
+            .setTitle(template.name)
+            .setItems(arrayOf("使用模板创建 Context", "编辑模板", "复制模板", "删除模板")) { _, index ->
+                when (index) {
+                    0 -> promptCreateContext(template)
+                    1 -> editTemplate(template)
+                    2 -> editTemplate(template.copy(
+                        id = UUID.randomUUID().toString(),
+                        name = "${template.name} 副本"
+                    ))
+                    3 -> AlertDialog.Builder(this)
+                        .setTitle("删除模板")
+                        .setMessage("只删除模板配置，不影响已经创建的 Context。")
+                        .setNegativeButton("取消", null)
+                        .setPositiveButton("删除") { _, _ ->
+                            templateStore.delete(template.id)
+                            toast("模板已删除")
+                        }.show()
+                }
+            }
+            .setNegativeButton("返回") { _, _ -> showTemplateManagement() }
+            .show()
+    }
+
+    private fun chooseContextForTemplate() {
+        val contexts = store.all().sortedBy { it.name.lowercase() }
+        if (contexts.isEmpty()) {
+            toast("还没有 Context 可保存为模板")
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("选择要保存的 Context")
+            .setItems(contexts.map { it.name }.toTypedArray()) { _, index ->
+                val context = contexts[index]
+                editTemplate(ContextTemplate(
+                    name = "${context.name} 模板",
+                    notes = context.notes,
+                    enabledCapabilities = context.enabledCapabilities
+                ))
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun editTemplate(existing: ContextTemplate?) {
+        val nameField = EditText(this).apply {
+            hint = "模板名称"
+            setText(existing?.name.orEmpty())
+        }
+        val notesField = EditText(this).apply {
+            hint = "模板备注（可选）"
+            setText(existing?.notes.orEmpty())
+        }
+        val selected = (existing?.enabledCapabilities ?: ContextCapability.defaultForNewContext).toMutableSet()
+        val form = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), dp(4), dp(20), 0)
+            addView(nameField, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ))
+            addView(notesField, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ))
+            addView(TextView(this@SpaceActivity).apply {
+                text = "模板只保存初始备注与功能组合，不复制地址、资源或连接凭证。"
+                textSize = 13f
+                setPadding(0, dp(8), 0, dp(4))
+            })
+            ContextCapability.all.forEach { capability ->
+                addView(CheckBox(this@SpaceActivity).apply {
+                    text = ContextCapability.label(capability)
+                    isChecked = capability in selected
+                    setOnCheckedChangeListener { _, checked ->
+                        if (checked) selected += capability else selected -= capability
+                    }
+                })
+            }
+        }
+        AlertDialog.Builder(this)
+            .setTitle(if (existing == null) "新建模板" else "编辑模板")
+            .setView(form)
+            .setNegativeButton("取消", null)
+            .setPositiveButton("保存") { _, _ ->
+                val name = nameField.text.toString().trim()
+                if (name.isBlank()) {
+                    toast("模板名称不能为空")
+                } else {
+                    templateStore.save(ContextTemplate(
+                        id = existing?.id ?: UUID.randomUUID().toString(),
+                        name = name,
+                        notes = notesField.text.toString().trim(),
+                        enabledCapabilities = selected.toSet()
+                    ))
+                    toast("模板已保存")
+                }
+            }
+            .show()
+    }
+
+    private fun promptCreateContext(template: ContextTemplate? = null) {
+        val field = EditText(this).apply {
+            hint = "Context 名称"
+            template?.let { setText(it.name) }
+        }
+        val selected = (template?.enabledCapabilities ?: ContextCapability.defaultForNewContext).toMutableSet()
         val form = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(20), dp(4), dp(20), 0)
@@ -395,11 +516,15 @@ class SpaceActivity : AppCompatActivity() {
                 if (name.isBlank()) {
                     toast("Context 名称不能为空")
                 } else {
-                    val context = APSContext(
-                        id = UUID.randomUUID().toString(),
-                        name = name,
-                        enabledCapabilities = selected.toSet()
-                    )
+                    val context = if (template != null) {
+                        template.createContext(name).copy(enabledCapabilities = selected.toSet())
+                    } else {
+                        APSContext(
+                            id = UUID.randomUUID().toString(),
+                            name = name,
+                            enabledCapabilities = selected.toSet()
+                        )
+                    }
                     store.save(context)
                     val targetDirectory = selectedDirectoryFilter.takeIf {
                         it != ALL_DIRECTORIES && it != UNGROUPED
