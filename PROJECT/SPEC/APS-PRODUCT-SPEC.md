@@ -65,6 +65,8 @@ Context 不固定承载 Task、Conversation、State、内容或工作记录的�
 
 Context 可以使用一个或多个 Connection，也可以没有 AI Connection。Task 也不是所有 Context 的必需组成部分。
 
+2026-10-16 用户补充确认：APS 的 Android“所有文件访问权限”属于应用级能力，不扩张单个 Context 的资源范围。Context 默认只访问自身明确加入的本地或云端文件地址；一个 Context 可以加入多个地址，每条包含名称、地址、备注。云端认证、连接授权和修改等操作权限仍独立检查。完整施工基线见 [`PROJECT/UI/README.md`](../UI/README.md) 的“2026-10-16 用户确认的施工基线”。
+
 ## 五、软件开发结构
 
 “软件开发结构”是软件开发类 Context 的一种可组合能力，用于把产品设计、功能、架构、施工和验证连接到同一结构模型中。
