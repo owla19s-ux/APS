@@ -74,7 +74,7 @@
 | 功能 ID | 功能名称 | 功能边界 / 完成条件摘要 | 设计状态 | 当前实现状态 | 已知证据 / 待补内容 |
 |---|---|---|---|---|---|
 | FN-001 | Space 与目录管理 | 管理 Space，按目录组织 Context；有稳定身份与顺序 | 已确认 | 部分实现 | SpaceDirectoryStore 与 SpaceActivity 已提供单个当前空间名称、目录 CRUD/筛选及 Context 分组；多 Space 独立身份、切换和删除尚未实现 |
-| FN-002 | Context 管理 | Context 新建、读取、修改、删除、移动/复制/归档；稳定 ID；保存每个 Context 独立的功能组合 | 已确认 | 部分实现 | `context/Context.kt`、`ContextStore.kt`；本批新增 `enabledCapabilities` 持久化、创建时多选和详情页调整入口，待 CI 验证；模板、复制、归档仍未实现 |
+| FN-002 | Context 管理 | Context 新建、读取、修改、删除、移动/复制/归档；稳定 ID；保存每个 Context 独立的功能组合 | 已确认 | 部分实现 | `context/Context.kt`、`ContextStore.kt`；`enabledCapabilities` 持久化、创建时多选和详情页调整入口已接入；Context 本体复制、归档仍未实现。模板配置单列于 FN-003 |
 | FN-003 | Context 模板管理 | 内置/自定义模板、从已有 Context 保存模板、复制/编辑/删除模板 | 已确认 | 部分实现 | ContextTemplateStore 持久化模板名称、备注和 enabledCapabilities；SpaceActivity 已接入模板新建/编辑/复制/删除、从现有 Context 保存及应用模板创建新 Context；新增 ContextTemplateTest 覆盖新身份、能力组合和未知能力拒绝。CI 与真机交互待验收；内置模板预置项、模板导入/导出未实现 |
 | FN-004 | Address / Resource 关联 | 多个 Address 定位资源；操作前解析实际 Resource；不把地址等同内容 | 已确认 | 部分实现 | 当前 ResourceRef 仅覆盖 GitHub Resource；通用 Address 模型待建 |
 | FN-005 | 对话管理 | 创建、查看、切换、重命名、删除普通对话；支持独立/可关联 Context | 已确认 | 部分实现 | ConversationManager/Store 与对应 UI 动作已接入；需补足失败保存边界并做设备交互验收 |
